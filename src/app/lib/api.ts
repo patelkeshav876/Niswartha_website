@@ -152,6 +152,49 @@ export const api = {
   createRazorpayOrder: (data: Record<string, unknown>) =>
     fetchAPI('/razorpay/order', { method: 'POST', body: JSON.stringify(data) }),
 
+  // --- Photo Gallery API ---
+  getAlbums: () => fetchAPI<any[]>('/albums'),
+  getAlbum: (id: string) => fetchAPI<any>(`/albums/${id}`),
+  createAlbum: (data: Record<string, unknown>) =>
+    fetchAPI<any>('/albums', { method: 'POST', body: JSON.stringify(data) }),
+  updateAlbum: (id: string, data: Record<string, unknown>) =>
+    fetchAPI<any>(`/albums/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteAlbum: (id: string) =>
+    fetchAPI<any>(`/albums/${id}`, { method: 'DELETE' }),
+
+  // --- Government Schemes API ---
+  getSchemes: () => fetchAPI<any[]>('/schemes'),
+  getScheme: (id: string) => fetchAPI<any>(`/schemes/${id}`),
+  createScheme: (data: Record<string, unknown>) =>
+    fetchAPI<any>('/schemes', { method: 'POST', body: JSON.stringify(data) }),
+  updateScheme: (id: string, data: Record<string, unknown>) =>
+    fetchAPI<any>(`/schemes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteScheme: (id: string) =>
+    fetchAPI<any>(`/schemes/${id}`, { method: 'DELETE' }),
+
+  // --- Child Records API ---
+  getChildren: () => fetchAPI<any[]>('/children'),
+  getChild: (id: string) => fetchAPI<any>(`/children/${id}`),
+  createChild: (data: Record<string, unknown>) =>
+    fetchAPI<any>('/children', { method: 'POST', body: JSON.stringify(data) }),
+  updateChild: (id: string, data: Record<string, unknown>) =>
+    fetchAPI<any>(`/children/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteChild: (id: string) =>
+    fetchAPI<any>(`/children/${id}`, { method: 'DELETE' }),
+
+  // --- Team Members API ---
+  getTeamMembers: () => fetchAPI<any[]>('/team'),
+  createTeamMember: (data: Record<string, unknown>) =>
+    fetchAPI<any>('/team', { method: 'POST', body: JSON.stringify(data) }),
+  updateTeamMember: (id: string, data: Record<string, unknown>) =>
+    fetchAPI<any>(`/team/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteTeamMember: (id: string) =>
+    fetchAPI<any>(`/team/${id}`, { method: 'DELETE' }),
+
+  // --- Admin User Management API ---
+  getAdminUsers: () => fetchAPI<any[]>('/admin/users'),
+  deleteUser: (id: string) => fetchAPI<any>(`/admin/users/${id}`, { method: 'DELETE' }),
+
   initData: (payload: Record<string, unknown>) =>
     fetchAPI('/init-data', { method: 'POST', body: JSON.stringify(payload) }),
 };

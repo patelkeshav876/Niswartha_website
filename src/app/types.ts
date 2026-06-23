@@ -134,3 +134,52 @@ export interface VisitBookingRecord {
 export type UnifiedBookingRow =
   | { kind: 'event'; booking: EventBookingRecord }
   | { kind: 'visit'; booking: VisitBookingRecord };
+
+export interface Album {
+  id: string;
+  name: string;
+  description: string;
+  coverUrl?: string;
+  images: string[];
+  createdAt: string;
+}
+
+export type GovSchemeCategory = 'Education' | 'Scholarship' | 'Child Welfare' | 'Healthcare' | 'Disability Support';
+
+export interface GovScheme {
+  id: string;
+  title: string;
+  description: string;
+  category: GovSchemeCategory;
+  published: boolean;
+  eligibility?: string;
+  link?: string;
+  createdAt: string;
+}
+
+export interface ChildRecord {
+  id: string;
+  name: string;
+  age: number;
+  gender: string;
+  education: string;
+  admissionDate: string;
+  healthNotes?: string;
+  guardianInformation?: {
+    name: string;
+    relationship: string;
+    phone: string;
+  };
+  documents?: string[];
+  createdAt: string;
+}
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+  imageUrl?: string;
+  description?: string;
+  category: 'Management' | 'Faculty' | 'Staff';
+  createdAt: string;
+}

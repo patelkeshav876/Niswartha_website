@@ -21,6 +21,8 @@ import {
   ChevronDown,
   Gift,
   BookOpen,
+  Image,
+  FileText,
 } from 'lucide-react';
 
 const NAV_LINKS = [
@@ -28,6 +30,8 @@ const NAV_LINKS = [
   { to: '/about', label: 'About', icon: Info },
   { to: '/events', label: 'Events', icon: Calendar },
   { to: '/needs', label: 'Needs', icon: Gift },
+  { to: '/gallery', label: 'Gallery', icon: Image },
+  { to: '/schemes', label: 'Gov Schemes', icon: FileText },
 ] as const;
 
 export function Navbar() {

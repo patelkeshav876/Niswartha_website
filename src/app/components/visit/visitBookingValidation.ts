@@ -1,24 +1,22 @@
-import type { VisitPurposeId } from './visitBookingConstants';
-import { VISIT_MAX_PARTY } from './visitBookingConstants';
-import type { AgeGroupId } from './visitBookingConstants';
-
 export type VisitBookingFormState = {
   name: string;
   email: string;
   phone: string;
+  orgType: 'NGO' | 'College' | 'School' | 'Corporate' | 'Individual' | '';
+  orgName: string;
   userLocation: string;
   visitorCount: number;
   visitorNames: string[];
-  ageGroup: AgeGroupId | '';
+  ageGroup: string;
   gender: string;
   durationMinutes: string;
-  purpose: VisitPurposeId | '';
+  purpose: string;
   idNumber: string;
   idDocumentDataUrl: string;
   emergencyContactName: string;
   emergencyContactPhone: string;
-  phoneOtpToken: string;
-  phoneOtpVerified: boolean;
+  phoneOtpToken?: string;
+  phoneOtpVerified?: boolean;
 };
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -33,14 +31,17 @@ export function validateVisitBookingForm(
 
   if (!f.name.trim()) return 'Name is required';
   if (!f.email.trim() || !emailRe.test(f.email.trim())) return 'Valid email is required';
-  if (!f.phone.trim()) return 'Phone is required';
-  if (!f.phoneOtpVerified || !f.phoneOtpToken) return 'Verify your phone with OTP';
+  if (!f.phone.trim() || f.phone.replace(/\D/g, '').length < 10) return 'Valid 10-digit mobile number is required';
+
+  if (!f.orgType) return 'Select organization type';
+  if (f.orgType !== 'Individual' && !f.orgName.trim()) {
+    return 'Organization name is required';
+  }
 
   if (!f.userLocation.trim()) return 'Your city / location is required';
 
-  const n = Math.min(VISIT_MAX_PARTY, Math.max(1, f.visitorCount));
+  const n = Math.max(1, f.visitorCount);
   if (n < 1) return 'Visitor count must be at least 1';
-  if (!f.ageGroup) return 'Select an age group';
   if (!f.purpose) return 'Select visit purpose';
 
   if (f.visitorNames.length !== n) return 'Enter each visitor name';
@@ -48,7 +49,6 @@ export function validateVisitBookingForm(
     if (!f.visitorNames[i]?.trim()) return `Visitor ${i + 1} name is required`;
   }
 
-  if (!f.idNumber.trim()) return 'ID number is required';
   if (!f.emergencyContactName.trim()) return 'Emergency contact name is required';
   if (!f.emergencyContactPhone.trim()) return 'Emergency contact phone is required';
 

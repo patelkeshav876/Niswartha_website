@@ -31,6 +31,17 @@ import { NotFound } from './pages/NotFound';
 import { UserProvider, useUser } from './context/UserContext';
 import { Navigate } from 'react-router';
 
+// New layout and pages imports
+import { AdminLayout } from './components/AdminLayout';
+import { GalleryPage } from './pages/GalleryPage';
+import { SchemesPage } from './pages/SchemesPage';
+import { ManageGallery } from './pages/admin/ManageGallery';
+import { ManageSchemes } from './pages/admin/ManageSchemes';
+import { ManageChildren } from './pages/admin/ManageChildren';
+import { ManageTeam } from './pages/admin/ManageTeam';
+import { ManageUsers } from './pages/admin/ManageUsers';
+import { ManageBookings } from './pages/admin/ManageBookings';
+
 // Wrapper component to provide UserContext to all routes
 function RootLayout({ children }: { children: React.ReactNode }) {
   return <UserProvider>{children}</UserProvider>;
@@ -61,6 +72,8 @@ export const router = createBrowserRouter([
       { path: 'help', Component: Help },
       { path: 'events', element: <Events /> },
       { path: 'needs', element: <Needs /> },
+      { path: 'gallery', element: <GalleryPage /> },
+      { path: 'schemes', element: <SchemesPage /> },
 
       // Protected pages
       { path: 'events/suggest', element: <ProtectedRoute><SuggestEvent /></ProtectedRoute> },
@@ -73,14 +86,26 @@ export const router = createBrowserRouter([
       { path: 'donation-history', element: <ProtectedRoute><DonationHistory /></ProtectedRoute> },
       { path: 'settings', element: <ProtectedRoute><Settings /></ProtectedRoute> },
 
-      // Admin routes
-      { path: 'admin', element: <AdminRoute><AdminDashboard /></AdminRoute> },
-      { path: 'admin/needs', element: <AdminRoute><ManageNeeds /></AdminRoute> },
-      { path: 'admin/events', element: <AdminRoute><ManageEvents /></AdminRoute> },
-      { path: 'admin/events/bookings/:id', element: <AdminRoute><EventBookings /></AdminRoute> },
-      { path: 'admin/events/create', element: <AdminRoute><CreateEvent /></AdminRoute> },
-      { path: 'admin/feed', element: <AdminRoute><FeedManagement /></AdminRoute> },
-      { path: 'admin/settings', element: <AdminRoute><AdminSettings /></AdminRoute> },
+      // Admin routes wrapped in AdminLayout
+      {
+        path: 'admin',
+        element: <AdminRoute><AdminLayout /></AdminRoute>,
+        children: [
+          { index: true, element: <AdminDashboard /> },
+          { path: 'needs', element: <ManageNeeds /> },
+          { path: 'events', element: <ManageEvents /> },
+          { path: 'events/bookings/:id', element: <EventBookings /> },
+          { path: 'events/create', element: <CreateEvent /> },
+          { path: 'feed', element: <FeedManagement /> },
+          { path: 'settings', element: <AdminSettings /> },
+          { path: 'gallery', element: <ManageGallery /> },
+          { path: 'schemes', element: <ManageSchemes /> },
+          { path: 'children', element: <ManageChildren /> },
+          { path: 'team', element: <ManageTeam /> },
+          { path: 'users', element: <ManageUsers /> },
+          { path: 'bookings', element: <ManageBookings /> },
+        ],
+      },
 
       { path: '*', Component: NotFound },
     ],

@@ -2,7 +2,7 @@ import 'react-day-picker/dist/style.css';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { addDays, startOfDay, isBefore } from 'date-fns';
-import { ArrowLeft, Calendar, Check, Clock, MapPin, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Calendar, Check, Clock, MapPin, ExternalLink, Building, Info, ShieldCheck } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Calendar as CalendarUi } from '../components/ui/calendar';
@@ -19,15 +19,11 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '../components/ui/dialog';
 import { VisitTimeSlotGrid, type SlotAvailability } from '../components/visit/VisitTimeSlotGrid';
 import {
-  AGE_GROUP_OPTIONS,
-  DURATION_OPTIONS,
-  GENDER_OPTIONS,
   VISIT_PURPOSE_OPTIONS,
   VISIT_MAX_PARTY,
 } from '../components/visit/visitBookingConstants';
@@ -41,9 +37,6 @@ import { api } from '../lib/api';
 import { VISIT_TIME_SLOTS, VISIT_SLOT_CAPACITY } from '../lib/visitSlots';
 import type { Ashram } from '../types';
 import { toast } from 'sonner';
-
-const ACCENT = '#FF6633';
-const ACCENT_HOVER = '#e85a2e';
 
 function toLocalISODate(d: Date): string {
   const y = d.getFullYear();
@@ -100,19 +93,19 @@ const emptyForm = (): VisitBookingFormState => ({
   name: '',
   email: '',
   phone: '',
+  orgType: '',
+  orgName: '',
   userLocation: '',
   visitorCount: 1,
   visitorNames: [''],
-  ageGroup: '',
+  ageGroup: 'mixed',
   gender: '',
-  durationMinutes: '',
+  durationMinutes: '60',
   purpose: '',
-  idNumber: '',
+  idNumber: 'NOT_REQUIRED', // Bypass on backend
   idDocumentDataUrl: '',
   emergencyContactName: '',
   emergencyContactPhone: '',
-  phoneOtpToken: '',
-  phoneOtpVerified: false,
 });
 
 export function VisitBooking() {
@@ -134,11 +127,6 @@ export function VisitBooking() {
   const [slotsReady, setSlotsReady] = useState(false);
 
   const [form, setForm] = useState<VisitBookingFormState>(emptyForm);
-  const [otpCode, setOtpCode] = useState('');
-  const [otpSending, setOtpSending] = useState(false);
-  const [otpVerifying, setOtpVerifying] = useState(false);
-  const [otpHint, setOtpHint] = useState<string | null>(null);
-
   const [submitting, setSubmitting] = useState(false);
   const [fieldError, setFieldError] = useState<string | null>(null);
 
@@ -152,7 +140,6 @@ export function VisitBooking() {
     imageUrl: string;
     purposeLabel: string;
     visitorCount: number;
-    durationLabel: string;
   } | null>(null);
 
   useEffect(() => {
@@ -161,6 +148,8 @@ export function VisitBooking() {
         ...f,
         name: currentUser.name || f.name,
         email: currentUser.email || f.email,
+        phone: currentUser.phone || f.phone,
+        userLocation: currentUser.location || f.userLocation,
       }));
     }
   }, [currentUser]);
@@ -226,74 +215,11 @@ export function VisitBooking() {
     }
   }, [selectedSlot, slotAvail, form.visitorCount]);
 
-  const sendOtp = async () => {
-    setFieldError(null);
-    setOtpHint(null);
-    const digits = form.phone.replace(/\D/g, '');
-    if (digits.length < 10) {
-      setFieldError('Enter a valid 10-digit mobile number');
-      return;
-    }
-    setOtpSending(true);
-    try {
-      const out = await api.sendVisitOtp(form.phone);
-      if (out.devCode) {
-        setOtpHint(`Demo OTP: ${out.devCode}`);
-        setOtpCode(out.devCode);
-      } else {
-        setOtpHint('We sent a 6-digit code to your phone.');
-      }
-      setForm((f) => ({ ...f, phoneOtpToken: '', phoneOtpVerified: false }));
-      setOtpCode('');
-    } catch (e) {
-      setFieldError(parseApiError(e));
-    } finally {
-      setOtpSending(false);
-    }
-  };
-
-  const verifyOtp = async () => {
-    setFieldError(null);
-    if (otpCode.trim().length !== 6) {
-      setFieldError('Enter the 6-digit OTP');
-      return;
-    }
-    setOtpVerifying(true);
-    try {
-      const out = await api.verifyVisitOtp(form.phone, otpCode.trim());
-      setForm((f) => ({
-        ...f,
-        phoneOtpToken: out.phoneOtpToken,
-        phoneOtpVerified: true,
-      }));
-      setOtpHint(null);
-    } catch (e) {
-      setFieldError(parseApiError(e));
-    } finally {
-      setOtpVerifying(false);
-    }
-  };
-
-  const onIdFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 320 * 1024) {
-      setFieldError('ID image must be under 320KB');
-      e.target.value = '';
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setForm((f) => ({ ...f, idDocumentDataUrl: String(reader.result || '') }));
-      setFieldError(null);
-    };
-    reader.readAsDataURL(file);
-  };
-
   const handleSubmit = async () => {
     if (!ashramId || !selectedDate || !ashram || !currentUser?.id) {
       if (!currentUser?.id) {
-        toast.error('Session expired. Please re-login.');
+        toast.error('Session expired. Please sign in to book a visit.');
+        navigate('/login');
       }
       return;
     }
@@ -324,27 +250,24 @@ export function VisitBooking() {
         name: form.name.trim(),
         email: form.email.trim(),
         phone: form.phone.trim(),
-        phoneOtpToken: form.phoneOtpToken,
         userLocation: form.userLocation.trim(),
         visitorCount: form.visitorCount,
         visitorNames: form.visitorNames.map((n) => n.trim()),
-        ageGroup: form.ageGroup,
-        gender: form.gender || undefined,
-        durationMinutes: form.durationMinutes ? Number(form.durationMinutes) : undefined,
         purpose: form.purpose,
-        idNumber: form.idNumber.trim(),
-        idDocumentDataUrl: form.idDocumentDataUrl || undefined,
+        orgType: form.orgType,
+        orgName: form.orgType === 'Individual' ? '' : form.orgName.trim(),
         emergencyContactName: form.emergencyContactName.trim(),
         emergencyContactPhone: form.emergencyContactPhone.trim(),
+        idNumber: form.idNumber,
+        ageGroup: form.ageGroup,
+        gender: form.gender || undefined,
+        durationMinutes: Number(form.durationMinutes) || 60,
         status: 'confirmed',
         createdAt: new Date().toISOString(),
       });
       const id = (doc as { id?: string }).id || `visit-${Date.now()}`;
       const purposeLabel =
         VISIT_PURPOSE_OPTIONS.find((p) => p.id === form.purpose)?.label ?? form.purpose;
-      const durationLabel = form.durationMinutes
-        ? DURATION_OPTIONS.find((d) => d.value === form.durationMinutes)?.label ?? ''
-        : 'Not specified';
 
       setConfirmed({
         id,
@@ -360,7 +283,6 @@ export function VisitBooking() {
         imageUrl: ashram.imageUrl,
         purposeLabel,
         visitorCount: form.visitorCount,
-        durationLabel,
       });
       setConfirmOpen(true);
     } catch (e) {
@@ -372,13 +294,11 @@ export function VisitBooking() {
 
   if (loadingAshram) {
     return (
-      <div className="mx-auto min-h-screen max-w-[480px] bg-background pb-24">
-        <div className="sticky top-0 z-40 border-b bg-background/95 px-4 py-4 backdrop-blur-md">
-          <div className="h-9 w-9 animate-pulse rounded-md bg-muted" />
-        </div>
-        <div className="space-y-4 p-4">
-          <div className="h-48 animate-pulse rounded-2xl bg-muted" />
-          <div className="h-40 animate-pulse rounded-2xl bg-muted" />
+      <div className="section-container py-12 space-y-6">
+        <div className="h-10 w-48 bg-muted animate-pulse rounded-full" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 h-[600px] bg-muted animate-pulse rounded-3xl" />
+          <div className="h-[400px] bg-muted animate-pulse rounded-3xl" />
         </div>
       </div>
     );
@@ -386,9 +306,9 @@ export function VisitBooking() {
 
   if (!ashram || !ashramId) {
     return (
-      <div className="mx-auto flex min-h-screen max-w-[480px] flex-col items-center justify-center gap-4 px-6 pb-24">
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6">
         <p className="text-muted-foreground text-center">Organization not found.</p>
-        <Button onClick={() => navigate('/')}>Back home</Button>
+        <Button onClick={() => navigate('/')} className="rounded-full">Back home</Button>
       </div>
     );
   }
@@ -398,360 +318,360 @@ export function VisitBooking() {
   );
 
   return (
-    <div className="relative mx-auto min-h-screen max-w-[480px] bg-[#fafafa] pb-[28rem]">
-      <header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/95 px-4 py-4 backdrop-blur-md">
+    <div className="min-h-screen bg-[#FDFBF7] py-12">
+      <div className="section-container space-y-8">
+        {/* Back Link */}
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="h-9 w-9 shrink-0">
-            <ArrowLeft className="h-5 w-5" />
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="rounded-full shrink-0 border border-zinc-200 bg-white">
+            <ArrowLeft className="h-5 w-5 text-zinc-700" />
           </Button>
-          <h1 className="flex-1 text-center text-base font-bold text-zinc-900 pr-9">Book a visit</h1>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-zinc-900">Book a Visit</h1>
+            <p className="text-xs sm:text-sm text-zinc-500">Plan a visit to {ashram.name} in Nagpur</p>
+          </div>
         </div>
-      </header>
 
-      <div className="relative z-10 space-y-5 p-4">
         {fieldError && (
-          <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+          <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 font-medium">
             {fieldError}
           </p>
         )}
 
-        <div>
-          <h2 className="mb-2 text-sm font-bold text-zinc-900">Visit date</h2>
-          <Card className="overflow-hidden rounded-2xl border-zinc-100 shadow-md">
-            <CardContent className="p-2 sm:p-3">
-              <CalendarUi
-                mode="single"
-                selected={selectedDate}
-                onSelect={(d) => d && setSelectedDate(d)}
-                defaultMonth={selectedDate}
-                disabled={(d) => isBefore(startOfDay(d), today) || isBefore(maxDate, startOfDay(d))}
-                fromDate={today}
-                toDate={maxDate}
-                className="mx-auto w-full"
-                classNames={{
-                  day_selected:
-                    '!bg-[#FF6633] !text-white rounded-full hover:!bg-[#e85a2e] hover:!text-white focus:!bg-[#FF6633]',
-                  day_today: 'font-semibold text-zinc-900',
-                }}
-              />
-            </CardContent>
-          </Card>
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          {/* Form Side */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Step 1: Date & Time */}
+            <Card className="rounded-3xl border-none shadow-sm bg-white p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Date picker */}
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-[#0F6D4E]" />
+                    Select Date
+                  </h3>
+                  <CalendarUi
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(d) => d && setSelectedDate(d)}
+                    defaultMonth={selectedDate}
+                    disabled={(d) => isBefore(startOfDay(d), today) || isBefore(maxDate, startOfDay(d))}
+                    fromDate={today}
+                    toDate={maxDate}
+                    className="mx-auto border border-zinc-100 p-2 rounded-2xl"
+                    classNames={{
+                      day_selected:
+                        '!bg-[#0F6D4E] !text-white rounded-full hover:!bg-[#0c593f] hover:!text-white focus:!bg-[#0F6D4E]',
+                      day_today: 'font-bold text-zinc-950 underline',
+                    }}
+                  />
+                </div>
 
-        <div>
-          <h2 className="mb-2 text-sm font-bold text-zinc-900">Time slot</h2>
-          <p className="mb-3 text-xs text-zinc-500">
-            Up to {VISIT_SLOT_CAPACITY} people per slot (your party must fit in remaining space).
-          </p>
-          {loadingSlots && !slotsReady ? (
-            <p className="text-sm text-muted-foreground">Loading availability…</p>
-          ) : null}
-          <VisitTimeSlotGrid
-            selectedSlotId={selectedSlot}
-            onSelectSlot={setSelectedSlot}
-            availabilityById={slotAvail}
-            loading={loadingSlots}
-            ready={slotsReady}
-            maxSelectable={form.visitorCount}
-          />
-        </div>
-
-        <Card className="rounded-2xl border-zinc-100 shadow-sm">
-          <CardContent className="space-y-4 p-4">
-            <h3 className="text-sm font-bold text-zinc-900">Your details</h3>
-            <div className="space-y-2">
-              <Label htmlFor="vb-name">Full name</Label>
-              <Input
-                id="vb-name"
-                value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                className="rounded-xl"
-                autoComplete="name"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="vb-email">Email</Label>
-              <Input
-                id="vb-email"
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                className="rounded-xl"
-                autoComplete="email"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="vb-phone">Mobile (OTP)</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="vb-phone"
-                  type="tel"
-                  value={form.phone}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      phone: e.target.value,
-                      phoneOtpVerified: false,
-                      phoneOtpToken: '',
-                    }))
-                  }
-                  className="rounded-xl"
-                  placeholder="10-digit mobile"
-                  autoComplete="tel"
-                />
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="shrink-0 rounded-xl"
-                  disabled={otpSending}
-                  onClick={() => void sendOtp()}
-                >
-                  {otpSending ? '…' : 'Send OTP'}
-                </Button>
+                {/* Time slot picker */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-[#0F6D4E]" />
+                    Select Time Slot
+                  </h3>
+                  <p className="text-xs text-zinc-500 leading-relaxed">
+                    Up to {VISIT_SLOT_CAPACITY} visitors per slot. Please choose a slot that accommodates your party.
+                  </p>
+                  {loadingSlots && !slotsReady ? (
+                    <p className="text-xs text-muted-foreground animate-pulse">Loading availability…</p>
+                  ) : null}
+                  <VisitTimeSlotGrid
+                    selectedSlotId={selectedSlot}
+                    onSelectSlot={setSelectedSlot}
+                    availabilityById={slotAvail}
+                    loading={loadingSlots}
+                    ready={slotsReady}
+                    maxSelectable={form.visitorCount}
+                  />
+                </div>
               </div>
-              {otpHint && <p className="text-xs text-orange-700">{otpHint}</p>}
-              <div className="flex gap-2">
-                <Input
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className="rounded-xl"
-                  placeholder="6-digit OTP"
-                  maxLength={6}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="shrink-0 rounded-xl"
-                  disabled={otpVerifying}
-                  onClick={() => void verifyOtp()}
-                >
-                  {otpVerifying ? '…' : 'Verify'}
-                </Button>
+            </Card>
+
+            {/* Step 2: Visitors Details */}
+            <Card className="rounded-3xl border-none shadow-sm bg-white p-6 space-y-6">
+              <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider border-b pb-3 flex items-center gap-2">
+                <Building className="h-4 w-4 text-[#0F6D4E]" />
+                Visitor Details
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Full name */}
+                <div className="space-y-2">
+                  <Label htmlFor="vb-name" className="text-zinc-700 font-medium">Full Name</Label>
+                  <Input
+                    id="vb-name"
+                    value={form.name}
+                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    className="rounded-xl border-zinc-200"
+                    placeholder="Enter your full name"
+                  />
+                </div>
+
+                {/* Email */}
+                <div className="space-y-2">
+                  <Label htmlFor="vb-email" className="text-zinc-700 font-medium">Email Address</Label>
+                  <Input
+                    id="vb-email"
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                    className="rounded-xl border-zinc-200"
+                    placeholder="Enter email address"
+                  />
+                </div>
+
+                {/* Mobile */}
+                <div className="space-y-2">
+                  <Label htmlFor="vb-phone" className="text-zinc-700 font-medium">Mobile Number</Label>
+                  <Input
+                    id="vb-phone"
+                    type="tel"
+                    value={form.phone}
+                    onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                    className="rounded-xl border-zinc-200"
+                    placeholder="10-digit mobile number"
+                  />
+                </div>
+
+                {/* City location */}
+                <div className="space-y-2">
+                  <Label htmlFor="vb-loc" className="text-zinc-700 font-medium">Your City / Location</Label>
+                  <Input
+                    id="vb-loc"
+                    value={form.userLocation}
+                    onChange={(e) => setForm((f) => ({ ...f, userLocation: e.target.value }))}
+                    className="rounded-xl border-zinc-200"
+                    placeholder="e.g. Nagpur, Maharashtra"
+                  />
+                </div>
+
+                {/* Organization Type */}
+                <div className="space-y-2">
+                  <Label className="text-zinc-700 font-medium">Organization Type</Label>
+                  <Select
+                    value={form.orgType || undefined}
+                    onValueChange={(v) =>
+                      setForm((f) => ({
+                        ...f,
+                        orgType: v as VisitBookingFormState['orgType'],
+                        orgName: v === 'Individual' ? '' : f.orgName,
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="rounded-xl border-zinc-200">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent position="popper" className="z-[100]">
+                      {['Individual', 'NGO', 'College', 'School', 'Corporate'].map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Organization Name (Conditional) */}
+                {form.orgType && form.orgType !== 'Individual' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="vb-orgname" className="text-zinc-700 font-medium">Organization Name</Label>
+                    <Input
+                      id="vb-orgname"
+                      value={form.orgName}
+                      onChange={(e) => setForm((f) => ({ ...f, orgName: e.target.value }))}
+                      className="rounded-xl border-zinc-200"
+                      placeholder="Enter organization/college name"
+                    />
+                  </div>
+                )}
               </div>
-              {form.phoneOtpVerified && (
-                <p className="flex items-center gap-1 text-xs font-medium text-emerald-700">
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  Phone verified
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="vb-loc">Your city / location</Label>
-              <Input
-                id="vb-loc"
-                value={form.userLocation}
-                onChange={(e) => setForm((f) => ({ ...f, userLocation: e.target.value }))}
-                className="rounded-xl"
-                placeholder="e.g. Nagpur, Maharashtra"
-              />
-            </div>
-          </CardContent>
-        </Card>
+            </Card>
 
-        <Card className="rounded-2xl border-zinc-100 shadow-sm">
-          <CardContent className="space-y-4 p-4">
-            <h3 className="text-sm font-bold text-zinc-900">Visitors</h3>
-            <div className="space-y-2">
-              <Label>Number of visitors</Label>
-              <Select
-                value={String(form.visitorCount)}
-                onValueChange={(v) => {
-                  const n = Math.min(VISIT_MAX_PARTY, Math.max(1, Number(v) || 1));
-                  setForm((f) => ({
-                    ...f,
-                    visitorCount: n,
-                    visitorNames: Array.from({ length: n }, (_, i) => f.visitorNames[i] ?? ''),
-                  }));
-                }}
+            {/* Step 3: Purpose & Count */}
+            <Card className="rounded-3xl border-none shadow-sm bg-white p-6 space-y-6">
+              <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider border-b pb-3 flex items-center gap-2">
+                <Info className="h-4 w-4 text-[#0F6D4E]" />
+                Purpose & Group Size
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Visitor count */}
+                <div className="space-y-2">
+                  <Label className="text-zinc-700 font-medium">Number of Visitors</Label>
+                  <Select
+                    value={String(form.visitorCount)}
+                    onValueChange={(v) => {
+                      const n = Math.min(VISIT_MAX_PARTY, Math.max(1, Number(v) || 1));
+                      setForm((f) => ({
+                        ...f,
+                        visitorCount: n,
+                        visitorNames: Array.from({ length: n }, (_, i) => f.visitorNames[i] ?? ''),
+                      }));
+                    }}
+                  >
+                    <SelectTrigger className="rounded-xl border-zinc-200">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent position="popper" className="z-[100]">
+                      {Array.from({ length: VISIT_MAX_PARTY }, (_, i) => i + 1).map((n) => (
+                        <SelectItem key={n} value={String(n)}>
+                          {n} {n === 1 ? 'person' : 'people'}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Purpose */}
+                <div className="space-y-2">
+                  <Label className="text-zinc-700 font-medium">Purpose of Visit</Label>
+                  <Select
+                    value={form.purpose || undefined}
+                    onValueChange={(v) =>
+                      setForm((f) => ({ ...f, purpose: v }))
+                    }
+                  >
+                    <SelectTrigger className="rounded-xl border-zinc-200">
+                      <SelectValue placeholder="Select purpose" />
+                    </SelectTrigger>
+                    <SelectContent position="popper" className="z-[100]">
+                      {VISIT_PURPOSE_OPTIONS.map((o) => (
+                        <SelectItem key={o.id} value={o.id}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Visitor names inputs */}
+              <div className="space-y-3">
+                <Label className="text-zinc-700 font-medium">Visitor Names</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">Please provide names for each person attending.</p>
+                {form.visitorNames.map((name, i) => (
+                  <Input
+                    key={i}
+                    value={name}
+                    onChange={(e) =>
+                      setForm((f) => {
+                        const next = [...f.visitorNames];
+                        next[i] = e.target.value;
+                        return { ...f, visitorNames: next };
+                      })
+                    }
+                    className="rounded-xl border-zinc-200"
+                    placeholder={`Visitor ${i + 1} full name`}
+                  />
+                ))}
+              </div>
+            </Card>
+
+            {/* Step 4: Emergency Contact */}
+            <Card className="rounded-3xl border-none shadow-sm bg-white p-6 space-y-6">
+              <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider border-b pb-3 flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-[#0F6D4E]" />
+                Emergency Contact Details
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="vb-ec-name" className="text-zinc-700 font-medium">Contact Person Name</Label>
+                  <Input
+                    id="vb-ec-name"
+                    value={form.emergencyContactName}
+                    onChange={(e) => setForm((f) => ({ ...f, emergencyContactName: e.target.value }))}
+                    className="rounded-xl border-zinc-200"
+                    placeholder="Enter name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vb-ec-phone" className="text-zinc-700 font-medium">Contact Person Phone</Label>
+                  <Input
+                    id="vb-ec-phone"
+                    type="tel"
+                    value={form.emergencyContactPhone}
+                    onChange={(e) => setForm((f) => ({ ...f, emergencyContactPhone: e.target.value }))}
+                    className="rounded-xl border-zinc-200"
+                    placeholder="Enter phone number"
+                  />
+                </div>
+              </div>
+            </Card>
+
+            {/* Action buttons */}
+            <div className="flex gap-4">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => navigate(-1)}
+                className="w-1/3 rounded-full h-12"
               >
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent position="popper" className="z-[100]">
-                  {Array.from({ length: VISIT_MAX_PARTY }, (_, i) => i + 1).map((n) => (
-                    <SelectItem key={n} value={String(n)}>
-                      {n} {n === 1 ? 'person' : 'people'}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Age group</Label>
-              <Select
-                value={form.ageGroup || undefined}
-                onValueChange={(v) => setForm((f) => ({ ...f, ageGroup: v as VisitBookingFormState['ageGroup'] }))}
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                disabled={!canSubmitDate || submitting}
+                onClick={() => void handleSubmit()}
+                className="w-2/3 rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] h-12 font-bold text-white shadow-md border-none"
               >
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="Select age group" />
-                </SelectTrigger>
-                <SelectContent position="popper" className="z-[100]">
-                  {AGE_GROUP_OPTIONS.map((o) => (
-                    <SelectItem key={o.id} value={o.id}>
-                      {o.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {submitting ? 'Submitting Booking…' : 'Submit Visit Booking'}
+              </Button>
             </div>
-            <div className="space-y-2">
-              <Label>Gender (optional)</Label>
-              <Select
-                value={form.gender || '__none__'}
-                onValueChange={(v) =>
-                  setForm((f) => ({ ...f, gender: v === '__none__' ? '' : v }))
-                }
-              >
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="Prefer not to say" />
-                </SelectTrigger>
-                <SelectContent position="popper" className="z-[100]">
-                  {GENDER_OPTIONS.map((o) => (
-                    <SelectItem key={o.id || 'prefer-not'} value={o.id || '__none__'}>
-                      {o.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Visitor names</Label>
-              <p className="text-xs text-muted-foreground">Legal / preferred name for each person.</p>
-              {form.visitorNames.map((name, i) => (
-                <Input
-                  key={i}
-                  value={name}
-                  onChange={(e) =>
-                    setForm((f) => {
-                      const next = [...f.visitorNames];
-                      next[i] = e.target.value;
-                      return { ...f, visitorNames: next };
-                    })
-                  }
-                  className="rounded-xl"
-                  placeholder={`Visitor ${i + 1} full name`}
+          </div>
+
+          {/* Sidebar Location / Instructions */}
+          <div className="space-y-8">
+            <Card className="rounded-3xl border-none shadow-sm bg-white p-6 space-y-4">
+              <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider flex items-center gap-2 border-b pb-3">
+                <MapPin className="h-4 w-4 text-[#0F6D4E]" />
+                Ashram Location
+              </h3>
+              <p className="text-xs text-zinc-600 leading-relaxed font-semibold">
+                {ashram.location}
+              </p>
+              
+              <div className="relative overflow-hidden rounded-2xl bg-zinc-50 border aspect-video h-48">
+                <iframe
+                  title="Niswartha Location Map"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d119066.52982230485!2d79.00247348981146!3d21.139300975253805!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bd4c0a5a3d0f0d5%3A0x2c64115049cfad7a!2sNagpur%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1719114751480!5m2!1sen!2sin"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
                 />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </div>
 
-        <Card className="rounded-2xl border-zinc-100 shadow-sm">
-          <CardContent className="space-y-4 p-4">
-            <h3 className="text-sm font-bold text-zinc-900">Visit</h3>
-            <div className="space-y-2">
-              <Label>Purpose</Label>
-              <Select
-                value={form.purpose || undefined}
-                onValueChange={(v) =>
-                  setForm((f) => ({ ...f, purpose: v as VisitBookingFormState['purpose'] }))
-                }
+              <a
+                href="https://maps.google.com/?q=Deaf+and+Dumb+Industrial+Institute+Nagpur"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
               >
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="Select purpose" />
-                </SelectTrigger>
-                <SelectContent position="popper" className="z-[100]">
-                  {VISIT_PURPOSE_OPTIONS.map((o) => (
-                    <SelectItem key={o.id} value={o.id}>
-                      {o.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Duration (optional)</Label>
-              <Select
-                value={form.durationMinutes || '__none__'}
-                onValueChange={(v) =>
-                  setForm((f) => ({ ...f, durationMinutes: v === '__none__' ? '' : v }))
-                }
-              >
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="Not specified" />
-                </SelectTrigger>
-                <SelectContent position="popper" className="z-[100]">
-                  {DURATION_OPTIONS.map((o) => (
-                    <SelectItem key={o.value || 'n'} value={o.value || '__none__'}>
-                      {o.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+                <Button variant="outline" className="w-full rounded-full gap-1.5 font-bold text-xs h-10 border-[#0F6D4E] text-[#0F6D4E] hover:bg-[#0F6D4E]/5">
+                  Get Directions
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </Button>
+              </a>
+            </Card>
 
-        <Card className="rounded-2xl border-zinc-100 shadow-sm">
-          <CardContent className="space-y-4 p-4">
-            <h3 className="text-sm font-bold text-zinc-900">ID & emergency</h3>
-            <div className="space-y-2">
-              <Label htmlFor="vb-id">Government ID number</Label>
-              <Input
-                id="vb-id"
-                value={form.idNumber}
-                onChange={(e) => setForm((f) => ({ ...f, idNumber: e.target.value }))}
-                className="rounded-xl"
-                placeholder="Aadhaar / passport / other"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="vb-id-file">ID document photo (optional)</Label>
-              <Input
-                id="vb-id-file"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="rounded-xl text-sm"
-                onChange={onIdFile}
-              />
-              {form.idDocumentDataUrl && (
-                <p className="text-xs text-emerald-700">Image attached</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="vb-ec-name">Emergency contact name</Label>
-              <Input
-                id="vb-ec-name"
-                value={form.emergencyContactName}
-                onChange={(e) => setForm((f) => ({ ...f, emergencyContactName: e.target.value }))}
-                className="rounded-xl"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="vb-ec-phone">Emergency contact phone</Label>
-              <Input
-                id="vb-ec-phone"
-                type="tel"
-                value={form.emergencyContactPhone}
-                onChange={(e) => setForm((f) => ({ ...f, emergencyContactPhone: e.target.value }))}
-                className="rounded-xl"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-      </div>
-
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-200 bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgb(0,0,0,0.08)]">
-        <div className="mx-auto w-full max-w-[480px] space-y-2">
-          <Button
-            type="button"
-            disabled={!canSubmitDate || submitting}
-            className="h-12 w-full rounded-2xl text-base font-semibold text-white shadow-lg border-0"
-            style={{ backgroundColor: ACCENT }}
-            onMouseEnter={(e) => {
-              if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = ACCENT_HOVER;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = ACCENT;
-            }}
-            onClick={() => void handleSubmit()}
-          >
-            {submitting ? 'Submitting…' : 'Submit booking'}
-          </Button>
+            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-[#0F6D4E] to-[#0c593f] p-6 text-white space-y-3">
+              <h4 className="font-bold text-sm uppercase tracking-wide">Visitor Guidelines</h4>
+              <ul className="text-xs text-white/90 space-y-2 list-disc list-inside leading-relaxed">
+                <li>Visits must be booked at least 24 hours in advance.</li>
+                <li>Please arrive 10 minutes prior to your selected slot.</li>
+                <li>Ensure you bring a government-issued photo ID.</li>
+                <li>Interactions with students are guided by school supervisors.</li>
+              </ul>
+            </Card>
+          </div>
         </div>
       </div>
 
+      {/* Confirmation Dialog */}
       <Dialog
         open={confirmOpen}
         onOpenChange={(o) => {
@@ -765,72 +685,46 @@ export function VisitBooking() {
         }}
       >
         <DialogContent
-          className="max-w-[min(100%,22rem)] rounded-3xl border-0 bg-white p-6 shadow-2xl sm:max-w-md"
+          className="max-w-md rounded-3xl border-none bg-white p-6 shadow-2xl"
           onPointerDownOutside={(e) => e.preventDefault()}
         >
           {confirmed && (
-            <>
+            <div className="space-y-4">
               <DialogHeader className="items-center space-y-3 text-center">
-                <div
-                  className="flex h-16 w-16 items-center justify-center rounded-full"
-                  style={{ backgroundColor: ACCENT }}
-                >
-                  <Check className="h-8 w-8 text-white stroke-[3]" />
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
+                  <Check className="h-8 w-8 text-[#0F6D4E] stroke-[3]" />
                 </div>
-                <DialogTitle className="text-xl font-bold text-zinc-900">Booking confirmed</DialogTitle>
+                <DialogTitle className="text-xl font-bold text-zinc-900">Visit Booked Successfully</DialogTitle>
                 <DialogDescription className="text-sm text-zinc-500">
-                  A summary was sent to your email. Keep your booking ID for reference.
+                  Your visit has been confirmed and saved to your account. An email has been sent.
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="mt-2 max-h-[50vh] space-y-3 overflow-y-auto rounded-2xl border border-zinc-100 bg-zinc-50/80 p-4 text-left text-sm">
-                <p className="text-center font-semibold" style={{ color: ACCENT }}>
-                  Booking ID — {confirmed.displayId}
+              <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4 space-y-2.5 text-sm">
+                <p className="text-center font-bold text-[#0F6D4E]">
+                  Booking ID: {confirmed.displayId}
                 </p>
-                <div className="flex gap-3">
-                  <img
-                    src={confirmed.imageUrl}
-                    alt=""
-                    className="h-16 w-16 shrink-0 rounded-xl object-cover"
-                  />
-                  <div className="min-w-0 flex-1 space-y-1.5">
-                    <p className="font-bold text-zinc-900">{confirmed.orgName}</p>
-                    <div className="flex items-start gap-2 text-xs text-zinc-600">
-                      <Calendar className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                      <span>{confirmed.dateLabel}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-zinc-600">
-                      <Clock className="h-3.5 w-3.5 shrink-0" />
-                      <span>{confirmed.timeLabel}</span>
-                    </div>
-                    <div className="flex items-start gap-2 text-xs text-zinc-600">
-                      <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                      <span>{ashram.location}</span>
-                    </div>
-                    <p className="text-xs text-zinc-600">
-                      <span className="font-medium text-zinc-800">Purpose:</span> {confirmed.purposeLabel}
-                    </p>
-                    <p className="text-xs text-zinc-600">
-                      <span className="font-medium text-zinc-800">Visitors:</span> {confirmed.visitorCount}
-                    </p>
-                    <p className="text-xs text-zinc-600">
-                      <span className="font-medium text-zinc-800">Duration:</span> {confirmed.durationLabel}
-                    </p>
-                  </div>
+                <div className="border-t border-zinc-200/50 pt-2 space-y-1 text-xs text-zinc-600">
+                  <p><strong>Organization:</strong> {confirmed.orgName}</p>
+                  <p><strong>Date:</strong> {confirmed.dateLabel}</p>
+                  <p><strong>Time Slot:</strong> {confirmed.timeLabel}</p>
+                  <p><strong>Visitors:</strong> {confirmed.visitorCount} {confirmed.visitorCount === 1 ? 'person' : 'people'}</p>
+                  <p><strong>Purpose:</strong> {confirmed.purposeLabel}</p>
                 </div>
               </div>
 
-              <DialogFooter className="mt-2 sm:justify-stretch">
+              <div className="pt-2">
                 <Button
-                  type="button"
-                  className="h-12 w-full rounded-2xl font-semibold text-white border-0"
-                  style={{ backgroundColor: ACCENT }}
-                  onClick={() => setConfirmOpen(false)}
+                  onClick={() => {
+                    setConfirmOpen(false);
+                    navigate('/my-bookings');
+                  }}
+                  className="w-full rounded-full bg-[#0F6D4E] text-white hover:bg-[#0c593f]"
                 >
-                  Done
+                  Go to My Bookings
                 </Button>
-              </DialogFooter>
-            </>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
