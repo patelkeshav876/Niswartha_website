@@ -79,7 +79,7 @@ export function Footer() {
               <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-white/80">Support</h4>
               <ul className="space-y-2.5">
                 {[
-                  { to: '/donate/ashram-1', label: 'Donate Now' },
+                  { to: '/donate/ashram-1', label: 'Support Our Mission' },
                   { to: '/events/suggest', label: 'Suggest Event' },
                   { to: '/help', label: 'Help & FAQ' },
                   { to: '/profile', label: 'My Account' },
@@ -126,7 +126,7 @@ export function Footer() {
         <div className="border-t border-white/10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-white/40">
-              © {currentYear} Niswartha — Deaf and Dumb Industrial Institute, Nagpur. All rights reserved.
+              © {currentYear} Niswartha — Deaf and Dumb Industrial Institute, Shankar Nagar, Nagpur. All rights reserved.
             </p>
             <p className="text-xs text-white/30 flex items-center gap-1">
               Built with <Heart className="h-3 w-3 text-primary" fill="currentColor" /> for a better tomorrow

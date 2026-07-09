@@ -8,6 +8,7 @@ interface UserContextType {
   setCurrentUser: (user: User | null) => void;
   token: string | null;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   isDonor: boolean;
   loading: boolean;
   login: (user: User, token: string) => void;
@@ -45,7 +46,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
   const [loading, setLoading] = useState(false); // No longer async loading by default
 
-  const isAdmin = currentUser?.role === 'admin';
+  const isSuperAdmin = currentUser?.role === 'super_admin';
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
   const isDonor = currentUser?.role === 'donor';
 
   useEffect(() => {
@@ -81,7 +83,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <UserContext.Provider value={{ currentUser, setCurrentUser, token, isAdmin, isDonor, loading, login, logout, updateProfile }}>
+    <UserContext.Provider value={{ currentUser, setCurrentUser, token, isAdmin, isSuperAdmin, isDonor, loading, login, logout, updateProfile }}>
       {children}
     </UserContext.Provider>
   );

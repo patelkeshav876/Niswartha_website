@@ -23,9 +23,9 @@ const slides: SplashSlide[] = [
     id: 'donate',
     badge: 'Live',
     badgeDot: 'bg-emerald-400',
-    title: 'Donate',
+    title: 'Support Our Mission',
     metaLine1: 'Instant impact for children & care',
-    metaLine2: 'Deaf & Dumb Industrial Institute, Nagpur',
+    metaLine2: 'Deaf & Dumb Industrial Institute, Shankar Nagar, Nagpur',
     image:
       'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80',
     headline: 'Give with confidence',
@@ -117,7 +117,7 @@ export function SplashScreen({ onFinish }: SplashScreenProps) {
           className="px-6 text-center shrink-0"
         >
           <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/45">
-            Orphanage Connect
+            Niswartha
           </p>
         </motion.div>
 

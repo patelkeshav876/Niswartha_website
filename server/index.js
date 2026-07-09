@@ -59,7 +59,60 @@ let fallbackMailTransporterPromise = null;
 
 const app = express();
 app.use(cors({ origin: true }));
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '6mb' }));
+
+// --- Security Middleware: Headers ---
+app.use((req, res, next) => {
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://www.google.com https://maps.google.com; connect-src 'self' *;");
+  next();
+});
+
+// --- Security Middleware: In-Memory Rate Limiting ---
+const ipRequests = new Map();
+const RATE_LIMIT_WINDOW = 60 * 1000;
+const MAX_REQUESTS_PER_WINDOW = 200;
+app.use((req, res, next) => {
+  const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  const now = Date.now();
+  if (!ipRequests.has(ip)) {
+    ipRequests.set(ip, []);
+  }
+  const timestamps = ipRequests.get(ip).filter((t) => now - t < RATE_LIMIT_WINDOW);
+  timestamps.push(now);
+  ipRequests.set(ip, timestamps);
+  if (timestamps.length > MAX_REQUESTS_PER_WINDOW) {
+    return res.status(429).json({ error: 'Too many requests. Please try again later.' });
+  }
+  next();
+});
+
+// --- Security Middleware: NoSQL Injection Prevention ---
+function sanitizeData(obj) {
+  if (obj instanceof Array) {
+    for (let i = 0; i < obj.length; i++) {
+      obj[i] = sanitizeData(obj[i]);
+    }
+  } else if (obj !== null && typeof obj === 'object') {
+    for (const key in obj) {
+      if (key.startsWith('$')) {
+        delete obj[key];
+      } else {
+        obj[key] = sanitizeData(obj[key]);
+      }
+    }
+  }
+  return obj;
+}
+app.use((req, res, next) => {
+  if (req.body) sanitizeData(req.body);
+  if (req.query) sanitizeData(req.query);
+  if (req.params) sanitizeData(req.params);
+  next();
+});
 
 const generic = (name, coll) =>
   mongoose.model(
@@ -80,6 +133,11 @@ const Album = generic('AlbumDoc', 'albums');
 const GovScheme = generic('GovSchemeDoc', 'gov_schemes');
 const ChildRecord = generic('ChildRecordDoc', 'child_records');
 const TeamMember = generic('TeamMemberDoc', 'team_members');
+const Config = generic('ConfigDoc', 'configurations');
+const Advertisement = generic('AdvertisementDoc', 'advertisements');
+const EmailLog = generic('EmailLogDoc', 'email_logs');
+const SecurityLog = generic('SecurityLogDoc', 'security_logs');
+const AuditLog = generic('AuditLogDoc', 'audit_logs');
 
 /** Must match client `VISIT_TIME_SLOTS` ids */
 const VISIT_SLOT_IDS = [
@@ -112,6 +170,25 @@ function normalizeVisitPhone(p) {
 
 function isValidEmail(v) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || '').trim());
+}
+
+async function sendEmailWithRetry(transporter, mailOptions, maxAttempts = 3) {
+  let attempt = 0;
+  let delay = 1000;
+  while (attempt < maxAttempts) {
+    attempt++;
+    try {
+      const info = await transporter.sendMail(mailOptions);
+      return { success: true, info, attempts: attempt };
+    } catch (err) {
+      if (attempt === maxAttempts) {
+        return { success: false, error: err.message, attempts: attempt };
+      }
+      console.warn(`Email attempt ${attempt} failed: ${err.message}. Retrying in ${delay}ms...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      delay *= 2;
+    }
+  }
 }
 
 async function sendVisitBookingEmails({ booking, ashram }) {
@@ -155,19 +232,39 @@ async function sendVisitBookingEmails({ booking, ashram }) {
     `Purpose: ${booking.purpose || 'N/A'}\n` +
     `Booking ID: ${booking.id || 'N/A'}\n`;
 
-  const results = await Promise.allSettled(
-    recipients.map((to) =>
-      transporter.sendMail({
-        from: SMTP_FROM,
-        to,
-        subject,
-        text,
-      }),
-    ),
-  );
-  for (const r of results) {
-    if (r.status === 'fulfilled') {
-      const previewUrl = nodemailer.getTestMessageUrl(r.value);
+  for (const to of recipients) {
+    const mailOptions = {
+      from: SMTP_FROM,
+      to,
+      subject,
+      text,
+    };
+    const logId = `elog-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const result = await sendEmailWithRetry(transporter, mailOptions);
+
+    await EmailLog.create({
+      id: logId,
+      recipient: to,
+      subject,
+      status: result.success ? 'success' : 'failed',
+      error: result.success ? null : result.error,
+      attempts: result.attempts,
+      createdAt: new Date().toISOString(),
+    });
+
+    if (!result.success) {
+      console.error(`Failed to send email to ${to}: ${result.error}`);
+      await Notification.create({
+        id: `noti-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        userId: 'admin-hardcoded-1',
+        title: 'Email Delivery Failure',
+        message: `Failed to deliver visit booking confirmation email to ${to} after ${result.attempts} attempts. Error: ${result.error}`,
+        type: 'alert',
+        read: false,
+        createdAt: new Date().toISOString(),
+      });
+    } else {
+      const previewUrl = nodemailer.getTestMessageUrl(result.info);
       if (previewUrl) console.log(`Email preview: ${previewUrl}`);
     }
   }
@@ -218,10 +315,20 @@ function authenticateToken(req, res, next) {
 
 function requireAdmin(req, res, next) {
   authenticateToken(req, res, () => {
-    if (req.user && req.user.role === 'admin') {
+    if (req.user && (req.user.role === 'admin' || req.user.role === 'super_admin')) {
       next();
     } else {
-      res.status(403).json({ error: 'Access denied. Admin role required.' });
+      res.status(403).json({ error: 'Access denied. Admin or Super Admin role required.' });
+    }
+  });
+}
+
+function requireSuperAdmin(req, res, next) {
+  authenticateToken(req, res, () => {
+    if (req.user && req.user.role === 'super_admin') {
+      next();
+    } else {
+      res.status(403).json({ error: 'Access denied. Super Admin role required.' });
     }
   });
 }
@@ -262,6 +369,14 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ error: 'Email, password and name are required' });
     }
 
+    // Password strength check
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        error: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.'
+      });
+    }
+
     const existing = await User.findOne({ email }).lean();
     if (existing) return res.status(400).json({ error: 'User already exists' });
 
@@ -273,13 +388,22 @@ app.post('/api/auth/register', async (req, res) => {
       password: hashedPassword,
       name,
       role: role || 'donor',
-      avatarUrl: `https://i.pravatar.cc/150?u=${id}`,
+      avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`,
       createdAt: new Date().toISOString()
     };
 
     await User.create(userDoc);
     const token = jwt.sign({ id, email, role: userDoc.role }, JWT_SECRET);
     const { password: _, ...userWithoutPassword } = userDoc;
+
+    await SecurityLog.create({
+      id: `seclog-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      eventType: 'register_success',
+      email,
+      ip: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+      createdAt: new Date().toISOString()
+    });
+
     res.json({ user: userWithoutPassword, token });
   } catch (e) {
     res.status(500).json({ error: String(e.message) });
@@ -289,31 +413,69 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    const lowerEmail = email ? email.trim().toLowerCase() : '';
+    const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     
     // --- EMERGENCY ADMIN BYPASS (Ignores Database timeouts) ---
-    const lowerEmail = email ? email.trim().toLowerCase() : '';
     if (lowerEmail === 'keshavpaterl3690@gmail.com' || lowerEmail === 'admin@niswartha.org') {
       const isDemo = lowerEmail === 'admin@niswartha.org';
+      const role = isDemo ? 'admin' : 'super_admin';
       const adminUser = {
         id: isDemo ? 'admin-hardcoded-demo' : 'admin-hardcoded-1',
         email: lowerEmail,
         name: isDemo ? 'Demo Admin' : 'Keshav Patel',
-        role: 'admin',
-        avatarUrl: `https://i.pravatar.cc/150?u=${isDemo ? 'admin-hardcoded-demo' : 'admin-hardcoded-1'}`,
+        role: role,
+        avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${isDemo ? 'Demo%20Admin' : 'Keshav%20Patel'}`,
         createdAt: new Date().toISOString()
       };
-      const token = jwt.sign({ id: adminUser.id, email: adminUser.email, role: 'admin' }, JWT_SECRET);
+      const token = jwt.sign({ id: adminUser.id, email: adminUser.email, role: role }, JWT_SECRET);
+      
+      await SecurityLog.create({
+        id: `seclog-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        eventType: 'login_bypass_success',
+        email: lowerEmail,
+        ip: ipAddress,
+        createdAt: new Date().toISOString()
+      });
+
       return res.json({ user: adminUser, token });
     }
     
     const user = await User.findOne({ email }).lean();
-    if (!user) return res.status(400).json({ error: 'Invalid email or password' });
+    if (!user) {
+      await SecurityLog.create({
+        id: `seclog-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        eventType: 'login_failed_user_not_found',
+        email: lowerEmail,
+        ip: ipAddress,
+        createdAt: new Date().toISOString()
+      });
+      return res.status(400).json({ error: 'Invalid email or password' });
+    }
 
     const validPass = await bcrypt.compare(password, user.password);
-    if (!validPass) return res.status(400).json({ error: 'Invalid email or password' });
+    if (!validPass) {
+      await SecurityLog.create({
+        id: `seclog-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        eventType: 'login_failed_wrong_password',
+        email: lowerEmail,
+        ip: ipAddress,
+        createdAt: new Date().toISOString()
+      });
+      return res.status(400).json({ error: 'Invalid email or password' });
+    }
 
     const token = jwt.sign({ id: user.id || String(user._id), email: user.email, role: user.role }, JWT_SECRET);
     const { password: _, ...userWithoutPassword } = user;
+
+    await SecurityLog.create({
+      id: `seclog-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      eventType: 'login_success',
+      email: lowerEmail,
+      ip: ipAddress,
+      createdAt: new Date().toISOString()
+    });
+
     res.json({ user: { ...userWithoutPassword, id: user.id || String(user._id) }, token });
   } catch (e) {
     res.status(500).json({ error: String(e.message) });
@@ -1467,6 +1629,317 @@ app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
   try {
     await User.deleteOne({ id: req.params.id });
     res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+// --- Global Configurations Endpoint ---
+app.get('/api/config', async (req, res) => {
+  try {
+    let conf = await Config.findOne({ id: 'global-config' }).lean();
+    if (!conf) {
+      conf = {
+        id: 'global-config',
+        whatsappNumber: '+919876543210',
+        whatsappWelcomeMessage: 'Hello! I would like to learn more about support options for the Niswartha Ashram.',
+        ashramLocation: 'North Ambazari Road, Shankar Nagar, Nagpur, Maharashtra 440010',
+        ashramLocationMapUrl: 'https://maps.google.com/maps?q=Deaf%20and%20Dumb%20Industrial%20Institute%2C%20Shankar%20Nagar%2C%20Nagpur&t=&z=15&ie=UTF8&iwloc=&output=embed',
+        ashramPhone: '+91 98765 43210',
+        ashramEmail: 'contact@deafdumbinstitute.org',
+        ashramWebsite: 'www.deafdumbinstitute.org',
+        donationWording: 'Support Our Mission',
+        heroBgType: 'gradient',
+        heroBgUrl: '',
+        heroOverlayOpacity: 0.5,
+        heroParallax: false,
+        maintenanceMode: false,
+        globalAnnouncement: ''
+      };
+      await Config.create(conf);
+    }
+    res.json(conf);
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+app.put('/api/config', requireSuperAdmin, async (req, res) => {
+  try {
+    const updated = { ...req.body, id: 'global-config' };
+    await Config.findOneAndUpdate({ id: 'global-config' }, updated, { upsert: true, new: true }).lean();
+    
+    await AuditLog.create({
+      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      userId: req.user.id,
+      action: 'update_global_config',
+      details: 'Updated global site settings',
+      createdAt: new Date().toISOString()
+    });
+
+    res.json(updated);
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+// --- Advertisements Endpoint ---
+app.get('/api/advertisements', async (req, res) => {
+  try {
+    const ads = await Advertisement.find({}).lean();
+    res.json(ads);
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+app.post('/api/advertisements', requireSuperAdmin, async (req, res) => {
+  try {
+    const ad = req.body;
+    const id = ad.id || `ad-${Date.now()}`;
+    const doc = {
+      ...ad,
+      id,
+      clicks: 0,
+      views: 0,
+      createdAt: new Date().toISOString()
+    };
+    await Advertisement.create(doc);
+    
+    await AuditLog.create({
+      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      userId: req.user.id,
+      action: 'create_advertisement',
+      details: `Created ad: ${ad.title}`,
+      createdAt: new Date().toISOString()
+    });
+
+    res.json(doc);
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+app.put('/api/advertisements/:id', requireSuperAdmin, async (req, res) => {
+  try {
+    const ad = await Advertisement.findOne({ id: req.params.id }).lean();
+    if (!ad) return res.status(404).json({ error: 'Advertisement not found' });
+    const { _id, ...rest } = ad;
+    const updated = { ...rest, ...req.body, id: req.params.id };
+    await Advertisement.findOneAndUpdate({ id: req.params.id }, updated, { upsert: true }).lean();
+    
+    await AuditLog.create({
+      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      userId: req.user.id,
+      action: 'update_advertisement',
+      details: `Updated ad: ${updated.title}`,
+      createdAt: new Date().toISOString()
+    });
+
+    res.json(updated);
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+app.delete('/api/advertisements/:id', requireSuperAdmin, async (req, res) => {
+  try {
+    await Advertisement.deleteOne({ id: req.params.id });
+    
+    await AuditLog.create({
+      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      userId: req.user.id,
+      action: 'delete_advertisement',
+      details: `Deleted ad ID: ${req.params.id}`,
+      createdAt: new Date().toISOString()
+    });
+
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+app.post('/api/advertisements/:id/view', async (req, res) => {
+  try {
+    await Advertisement.updateOne({ id: req.params.id }, { $inc: { views: 1 } });
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+app.post('/api/advertisements/:id/click', async (req, res) => {
+  try {
+    await Advertisement.updateOne({ id: req.params.id }, { $inc: { clicks: 1 } });
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+// --- Super Admin logs endpoint ---
+app.get('/api/super-admin/logs', requireSuperAdmin, async (req, res) => {
+  try {
+    const type = req.query.type || 'all';
+    const limit = Math.min(100, Number(req.query.limit) || 50);
+    
+    let emailLogs = [];
+    let securityLogs = [];
+    let auditLogs = [];
+    
+    if (type === 'email' || type === 'all') {
+      emailLogs = await EmailLog.find({}).sort({ createdAt: -1 }).limit(limit).lean();
+    }
+    if (type === 'security' || type === 'all') {
+      securityLogs = await SecurityLog.find({}).sort({ createdAt: -1 }).limit(limit).lean();
+    }
+    if (type === 'audit' || type === 'all') {
+      auditLogs = await AuditLog.find({}).sort({ createdAt: -1 }).limit(limit).lean();
+    }
+    
+    res.json({
+      email: emailLogs,
+      security: securityLogs,
+      audit: auditLogs
+    });
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+// --- Super Admin User Directory Management ---
+app.get('/api/super-admin/users', requireSuperAdmin, async (req, res) => {
+  try {
+    const users = await User.find({}).lean();
+    res.json(users.map(({ _id, password, ...u }) => u));
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+app.put('/api/super-admin/users/:id/role', requireSuperAdmin, async (req, res) => {
+  try {
+    const { role } = req.body;
+    if (!['super_admin', 'admin', 'staff', 'donor'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role' });
+    }
+    
+    const u = await User.findOne({ id: req.params.id }).lean();
+    if (!u) return res.status(404).json({ error: 'User not found' });
+    
+    await User.updateOne({ id: req.params.id }, { $set: { role } });
+    
+    await AuditLog.create({
+      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      userId: req.user.id,
+      action: 'update_user_role',
+      details: `Changed role of user ${u.email} to ${role}`,
+      createdAt: new Date().toISOString()
+    });
+
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+app.delete('/api/super-admin/users/:id', requireSuperAdmin, async (req, res) => {
+  try {
+    const u = await User.findOne({ id: req.params.id }).lean();
+    if (!u) return res.status(404).json({ error: 'User not found' });
+    
+    await User.deleteOne({ id: req.params.id });
+    
+    await AuditLog.create({
+      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      userId: req.user.id,
+      action: 'delete_user',
+      details: `Deleted user account: ${u.email}`,
+      createdAt: new Date().toISOString()
+    });
+
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+// --- Super Admin Backup & Restore ---
+app.get('/api/super-admin/backup', requireSuperAdmin, async (req, res) => {
+  try {
+    const collections = {
+      users: await User.find({}).lean(),
+      ashrams: await Ashram.find({}).lean(),
+      needs: await Need.find({}).lean(),
+      events: await EventModel.find({}).lean(),
+      posts: await Post.find({}).lean(),
+      donations: await Donation.find({}).lean(),
+      event_bookings: await EventBooking.find({}).lean(),
+      visit_bookings: await VisitBookingModel.find({}).lean(),
+      notifications: await Notification.find({}).lean(),
+      albums: await Album.find({}).lean(),
+      gov_schemes: await GovScheme.find({}).lean(),
+      child_records: await ChildRecord.find({}).lean(),
+      team_members: await TeamMember.find({}).lean(),
+      configurations: await Config.find({}).lean(),
+      advertisements: await Advertisement.find({}).lean()
+    };
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', 'attachment; filename=niswartha_backup.json');
+    res.send(JSON.stringify(collections, null, 2));
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+app.post('/api/super-admin/restore', requireSuperAdmin, async (req, res) => {
+  try {
+    const collections = req.body;
+    if (!collections || typeof collections !== 'object') {
+      return res.status(400).json({ error: 'Invalid backup format' });
+    }
+    
+    const countRestored = {};
+    const mapping = {
+      users: User,
+      ashrams: Ashram,
+      needs: Need,
+      events: EventModel,
+      posts: Post,
+      donations: Donation,
+      event_bookings: EventBooking,
+      visit_bookings: VisitBookingModel,
+      notifications: Notification,
+      albums: Album,
+      gov_schemes: GovScheme,
+      child_records: ChildRecord,
+      team_members: TeamMember,
+      configurations: Config,
+      advertisements: Advertisement
+    };
+    
+    for (const key in mapping) {
+      if (collections[key] && Array.isArray(collections[key])) {
+        const Model = mapping[key];
+        await Model.deleteMany({});
+        if (collections[key].length > 0) {
+          const docs = collections[key].map(({ _id, ...doc }) => doc);
+          await Model.insertMany(docs);
+        }
+        countRestored[key] = collections[key].length;
+      }
+    }
+    
+    await AuditLog.create({
+      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      userId: req.user.id,
+      action: 'restore_database_backup',
+      details: `Restored collections: ${Object.keys(countRestored).join(', ')}`,
+      createdAt: new Date().toISOString()
+    });
+
+    res.json({ success: true, restored: countRestored });
   } catch (e) {
     res.status(500).json({ error: String(e.message) });
   }

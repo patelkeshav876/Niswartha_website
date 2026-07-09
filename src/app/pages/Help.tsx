@@ -9,16 +9,16 @@ export function Help() {
 
   const faqs = [
     {
-      question: 'How do I make a donation?',
-      answer: 'Browse ashrams, select one you\'d like to support, and click the "Donate" button. You can choose to donate to a specific need or make a general donation. Follow the payment process to complete your contribution.',
+      question: 'How do I contribute or support?',
+      answer: 'Browse ashrams, select one you\'d like to support, and click the "Support Our Mission" button. You can choose to contribute to a specific need or make a general contribution. Follow the payment process to complete your contribution.',
     },
     {
-      question: 'Is my donation tax-deductible?',
-      answer: 'Yes, all donations made through Ashram Connect are eligible for tax deductions under Section 80G. You will receive a donation receipt via email after your contribution.',
+      question: 'Are my contributions tax-deductible?',
+      answer: 'Yes, all contributions made through Niswartha are eligible for tax deductions under Section 80G. You will receive a contribution receipt via email after your contribution.',
     },
     {
-      question: 'Can I track how my donation is being used?',
-      answer: 'Yes! Visit your Donation History to see all your contributions. Ashrams regularly post updates on their feed showing how donations are making an impact.',
+      question: 'Can I track how my contribution is being used?',
+      answer: 'Yes! Visit your Donation History to see all your contributions. Ashrams regularly post updates on their feed showing how contributions are making an impact.',
     },
     {
       question: 'How do I become an ashram admin?',

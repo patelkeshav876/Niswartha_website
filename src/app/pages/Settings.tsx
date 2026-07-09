@@ -187,7 +187,7 @@ export function Settings() {
                       id="loc"
                       value={editData.location}
                       onChange={(e) => setEditData({ ...editData, location: e.target.value })}
-                      placeholder="e.g. Nagpur, India"
+                      placeholder="e.g. Shankar Nagar, Nagpur"
                       className="rounded-xl border-zinc-200"
                     />
                   </div>

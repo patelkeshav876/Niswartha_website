@@ -23,6 +23,7 @@ import { api } from '../lib/api';
 import { Ashram, type Event as EventType, Need } from '../types';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { PremiumHeroBackdrop } from '../components/home/PremiumHeroBackdrop';
+import { AdBanner } from '../components/AdBanner';
 
 /* ───── Count-Up Hook ───── */
 function useCountUp(target: number, duration = 2000) {
@@ -168,7 +169,7 @@ export function Home() {
               className="h-14 rounded-full bg-primary px-8 text-base font-semibold text-primary-foreground shadow-[0_14px_40px_-6px_rgba(15,109,78,0.5)] transition-all hover:scale-[1.02] hover:shadow-[0_18px_50px_-6px_rgba(15,109,78,0.6)]"
               onClick={() => navigate(`/donate/${ashram.id}`)}
             >
-              <Heart className="mr-2 h-5 w-5" /> Donate Now
+              <Heart className="mr-2 h-5 w-5" /> Support Our Mission
             </Button>
             <Button
               size="lg"
@@ -199,6 +200,9 @@ export function Home() {
 
       {/* ════════════ MAIN CONTENT ════════════ */}
       <main ref={mainRef} className="flex-1">
+        <div className="section-container pt-6">
+          <AdBanner placement="home_top" />
+        </div>
 
         {/* ──── Quick Actions ──── */}
         <section className="section-container py-16 lg:py-20">
@@ -208,7 +212,7 @@ export function Home() {
                 {
                   tint: 'bg-gradient-to-b from-primary/12 to-primary/5 ring-1 ring-primary/15',
                   iconBg: 'text-primary',
-                  title: 'Donate Now',
+                  title: 'Support Our Mission',
                   subtitle: 'Support our children with a contribution',
                   icon: <Heart className="h-7 w-7" />,
                   onClick: () => navigate(`/donate/${ashram.id}`),
@@ -464,7 +468,7 @@ export function Home() {
                       className="h-14 w-full max-w-xs rounded-full bg-white text-primary font-semibold hover:bg-white/90 shadow-lg"
                       onClick={() => navigate(`/donate/${ashram.id}`)}
                     >
-                      Donate Now <Heart className="ml-2 h-5 w-5" />
+                      Support Our Mission <Heart className="ml-2 h-5 w-5" />
                     </Button>
                   </CardContent>
                 </Card>
@@ -472,6 +476,10 @@ export function Home() {
             </ScrollReveal>
           </div>
         </section>
+        
+        <div className="section-container pb-8 mt-6">
+          <AdBanner placement="home_bottom" />
+        </div>
       </main>
     </div>
   );

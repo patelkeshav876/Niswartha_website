@@ -37,6 +37,8 @@ import { GalleryPage } from './pages/GalleryPage';
 import { SchemesPage } from './pages/SchemesPage';
 import { ManageGallery } from './pages/admin/ManageGallery';
 import { ManageSchemes } from './pages/admin/ManageSchemes';
+import { SuperAdminLayout } from './components/SuperAdminLayout';
+import { SuperAdminDashboard } from './pages/super-admin/SuperAdminDashboard';
 import { ManageChildren } from './pages/admin/ManageChildren';
 import { ManageTeam } from './pages/admin/ManageTeam';
 import { ManageUsers } from './pages/admin/ManageUsers';
@@ -61,6 +63,14 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   if (loading) return null;
   if (!currentUser) return <Navigate to="/login" replace />;
   if (!isAdmin) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
+function SuperAdminRoute({ children }: { children: React.ReactNode }) {
+  const { currentUser, loading, isSuperAdmin } = useUser();
+  if (loading) return null;
+  if (!currentUser) return <Navigate to="/login" replace />;
+  if (!isSuperAdmin) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
@@ -113,6 +123,20 @@ export const router = createBrowserRouter([
           { path: 'team', element: <ManageTeam /> },
           { path: 'users', element: <ManageUsers /> },
           { path: 'bookings', element: <ManageBookings /> },
+        ],
+      },
+
+      // Super Admin routes wrapped in SuperAdminLayout
+      {
+        path: 'super-admin',
+        element: <SuperAdminRoute><SuperAdminLayout /></SuperAdminRoute>,
+        children: [
+          { index: true, element: <SuperAdminDashboard /> },
+          { path: 'users', element: <SuperAdminDashboard /> },
+          { path: 'ads', element: <SuperAdminDashboard /> },
+          { path: 'logs', element: <SuperAdminDashboard /> },
+          { path: 'configs', element: <SuperAdminDashboard /> },
+          { path: 'backup', element: <SuperAdminDashboard /> },
         ],
       },
 

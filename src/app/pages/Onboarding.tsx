@@ -18,8 +18,8 @@ const slides = [
   },
   {
     id: 3,
-    title: 'Donate or Visit',
-    description: 'Make a difference by donating securely or scheduling a visit to share your love.',
+    title: 'Support or Visit',
+    description: 'Make a difference by contributing securely or scheduling a visit to share your love.',
     image: 'https://images.unsplash.com/photo-1599666882726-fe28581e3147?auto=format&fit=crop&q=80',
   },
 ];

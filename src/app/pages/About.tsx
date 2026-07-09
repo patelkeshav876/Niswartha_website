@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router';
 import { mockAshrams } from '../data/mock';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { PremiumHeroBackdrop } from '../components/home/PremiumHeroBackdrop';
+import { AdBanner } from '../components/AdBanner';
 import { motion } from 'motion/react';
 import { api } from '../lib/api';
 
@@ -345,7 +346,7 @@ export function About() {
             <ScrollReveal>
               <div className="text-center">
                 <h2 className="text-2xl font-bold lg:text-3xl font-serif text-zinc-950">Visit Us & Location</h2>
-                <p className="mt-2 text-muted-foreground">Find directions to our school in Nagpur</p>
+                <p className="mt-2 text-muted-foreground">Find directions to our school in Shankar Nagar, Nagpur</p>
               </div>
             </ScrollReveal>
 
@@ -362,7 +363,7 @@ export function About() {
                         { icon: Phone, label: 'Phone', value: ashram.contact.phone, href: `tel:${ashram.contact.phone}` },
                         { icon: Mail, label: 'Email', value: ashram.contact.email, href: `mailto:${ashram.contact.email}` },
                         ...(ashram.contact.website ? [{ icon: Globe, label: 'Website', value: ashram.contact.website, href: `https://${ashram.contact.website}` }] : []),
-                        ...(ashram.facebookUrl ? [{ icon: Facebook, label: 'Facebook', value: 'Deaf and Dumb Industrial Institute — Nagpur', href: ashram.facebookUrl }] : []),
+                        ...(ashram.facebookUrl ? [{ icon: Facebook, label: 'Facebook', value: 'Deaf and Dumb Industrial Institute — Shankar Nagar, Nagpur', href: ashram.facebookUrl }] : []),
                         { icon: MapPin, label: 'Address', value: ashram.location },
                       ].map((item, i) => (
                         <div key={i} className="flex items-center gap-4">
@@ -392,7 +393,7 @@ export function About() {
                   <div className="relative overflow-hidden rounded-2xl bg-zinc-100 aspect-video flex-1 min-h-[220px]">
                     <iframe
                       title="Niswartha Location Map"
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d119066.52982230485!2d79.00247348981146!3d21.139300975253805!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bd4c0a5a3d0f0d5%3A0x2c64115049cfad7a!2sNagpur%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1719114751480!5m2!1sen!2sin"
+                      src="https://maps.google.com/maps?q=Deaf%20and%20Dumb%20Industrial%20Institute%2C%20Shankar%20Nagar%2C%20Nagpur&t=&z=15&ie=UTF8&iwloc=&output=embed"
                       width="100%"
                       height="100%"
                       style={{ border: 0 }}
@@ -403,7 +404,7 @@ export function About() {
                   </div>
                   <div className="flex gap-4">
                     <a
-                      href="https://maps.google.com/?q=Deaf+and+Dumb+Industrial+Institute+Nagpur"
+                      href="https://maps.google.com/?q=Deaf+and+Dumb+Industrial+Institute+Shankar+Nagar+Nagpur"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1"
@@ -418,7 +419,7 @@ export function About() {
                       onClick={() => navigate(`/donate/${ashram.id}`)}
                       className="flex-1 rounded-full border-primary text-primary hover:bg-primary/5 font-bold text-xs h-11"
                     >
-                      Donate to Ashram
+                      Support Our Mission
                     </Button>
                   </div>
                 </Card>
@@ -426,6 +427,10 @@ export function About() {
             </div>
           </div>
         </section>
+
+        <div className="section-container pb-8 mt-6">
+          <AdBanner placement="about_bottom" />
+        </div>
       </main>
     </div>
   );

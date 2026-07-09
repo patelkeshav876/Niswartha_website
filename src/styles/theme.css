@@ -210,3 +210,20 @@
 .section-container {
   @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
 }
+
+/* Disable text selection on public pages, keeping inputs & forms selectable */
+.public-no-select {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+.public-no-select input,
+.public-no-select textarea,
+.public-no-select select,
+.public-no-select [contenteditable="true"] {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}

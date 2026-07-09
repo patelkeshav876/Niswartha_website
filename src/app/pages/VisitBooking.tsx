@@ -327,7 +327,7 @@ export function VisitBooking() {
           </Button>
           <div>
             <h1 className="text-2xl sm:text-3xl font-serif font-bold text-zinc-900">Book a Visit</h1>
-            <p className="text-xs sm:text-sm text-zinc-500">Plan a visit to {ashram.name} in Nagpur</p>
+            <p className="text-xs sm:text-sm text-zinc-500">Plan a visit to {ashram.name} in Shankar Nagar, Nagpur</p>
           </div>
         </div>
 
@@ -444,7 +444,7 @@ export function VisitBooking() {
                     value={form.userLocation}
                     onChange={(e) => setForm((f) => ({ ...f, userLocation: e.target.value }))}
                     className="rounded-xl border-zinc-200"
-                    placeholder="e.g. Nagpur, Maharashtra"
+                    placeholder="e.g. Shankar Nagar, Nagpur"
                   />
                 </div>
 
@@ -636,7 +636,7 @@ export function VisitBooking() {
               <div className="relative overflow-hidden rounded-2xl bg-zinc-50 border aspect-video h-48">
                 <iframe
                   title="Niswartha Location Map"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d119066.52982230485!2d79.00247348981146!3d21.139300975253805!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bd4c0a5a3d0f0d5%3A0x2c64115049cfad7a!2sNagpur%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1719114751480!5m2!1sen!2sin"
+                  src="https://maps.google.com/maps?q=Deaf%20and%20Dumb%20Industrial%20Institute%2C%20Shankar%20Nagar%2C%20Nagpur&t=&z=15&ie=UTF8&iwloc=&output=embed"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
@@ -646,7 +646,7 @@ export function VisitBooking() {
               </div>
 
               <a
-                href="https://maps.google.com/?q=Deaf+and+Dumb+Industrial+Institute+Nagpur"
+                href="https://maps.google.com/?q=Deaf+and+Dumb+Industrial+Institute+Shankar+Nagar+Nagpur"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block"

@@ -88,9 +88,9 @@ export function Profile() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               {
-                label: 'Total Impact Donated',
+                label: 'Total Contributions',
                 value: `₹${stats.totalDonations.toLocaleString()}`,
-                desc: 'All-time donations',
+                desc: 'All-time support',
                 color: 'bg-emerald-50 text-[#0F6D4E]',
                 icon: IndianRupee,
               },

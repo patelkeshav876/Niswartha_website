@@ -10,6 +10,7 @@ import { api } from '../lib/api';
 import type { Ashram, Need, Post, Event as EventItem } from '../types';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { FloatingQuickContact } from '../components/FloatingQuickContact';
+import { RichBlocksRenderer } from '../components/RichContentEditor';
 
 export function AshramDetail() {
   const { id } = useParams();
@@ -148,7 +149,7 @@ export function AshramDetail() {
                className="w-full text-xs h-8"
                onClick={() => navigate(`/donate-flow/${need.ashramId}/${need.id}`)}
              >
-               Donate Now
+               Support Our Mission
              </Button>
           </div>
         </Card>
@@ -184,32 +185,45 @@ export function AshramDetail() {
     <div className="space-y-6 animate-in fade-in duration-300">
       {posts.map((post) => (
         <div key={post.id} className="bg-card rounded-xl overflow-hidden shadow-sm border border-border">
-          <div className="p-3 flex items-center gap-2">
+          <div className="p-3 flex items-center gap-2 border-b">
             <div className="h-8 w-8 rounded-full bg-primary/20 overflow-hidden">
                <img src={ashram.imageUrl} className="h-full w-full object-cover" />
             </div>
             <div className="flex-1">
-               <p className="text-xs font-bold">{ashram.name}</p>
+               <p className="text-xs font-bold text-zinc-800">{ashram.name}</p>
                <p className="text-[10px] text-muted-foreground">{new Date(post.createdAt).toLocaleDateString()}</p>
             </div>
           </div>
-          <div className="aspect-square bg-muted">
-            <img src={post.imageUrl} alt="Post" className="w-full h-full object-cover" />
+          
+          <div className="p-4 space-y-4">
+            {post.contentBlocks && post.contentBlocks.length > 0 ? (
+              <RichBlocksRenderer blocks={post.contentBlocks} />
+            ) : (
+              <>
+                <div className="rounded-xl overflow-hidden shadow-sm bg-muted max-h-80 border">
+                  <img src={post.imageUrl} alt="Post Cover" className="w-full object-cover" />
+                </div>
+                <p className="text-sm text-zinc-600 leading-relaxed mt-2 font-medium">
+                  {post.caption}
+                </p>
+              </>
+            )}
           </div>
-          <div className="p-3 space-y-2">
-             <div className="flex gap-4">
-                <Heart className="h-5 w-5 text-destructive" />
-                <Share2 className="h-5 w-5 text-muted-foreground" />
+
+          <div className="p-3 border-t bg-zinc-50/50 flex justify-between items-center">
+             <div className="flex items-center gap-3">
+                <button type="button" className="flex items-center gap-1 text-xs text-muted-foreground font-semibold hover:text-red-500 transition-colors">
+                  <Heart className="h-4 w-4 text-red-500 fill-current" />
+                  <span>{post.likes} likes</span>
+                </button>
              </div>
-             <p className="text-sm font-medium">{post.likes} likes</p>
-             <p className="text-sm text-muted-foreground">
-               <span className="font-semibold text-foreground mr-1">{ashram.name}</span>
-               {post.caption}
-             </p>
+             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground">
+                <Share2 className="h-4 w-4" />
+             </Button>
           </div>
         </div>
       ))}
-      {posts.length === 0 && <p className="text-center text-muted-foreground py-8">No posts yet.</p>}
+      {posts.length === 0 && <p className="text-center text-muted-foreground py-8">No updates yet.</p>}
     </div>
   );
 
@@ -259,7 +273,7 @@ export function AshramDetail() {
                 Book a visit
               </Button>
               <Button onClick={handleDonate} className="rounded-full px-6 shadow-lg shadow-primary/20">
-                Donate
+                Support Our Mission
               </Button>
            </div>
         </div>

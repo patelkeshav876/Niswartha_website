@@ -197,6 +197,38 @@ export const api = {
   getAdminUsers: () => fetchAPI<any[]>('/admin/users'),
   deleteUser: (id: string) => fetchAPI<any>(`/admin/users/${id}`, { method: 'DELETE' }),
 
+  // --- Configurations API ---
+  getConfig: () => fetchAPI<any>('/config'),
+  updateConfig: (data: Record<string, unknown>) =>
+    fetchAPI<any>('/config', { method: 'PUT', body: JSON.stringify(data) }),
+
+  // --- Advertisements API ---
+  getAdvertisements: () => fetchAPI<any[]>('/advertisements'),
+  createAdvertisement: (data: Record<string, unknown>) =>
+    fetchAPI<any>('/advertisements', { method: 'POST', body: JSON.stringify(data) }),
+  updateAdvertisement: (id: string, data: Record<string, unknown>) =>
+    fetchAPI<any>(`/advertisements/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteAdvertisement: (id: string) =>
+    fetchAPI<any>(`/advertisements/${id}`, { method: 'DELETE' }),
+  trackAdView: (id: string) =>
+    fetchAPI<any>(`/advertisements/${id}/view`, { method: 'POST' }),
+  trackAdClick: (id: string) =>
+    fetchAPI<any>(`/advertisements/${id}/click`, { method: 'POST' }),
+
+  // --- Super Admin APIs ---
+  getSuperAdminLogs: (type: string = 'all', limit: number = 50) =>
+    fetchAPI<any>(`/super-admin/logs?type=${type}&limit=${limit}`),
+  getSuperAdminUsers: () =>
+    fetchAPI<any[]>('/super-admin/users'),
+  updateSuperAdminUserRole: (id: string, role: string) =>
+    fetchAPI<any>(`/super-admin/users/${id}/role`, { method: 'PUT', body: JSON.stringify({ role }) }),
+  deleteSuperAdminUser: (id: string) =>
+    fetchAPI<any>(`/super-admin/users/${id}`, { method: 'DELETE' }),
+  backupDatabase: () =>
+    fetchAPI<any>('/super-admin/backup'),
+  restoreDatabase: (data: Record<string, unknown>) =>
+    fetchAPI<any>('/super-admin/restore', { method: 'POST', body: JSON.stringify(data) }),
+
   initData: (payload: Record<string, unknown>) =>
     fetchAPI('/init-data', { method: 'POST', body: JSON.stringify(payload) }),
 };
