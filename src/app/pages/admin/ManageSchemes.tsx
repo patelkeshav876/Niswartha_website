@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../../components/ui/alert-dialog';
 import { Badge } from '../../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Plus, Search, Edit2, Trash2, Check, X, FileText } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Check, X, FileText, RefreshCw } from 'lucide-react';
 import { api } from '../../lib/api';
 import { toast } from 'sonner';
 import type { GovScheme, GovSchemeCategory } from '../../types';
@@ -38,6 +38,8 @@ export function ManageSchemes() {
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'published' | 'drafts'>('published');
 
   const loadSchemes = async () => {
     setLoading(true);
@@ -55,6 +57,20 @@ export function ManageSchemes() {
   useEffect(() => {
     loadSchemes();
   }, []);
+
+  const syncSchemes = async () => {
+    setSyncing(true);
+    try {
+      const res = await api.syncSchemes();
+      toast.success(res.message || 'Crawl sync completed! New drafts added.');
+      await loadSchemes();
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to sync schemes from RSS feed');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const openCreate = () => {
     setEditingId(null);
@@ -145,6 +161,10 @@ export function ManageSchemes() {
     s.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const drafts = filteredSchemes.filter((s) => s.published === false);
+  const publishedSchemes = filteredSchemes.filter((s) => s.published !== false);
+  const displayedSchemes = activeTab === 'published' ? publishedSchemes : drafts;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
@@ -152,10 +172,21 @@ export function ManageSchemes() {
           <h2 className="text-xl sm:text-2xl font-serif font-bold text-zinc-950">Government Schemes</h2>
           <p className="text-xs text-muted-foreground mt-0.5">Manage educational aids, scholarships, and child welfare schemes</p>
         </div>
-        <Button onClick={openCreate} className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white self-start sm:self-auto gap-1.5 text-xs font-bold px-4 py-2 shadow-sm border-none">
-          <Plus className="h-4 w-4" />
-          Add Scheme
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            onClick={syncSchemes}
+            disabled={syncing}
+            variant="outline"
+            className="rounded-full border-zinc-200 hover:bg-zinc-100 gap-1.5 text-xs font-bold px-4 py-2"
+          >
+            <RefreshCw className={`h-4 w-4 text-[#0F6D4E] ${syncing ? 'animate-spin' : ''}`} />
+            {syncing ? 'Syncing...' : 'Sync RSS Feed'}
+          </Button>
+          <Button onClick={openCreate} className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white gap-1.5 text-xs font-bold px-4 py-2 shadow-sm border-none">
+            <Plus className="h-4 w-4" />
+            Add Scheme
+          </Button>
+        </div>
       </div>
 
       {/* Search Filter */}
@@ -169,6 +200,30 @@ export function ManageSchemes() {
         />
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-4 border-b border-zinc-200/50 pb-1">
+        <button
+          onClick={() => setActiveTab('published')}
+          className={`pb-2.5 text-xs sm:text-sm font-bold border-b-2 uppercase tracking-wider transition-all ${
+            activeTab === 'published'
+              ? 'border-[#0F6D4E] text-[#0F6D4E]'
+              : 'border-transparent text-zinc-400 hover:text-zinc-600'
+          }`}
+        >
+          Published ({publishedSchemes.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('drafts')}
+          className={`pb-2.5 text-xs sm:text-sm font-bold border-b-2 uppercase tracking-wider transition-all ${
+            activeTab === 'drafts'
+              ? 'border-[#0F6D4E] text-[#0F6D4E]'
+              : 'border-transparent text-zinc-400 hover:text-zinc-600'
+          }`}
+        >
+          Drafts / Imported ({drafts.length})
+        </button>
+      </div>
+
       {/* Data Table */}
       {loading ? (
         <div className="space-y-3">
@@ -176,9 +231,9 @@ export function ManageSchemes() {
             <div key={n} className="h-16 rounded-2xl bg-zinc-100 animate-pulse" />
           ))}
         </div>
-      ) : filteredSchemes.length === 0 ? (
+      ) : displayedSchemes.length === 0 ? (
         <div className="text-center py-12 text-zinc-500 bg-white border border-zinc-100 rounded-3xl">
-          <p className="text-sm">No government schemes cataloged yet.</p>
+          <p className="text-sm">No {activeTab} schemes cataloged yet.</p>
         </div>
       ) : (
         <Card className="border border-zinc-200/50 rounded-3xl overflow-hidden shadow-sm bg-white">
@@ -193,7 +248,7 @@ export function ManageSchemes() {
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {filteredSchemes.map((scheme) => (
+                {displayedSchemes.map((scheme) => (
                   <tr key={scheme.id} className="hover:bg-zinc-50/50 transition-colors">
                     <td className="p-4 min-w-[280px]">
                       <div className="flex items-start gap-3">
@@ -222,6 +277,17 @@ export function ManageSchemes() {
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex justify-end gap-1.5">
+                        {!scheme.published && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => togglePublishStatus(scheme)}
+                            className="h-8 w-8 rounded-lg hover:bg-emerald-50 text-emerald-600"
+                            title="Approve & Publish"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
                         <Button variant="ghost" size="icon" onClick={() => openEdit(scheme)} className="h-8 w-8 rounded-lg hover:bg-zinc-100">
                           <Edit2 className="h-3.5 w-3.5 text-zinc-600" />
                         </Button>

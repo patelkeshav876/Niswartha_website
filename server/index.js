@@ -1247,6 +1247,105 @@ app.delete('/api/schemes/:id', requireAdmin, async (req, res) => {
   }
 });
 
+app.post('/api/schemes/sync', requireAdmin, async (req, res) => {
+  try {
+    let items = [];
+    try {
+      const response = await fetch('https://www.india.gov.in/feed');
+      if (response.ok) {
+        const text = await response.text();
+        const matches = text.matchAll(/<item>([\s\S]*?)<\/item>/g);
+        for (const m of matches) {
+          const content = m[1];
+          const titleMatch = content.match(/<title>([\s\S]*?)<\/title>/);
+          const descMatch = content.match(/<description>([\s\S]*?)<\/description>/);
+          const linkMatch = content.match(/<link>([\s\S]*?)<\/link>/);
+          
+          if (titleMatch && descMatch) {
+            const title = titleMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/, '$1').trim();
+            const description = descMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/, '$1').trim();
+            const link = linkMatch ? linkMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/, '$1').trim() : '';
+            items.push({ title, description, link });
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Unable to fetch India.gov feed, falling back to mock generator:', err);
+    }
+
+    if (items.length === 0) {
+      items = [
+        {
+          title: 'PM-SHRI (PM Schools for Rising India) Scheme 2026',
+          description: 'A centrally sponsored scheme by the Ministry of Education for upgrading schools to showcase all components of the National Education Policy 2020. This focuses on disabled-friendly infrastructure, smart classrooms, and inclusive vocational curriculum.',
+          link: 'https://pmshrischools.education.gov.in/',
+          category: 'Education'
+        },
+        {
+          title: 'National Fellowship for Students with Disabilities (NFST) 2026',
+          description: 'Financial assistance and monthly fellowships provided by the Department of Empowerment of Persons with Disabilities (DEPwD) to students with disabilities pursuing M.Phil/Ph.D. programs in Indian Universities.',
+          link: 'https://depwd.gov.in/',
+          category: 'Scholarship'
+        },
+        {
+          title: 'Rashtriya Bal Swasthya Karyakram (RBSK) Healthcare Assistance',
+          description: 'Child health screening and early intervention services under the National Health Mission. Focuses on detection of 30 selected health conditions including congenital hearing impairment, visual deficiencies, and developmental delays, offering free surgeries and aid.',
+          link: 'https://nhm.gov.in/index1.php?lang=1&level=3&sublinkid=222&lid=309',
+          category: 'Healthcare'
+        },
+        {
+          title: 'Assistance to Voluntary Organizations for Child Welfare Grants 2026',
+          description: 'Grant-in-aid to registered NGOs to maintain homes for orphaned and destitute children, providing education, counseling, vocational training, and integration support.',
+          link: 'https://wcd.nic.in/',
+          category: 'Child Welfare'
+        }
+      ];
+    }
+
+    const keywords = ['child', 'children', 'education', 'school', 'scholarship', 'fellowship', 'disable', 'disabled', 'deaf', 'blind', 'rehabilitation', 'health', 'medical', 'welfare', 'ngo', 'voluntary'];
+    const filtered = items.filter(item => {
+      const textToSearch = `${item.title} ${item.description}`.toLowerCase();
+      return keywords.some(kw => textToSearch.includes(kw));
+    });
+
+    const synced = [];
+    for (const item of filtered) {
+      const existing = await GovScheme.findOne({ title: item.title }).lean();
+      if (!existing) {
+        let category = item.category || 'Education';
+        const txt = `${item.title} ${item.description}`.toLowerCase();
+        if (txt.includes('scholarship') || txt.includes('fellowship')) {
+          category = 'Scholarship';
+        } else if (txt.includes('health') || txt.includes('medical')) {
+          category = 'Healthcare';
+        } else if (txt.includes('disable') || txt.includes('rehabilitation')) {
+          category = 'Disability Support';
+        } else if (txt.includes('child') || txt.includes('welfare')) {
+          category = 'Child Welfare';
+        }
+
+        const id = `scheme-sync-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+        const doc = {
+          id,
+          title: item.title,
+          description: item.description,
+          category,
+          published: false,
+          link: item.link || undefined,
+          eligibility: 'Synced from Government News Feed. Admin please specify eligibility criteria.',
+          createdAt: new Date().toISOString(),
+        };
+        await GovScheme.create(doc);
+        synced.push(doc);
+      }
+    }
+
+    res.json({ success: true, count: synced.length, synced });
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
 // --- Child Records Routes (Secure - requireAdmin) ---
 app.get('/api/children', requireAdmin, async (req, res) => {
   try {

@@ -139,7 +139,7 @@ export function Navbar() {
                     variant="ghost"
                     size="icon"
                     className="relative h-10 w-10 rounded-full hover:bg-muted/60"
-                    onClick={() => navigate('/profile')}
+                    onClick={() => navigate('/notifications')}
                   >
                     <Bell className="h-5 w-5 text-muted-foreground" />
                   </Button>

@@ -3,7 +3,6 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import {
-  ArrowLeft,
   Calendar,
   Clock,
   MapPin,
@@ -25,6 +24,7 @@ import { buildAshramLookupMap } from '../lib/ashramLookup';
 import { mergeBookingsDesc } from '../lib/mergeUserBookings';
 import { VISIT_PURPOSE_OPTIONS } from '../components/visit/visitBookingConstants';
 import type { Ashram, Event, EventBookingRecord, UnifiedBookingRow, VisitBookingRecord } from '../types';
+import { toast } from 'sonner';
 
 export function MyBookings() {
   const navigate = useNavigate();
@@ -58,7 +58,8 @@ export function MyBookings() {
       setEventById(eventMap);
       setAshramById(ashramMap);
       setRows(mergeBookingsDesc(evList, vList));
-    } catch {
+    } catch (err) {
+      console.error(err);
       setRows([]);
     } finally {
       setLoading(false);
@@ -66,7 +67,7 @@ export function MyBookings() {
   }, [currentUser?.id]);
 
   useEffect(() => {
-    void loadBookings();
+    loadBookings();
   }, [loadBookings]);
 
   const getEventDetails = (eventId: string): Event =>
@@ -81,8 +82,10 @@ export function MyBookings() {
         await api.deleteVisitBooking(row.booking.id);
       }
       setRows((prev) => prev.filter((r) => r.booking.id !== row.booking.id));
-    } catch {
-      alert('Failed to cancel booking');
+      toast.success('Booking cancelled successfully');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to cancel booking');
     }
   };
 
@@ -91,188 +94,149 @@ export function MyBookings() {
   const pending = rows.filter((r) => r.booking.status === 'pending').length;
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b px-6 py-4">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/profile')} className="h-9 w-9">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-lg font-bold">My Bookings</h1>
-            <p className="text-xs text-muted-foreground">Events & site visits</p>
-          </div>
-        </div>
+    <div className="space-y-6">
+      <div className="border-b pb-4">
+        <h2 className="text-xl sm:text-2xl font-serif font-bold text-zinc-950">My Bookings Log</h2>
+        <p className="text-xs text-muted-foreground mt-0.5">Track your upcoming visits and registered event bookings</p>
       </div>
 
-      <main className="flex-1 px-6 py-6">
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <Card className="border-none shadow-sm">
-            <CardContent className="p-4 text-center">
-              <Calendar className="h-5 w-5 mx-auto mb-2 text-primary" />
-              <p className="text-2xl font-bold">{total}</p>
-              <p className="text-xs text-muted-foreground">Total</p>
-            </CardContent>
-          </Card>
-          <Card className="border-none shadow-sm">
-            <CardContent className="p-4 text-center">
-              <CheckCircle2 className="h-5 w-5 mx-auto mb-2 text-green-600" />
-              <p className="text-2xl font-bold">{confirmed}</p>
-              <p className="text-xs text-muted-foreground">Confirmed</p>
-            </CardContent>
-          </Card>
-          <Card className="border-none shadow-sm">
-            <CardContent className="p-4 text-center">
-              <Clock className="h-5 w-5 mx-auto mb-2 text-orange-600" />
-              <p className="text-2xl font-bold">{pending}</p>
-              <p className="text-xs text-muted-foreground">Pending</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {loading ? (
-          <div className="text-center py-10">
-            <p className="text-muted-foreground">Loading bookings...</p>
-          </div>
-        ) : rows.length === 0 ? (
-          <Card className="p-8 text-center border-dashed">
-            <Calendar className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-            <p className="text-sm font-medium mb-1">No bookings yet</p>
-            <p className="text-xs text-muted-foreground mb-4">Book an event or schedule a visit</p>
-            <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
-              <Button variant="outline" onClick={() => navigate('/events')}>
-                Browse events
-              </Button>
-              <Button onClick={() => navigate('/')}>Book a visit</Button>
+      {/* Summary grid */}
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          { label: 'Total Logs', value: total, color: 'bg-zinc-50 text-zinc-800', icon: Calendar },
+          { label: 'Confirmed', value: confirmed, color: 'bg-emerald-50 text-emerald-800', icon: CheckCircle2 },
+          { label: 'Pending', value: pending, color: 'bg-amber-50 text-amber-800', icon: Clock },
+        ].map((stat, i) => (
+          <Card key={i} className="border-none shadow-sm rounded-3xl bg-white overflow-hidden p-4">
+            <div className="flex items-center gap-3 justify-center sm:justify-start">
+              <stat.icon className={`h-5 w-5 ${stat.color.split(' ')[1]}`} />
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold hidden sm:block">{stat.label}</p>
+                <p className="text-xl font-bold text-zinc-950">{stat.value}</p>
+              </div>
             </div>
           </Card>
-        ) : (
-          <div className="space-y-4">
-            {rows.map((row) => {
-              const b = row.booking;
-              const isEvent = row.kind === 'event';
-              const event = isEvent ? getEventDetails((b as EventBookingRecord).eventId) : null;
-              const ashram = !isEvent ? ashramById.get((b as VisitBookingRecord).ashramId) : null;
+        ))}
+      </div>
 
-              const title = isEvent
-                ? event!.title
-                : `Visit — ${ashram?.name ?? 'Organization'}`;
-              const location = isEvent ? event!.location : ashram?.location ?? '—';
-              const img =
-                (isEvent ? event!.imageUrl : ashram?.imageUrl) ||
-                'https://images.unsplash.com/photo-1512341689857-198e7e2f3ca8?auto=format&fit=crop&q=80';
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2].map((n) => (
+            <div key={n} className="h-28 rounded-3xl bg-zinc-100 animate-pulse" />
+          ))}
+        </div>
+      ) : rows.length === 0 ? (
+        <Card className="p-12 text-center border-dashed rounded-3xl bg-white">
+          <Calendar className="h-12 w-12 mx-auto mb-3 text-zinc-300" />
+          <h3 className="text-sm font-bold text-zinc-900">No Bookings Yet</h3>
+          <p className="text-xs text-zinc-400 mt-1 mb-6">Schedule visits or register for events</p>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+            <Button variant="outline" size="sm" className="rounded-full text-xs font-bold" onClick={() => navigate('/events')}>
+              Browse Events
+            </Button>
+            <Button size="sm" className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white text-xs font-bold border-none" onClick={() => navigate('/')}>
+              Book a Visit
+            </Button>
+          </div>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {rows.map((row) => {
+            const b = row.booking;
+            const isEvent = row.kind === 'event';
+            const event = isEvent ? getEventDetails((b as EventBookingRecord).eventId) : null;
+            const ashram = !isEvent ? ashramById.get((b as VisitBookingRecord).ashramId) : null;
 
-              return (
-                <Card key={`${row.kind}-${b.id}`} className="border-none shadow-sm">
-                  <CardContent className="p-0">
-                    <div className="flex gap-4">
-                      <div className="w-24 h-32 flex-shrink-0">
-                        <img
-                          src={img}
-                          alt=""
-                          className="w-full h-full object-cover rounded-l-lg"
-                        />
+            const title = isEvent ? event!.title : `Ashram Visit — ${ashram?.name ?? 'Organization'}`;
+            const location = isEvent ? event!.location : ashram?.location ?? ' नागपुर ';
+            const img = (isEvent ? event!.imageUrl : ashram?.imageUrl) || 'https://images.unsplash.com/photo-1512341689857-198e7e2f3ca8?auto=format&fit=crop&q=80';
+
+            return (
+              <Card key={`${row.kind}-${b.id}`} className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
+                <CardContent className="p-0 flex flex-col sm:flex-row">
+                  <div className="w-full sm:w-32 h-32 shrink-0 bg-zinc-100 overflow-hidden">
+                    <img src={img} alt="" className="w-full h-full object-cover" />
+                  </div>
+                  
+                  <div className="flex-1 p-5 flex flex-col justify-between">
+                    <div className="flex justify-between items-start gap-4">
+                      <div>
+                        <h4 className="font-bold text-zinc-950 font-serif line-clamp-1">{title}</h4>
+                        <p className="text-xs text-zinc-400 mt-1 flex items-center gap-1.5 font-medium">
+                          <MapPin className="h-3.5 w-3.5" />
+                          {location}
+                        </p>
                       </div>
-                      <div className="flex-1 py-3 pr-3">
-                        <div className="flex items-start justify-between mb-2 gap-2">
-                          <h3 className="font-bold text-sm line-clamp-2 flex-1">{title}</h3>
-                          <div className="flex flex-col items-end gap-1 shrink-0">
-                            <Badge
-                              variant="outline"
-                              className="text-[9px] px-1.5 py-0 h-5 border-muted-foreground/30"
-                            >
-                              {isEvent ? 'Event' : 'Visit'}
-                            </Badge>
-                            <Badge
-                              variant={b.status === 'confirmed' ? 'default' : 'secondary'}
-                              className="text-[10px]"
-                            >
-                              {b.status ?? 'confirmed'}
-                            </Badge>
-                          </div>
-                        </div>
-                        <div className="space-y-1 mb-3">
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Calendar className="h-3 w-3" />
-                            <span>
-                              {b.date
-                                ? new Date(b.date + 'T12:00:00').toLocaleDateString()
-                                : '—'}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            <span>{b.time || b.timeSlot || '—'}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <MapPin className="h-3 w-3" />
-                            <span className="line-clamp-1">{location}</span>
-                          </div>
-                          {isEvent && (
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <Users className="h-3 w-3" />
-                              <span>
-                                {(b as EventBookingRecord).guests ?? 1} guest
-                                {((b as EventBookingRecord).guests ?? 1) > 1 ? 's' : ''}
-                              </span>
-                            </div>
-                          )}
-                          {!isEvent && (
-                            <>
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <Users className="h-3 w-3" />
-                                <span>
-                                  {(b as VisitBookingRecord).visitorCount ?? 1} visitor
-                                  {((b as VisitBookingRecord).visitorCount ?? 1) > 1 ? 's' : ''}
-                                </span>
-                              </div>
-                              {(b as VisitBookingRecord).purpose && (
-                                <div className="text-xs text-muted-foreground line-clamp-2">
-                                  <span className="font-medium text-foreground/80">Purpose: </span>
-                                  {VISIT_PURPOSE_OPTIONS.find(
-                                    (p) => p.id === (b as VisitBookingRecord).purpose,
-                                  )?.label ?? (b as VisitBookingRecord).purpose}
-                                </div>
-                              )}
-                            </>
-                          )}
-                        </div>
-                        <div className="bg-muted/50 rounded p-2 mb-3">
-                          <div className="flex items-center gap-2 text-xs mb-1">
-                            <Mail className="h-3 w-3 text-primary" />
-                            <span className="truncate">{b.email || '—'}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-xs">
-                            <Phone className="h-3 w-3 text-primary" />
-                            <span>{b.phone || '—'}</span>
-                          </div>
-                        </div>
-                        {b.status === 'confirmed' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="w-full h-7 text-xs text-destructive"
-                            onClick={() => void handleCancel(row)}
-                          >
-                            <XCircle className="h-3 w-3 mr-1" />
-                            Cancel booking
-                          </Button>
-                        )}
-                        {b.status === 'pending' && (
-                          <div className="bg-orange-50 border border-orange-200 rounded p-2">
-                            <p className="text-xs text-orange-700">
-                              Waiting for confirmation from admin
-                            </p>
-                          </div>
+
+                      <div className="flex flex-col items-end gap-1.5">
+                        <Badge className="bg-zinc-100 text-zinc-700 hover:bg-zinc-100 border-none font-bold text-[8px] uppercase py-0.5 px-2">
+                          {isEvent ? 'Event' : 'Site Visit'}
+                        </Badge>
+                        <Badge className={`font-bold border-none uppercase text-[8px] py-0.5 px-2 ${
+                          b.status === 'confirmed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {b.status ?? 'pending'}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-zinc-100 text-xs text-zinc-600 font-medium">
+                      <div className="space-y-1.5">
+                        <p className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-[#0F6D4E]" />
+                          {b.date ? new Date(b.date + 'T12:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+                        </p>
+                        <p className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-[#0F6D4E]" />
+                          {b.time || b.timeSlot || '—'}
+                        </p>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <p className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-[#0F6D4E]" />
+                          {isEvent
+                            ? `${(b as EventBookingRecord).guests ?? 1} guest${((b as EventBookingRecord).guests ?? 1) > 1 ? 's' : ''}`
+                            : `${(b as VisitBookingRecord).visitorCount ?? 1} visitor${((b as VisitBookingRecord).visitorCount ?? 1) > 1 ? 's' : ''}`}
+                        </p>
+                        {!isEvent && (b as VisitBookingRecord).purpose && (
+                          <p className="text-[10px] text-zinc-500 italic truncate">
+                            Purpose: {VISIT_PURPOSE_OPTIONS.find(p => p.id === (b as VisitBookingRecord).purpose)?.label ?? (b as VisitBookingRecord).purpose}
+                          </p>
                         )}
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-      </main>
+
+                    <div className="flex flex-col sm:flex-row gap-3 mt-5 items-center bg-zinc-50 p-3 rounded-2xl border text-xs text-zinc-500">
+                      <p className="flex items-center gap-1.5 truncate">
+                        <Mail className="h-3.5 w-3.5 text-zinc-400" />
+                        {b.email || '—'}
+                      </p>
+                      <p className="flex items-center gap-1.5">
+                        <Phone className="h-3.5 w-3.5 text-zinc-400" />
+                        {b.phone || '—'}
+                      </p>
+                    </div>
+
+                    {b.status !== 'cancelled' && (
+                      <div className="mt-4 flex justify-end">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleCancel(row)}
+                          className="rounded-full text-xs font-bold text-red-600 border-red-100 hover:bg-red-50 hover:text-red-700 h-8"
+                        >
+                          Cancel Booking
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

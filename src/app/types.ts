@@ -164,6 +164,7 @@ export interface ChildRecord {
   gender: string;
   education: string;
   admissionDate: string;
+  imageUrl?: string;
   healthNotes?: string;
   guardianInformation?: {
     name: string;

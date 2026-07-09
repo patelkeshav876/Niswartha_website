@@ -41,6 +41,8 @@ import { ManageChildren } from './pages/admin/ManageChildren';
 import { ManageTeam } from './pages/admin/ManageTeam';
 import { ManageUsers } from './pages/admin/ManageUsers';
 import { ManageBookings } from './pages/admin/ManageBookings';
+import { UserLayout } from './components/UserLayout';
+import { NotificationsPage } from './pages/NotificationsPage';
 
 // Wrapper component to provide UserContext to all routes
 function RootLayout({ children }: { children: React.ReactNode }) {
@@ -81,10 +83,17 @@ export const router = createBrowserRouter([
       { path: 'visit-book/:ashramId', element: <ProtectedRoute><VisitBooking /></ProtectedRoute> },
       { path: 'donate/:id', element: <ProtectedRoute><Donation /></ProtectedRoute> },
       { path: 'donate-flow/:ashramId/:needId', element: <ProtectedRoute><DonationFlow /></ProtectedRoute> },
-      { path: 'profile', element: <ProtectedRoute><Profile /></ProtectedRoute> },
-      { path: 'my-bookings', element: <ProtectedRoute><MyBookings /></ProtectedRoute> },
-      { path: 'donation-history', element: <ProtectedRoute><DonationHistory /></ProtectedRoute> },
-      { path: 'settings', element: <ProtectedRoute><Settings /></ProtectedRoute> },
+      // User dashboard routes wrapped in UserLayout
+      {
+        element: <ProtectedRoute><UserLayout /></ProtectedRoute>,
+        children: [
+          { path: 'profile', element: <Profile /> },
+          { path: 'my-bookings', element: <MyBookings /> },
+          { path: 'donation-history', element: <DonationHistory /> },
+          { path: 'settings', element: <Settings /> },
+          { path: 'notifications', element: <NotificationsPage /> },
+        ],
+      },
 
       // Admin routes wrapped in AdminLayout
       {

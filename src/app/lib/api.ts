@@ -171,6 +171,8 @@ export const api = {
     fetchAPI<any>(`/schemes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteScheme: (id: string) =>
     fetchAPI<any>(`/schemes/${id}`, { method: 'DELETE' }),
+  syncSchemes: () =>
+    fetchAPI<any>('/schemes/sync', { method: 'POST' }),
 
   // --- Child Records API ---
   getChildren: () => fetchAPI<any[]>('/children'),

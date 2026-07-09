@@ -11,6 +11,7 @@ import { Plus, Search, Edit2, Trash2, Image as ImageIcon, Link as LinkIcon, X } 
 import { api } from '../../lib/api';
 import { toast } from 'sonner';
 import type { Album } from '../../types';
+import { ImageUploadWithCamera } from '../../components/ImageUploadWithCamera';
 
 export function ManageGallery() {
   const [albums, setAlbums] = useState<Album[]>([]);
@@ -252,45 +253,87 @@ export function ManageGallery() {
               />
             </div>
 
-            <div className="space-y-2 border-t pt-3">
+            <div className="space-y-3 border-t pt-3">
               <Label className="text-zinc-700 font-semibold flex items-center gap-1.5">
                 <ImageIcon className="h-4 w-4 text-[#0F6D4E]" />
                 Album Photos ({images.length})
               </Label>
-              <div className="flex gap-2">
-                <Input
-                  value={imageUrlInput}
-                  onChange={(e) => setImageUrlInput(e.target.value)}
-                  placeholder="Paste direct photo URL..."
-                  className="rounded-xl border-zinc-200"
+
+              <div className="space-y-2 bg-zinc-50 border rounded-2xl p-3 border-dashed">
+                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Upload / Capture Image</p>
+                <ImageUploadWithCamera
+                  value=""
+                  onChange={(base64) => {
+                    if (base64) {
+                      setImages((prev) => [...prev, base64]);
+                      if (!coverUrl) {
+                        setCoverUrl(base64);
+                      }
+                    }
+                  }}
+                  aspectRatio="any"
+                  maxSizeKB={300}
                 />
-                <Button type="button" onClick={addImageUrl} className="rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800">
-                  Add URL
-                </Button>
               </div>
 
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Or Paste Image URL</p>
+                <div className="flex gap-2">
+                  <Input
+                    value={imageUrlInput}
+                    onChange={(e) => setImageUrlInput(e.target.value)}
+                    placeholder="Paste direct photo URL..."
+                    className="rounded-xl border-zinc-200"
+                  />
+                  <Button type="button" onClick={addImageUrl} className="rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800">
+                    Add URL
+                  </Button>
+                </div>
+              </div>
+            </div>
+
               {/* Thumbnails grid */}
-              <div className="grid grid-cols-4 gap-2.5 mt-3 max-h-40 overflow-y-auto p-1.5 border rounded-2xl border-dashed">
-                {images.map((url, index) => (
-                  <div key={index} className="relative aspect-square bg-zinc-50 rounded-lg overflow-hidden border">
-                    <img src={url} alt="" className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removeImageUrl(index)}
-                      className="absolute top-1 right-1 h-5 w-5 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-black"
+              <div className="grid grid-cols-4 gap-2.5 mt-3 max-h-48 overflow-y-auto p-1.5 border rounded-2xl border-dashed">
+                {images.map((url, index) => {
+                  const isCover = coverUrl === url;
+                  return (
+                    <div
+                      key={index}
+                      onClick={() => setCoverUrl(url)}
+                      title="Click to set as cover photo"
+                      className={`relative aspect-square bg-zinc-50 rounded-lg overflow-hidden border cursor-pointer group/item transition-all ${
+                        isCover ? 'ring-2 ring-[#0F6D4E] border-transparent' : 'hover:border-zinc-300'
+                      }`}
                     >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      {isCover && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-[#0F6D4E] text-white text-[8px] font-bold text-center py-0.5 uppercase tracking-wider">
+                          Cover
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeImageUrl(index);
+                          if (isCover) {
+                            setCoverUrl(images.find((_, i) => i !== index) || '');
+                          }
+                        }}
+                        className="absolute top-1 right-1 h-5 w-5 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-black"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  );
+                })}
                 {images.length === 0 && (
                   <div className="col-span-4 py-8 text-center text-xs text-zinc-400 font-medium">
-                    No images added. Paste URLs to construct the album.
+                    No images added. Upload photos or paste URLs.
                   </div>
                 )}
               </div>
             </div>
-          </div>
 
           <DialogFooter className="mt-4 flex gap-2">
             <Button variant="outline" onClick={() => setDialogOpen(false)} className="rounded-full">

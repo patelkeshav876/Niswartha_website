@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Plus, Search, Edit2, Trash2, Heart, ShieldAlert, Calendar, User, Phone } from 'lucide-react';
 import { api } from '../../lib/api';
 import { toast } from 'sonner';
+import { ImageUploadWithCamera } from '../../components/ImageUploadWithCamera';
 import type { ChildRecord } from '../../types';
 
 export function ManageChildren() {
@@ -32,6 +33,7 @@ export function ManageChildren() {
   const [guardianName, setGuardianName] = useState('');
   const [guardianRelation, setGuardianRelation] = useState('');
   const [guardianPhone, setGuardianPhone] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -88,6 +90,7 @@ export function ManageChildren() {
     setGuardianName('');
     setGuardianRelation('');
     setGuardianPhone('');
+    setImageUrl('');
     setDialogOpen(true);
   };
 
@@ -102,6 +105,7 @@ export function ManageChildren() {
     setGuardianName(child.guardianInformation?.name || '');
     setGuardianRelation(child.guardianInformation?.relationship || '');
     setGuardianPhone(child.guardianInformation?.phone || '');
+    setImageUrl(child.imageUrl || '');
     setDialogOpen(true);
   };
 
@@ -132,6 +136,7 @@ export function ManageChildren() {
         gender,
         education: education.trim(),
         admissionDate,
+        imageUrl,
         healthNotes: healthNotes.trim() || undefined,
         guardianInformation: {
           name: guardianName.trim(),
@@ -240,12 +245,19 @@ export function ManageChildren() {
                 {filteredChildren.map((child) => (
                   <tr key={child.id} className="hover:bg-zinc-50/50 transition-colors">
                     <td className="p-4">
-                      <button onClick={() => openView(child)} className="text-left group">
-                        <p className="font-bold text-zinc-950 group-hover:text-[#0F6D4E] group-hover:underline leading-snug">
-                          {child.name}
-                        </p>
-                        <p className="text-[10px] text-zinc-400 mt-0.5">ID: {child.id}</p>
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={child.imageUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(child.name)}`}
+                          alt=""
+                          className="h-10 w-10 rounded-full object-cover border border-zinc-200 shrink-0 bg-zinc-50"
+                        />
+                        <button onClick={() => openView(child)} className="text-left group">
+                          <p className="font-bold text-zinc-950 group-hover:text-[#0F6D4E] group-hover:underline leading-snug">
+                            {child.name}
+                          </p>
+                          <p className="text-[10px] text-zinc-400 mt-0.5">ID: {child.id}</p>
+                        </button>
+                      </div>
                     </td>
                     <td className="p-4 text-zinc-700">
                       {child.age} yrs • {child.gender}
@@ -283,10 +295,12 @@ export function ManageChildren() {
           {selectedChild && (
             <div className="space-y-6">
               <DialogHeader>
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center text-primary">
-                    <User className="h-5 w-5" />
-                  </div>
+                <div className="flex items-center gap-4">
+                  <img
+                    src={selectedChild.imageUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(selectedChild.name)}`}
+                    alt={selectedChild.name}
+                    className="h-16 w-16 rounded-2xl object-cover border border-zinc-200 bg-zinc-50"
+                  />
                   <div>
                     <DialogTitle className="text-lg font-serif font-bold text-zinc-950">{selectedChild.name}</DialogTitle>
                     <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Student Profile Detail</p>
@@ -360,6 +374,16 @@ export function ManageChildren() {
           </DialogHeader>
 
           <div className="space-y-4 py-4 text-sm">
+            <div className="space-y-1.5 flex flex-col items-center pb-3 border-b border-dashed border-zinc-200">
+              <Label className="text-zinc-700 font-semibold self-start">Profile Photo</Label>
+              <ImageUploadWithCamera
+                value={imageUrl}
+                onChange={setImageUrl}
+                aspectRatio="square"
+                maxSizeKB={200}
+              />
+            </div>
+
             <div className="space-y-1.5">
               <Label className="text-zinc-700 font-semibold">Student Full Name</Label>
               <Input
