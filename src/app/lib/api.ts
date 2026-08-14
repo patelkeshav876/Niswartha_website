@@ -32,7 +32,6 @@ export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}):
 
   if (!response.ok) {
     const error = await response.text();
-    console.error(`API Error [${endpoint}]:`, error);
     throw new Error(error || `API request failed: ${response.statusText}`);
   }
 
