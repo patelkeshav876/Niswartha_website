@@ -33,6 +33,8 @@ export function MyBookings() {
   const [eventById, setEventById] = useState<Map<string, Event>>(new Map());
   const [ashramById, setAshramById] = useState<Map<string, Ashram>>(new Map());
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'confirmed' | 'pending'>('all');
 
   const loadBookings = useCallback(async () => {
     if (!currentUser?.id) {
@@ -89,115 +91,177 @@ export function MyBookings() {
     }
   };
 
+  const filteredRows = rows.filter((row) => {
+    const b = row.booking;
+    const isEvent = row.kind === 'event';
+    const event = isEvent ? getEventDetails((b as EventBookingRecord).eventId) : null;
+    const ashram = !isEvent ? ashramById.get((b as VisitBookingRecord).ashramId) : null;
+    const title = isEvent ? (event?.title || '') : (`Ashram Visit — ${ashram?.name ?? ''}`);
+
+    const matchesSearch = title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter =
+      statusFilter === 'all' ||
+      (statusFilter === 'confirmed' && b.status === 'confirmed') ||
+      (statusFilter === 'pending' && (b.status === 'pending' || !b.status));
+
+    return matchesSearch && matchesFilter;
+  });
+
   const total = rows.length;
   const confirmed = rows.filter((r) => r.booking.status === 'confirmed').length;
-  const pending = rows.filter((r) => r.booking.status === 'pending').length;
+  const pending = rows.filter((r) => r.booking.status === 'pending' || !r.booking.status).length;
 
   return (
-    <div className="space-y-6">
-      <div className="border-b pb-4">
-        <h2 className="text-xl sm:text-2xl font-serif font-bold text-zinc-950">My Bookings Log</h2>
-        <p className="text-xs text-muted-foreground mt-0.5">Track your upcoming visits and registered event bookings</p>
+    <div className="max-w-4xl mx-auto space-y-6 animate-fade-up">
+      {/* Header section */}
+      <div className="border-b border-zinc-200/80 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-serif font-bold text-zinc-950">My Bookings Log</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Track your upcoming ashram visits & registered events</p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() => navigate('/events')}
+            className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white text-xs font-bold shadow-sm"
+          >
+            + New Event Registration
+          </Button>
+        </div>
       </div>
 
-      {/* Summary grid */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* Summary grid tiles matching Screenshot 1 */}
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
         {[
-          { label: 'Total Logs', value: total, color: 'bg-zinc-50 text-zinc-800', icon: Calendar },
-          { label: 'Confirmed', value: confirmed, color: 'bg-emerald-50 text-emerald-800', icon: CheckCircle2 },
-          { label: 'Pending', value: pending, color: 'bg-amber-50 text-amber-800', icon: Clock },
+          { label: 'Total Logs', value: total, color: 'text-zinc-900 bg-zinc-100', icon: Calendar },
+          { label: 'Confirmed', value: confirmed, color: 'text-emerald-700 bg-emerald-50 border-emerald-100', icon: CheckCircle2 },
+          { label: 'Pending', value: pending, color: 'text-amber-700 bg-amber-50 border-amber-100', icon: Clock },
         ].map((stat, i) => (
-          <Card key={i} className="border-none shadow-sm rounded-3xl bg-white overflow-hidden p-4">
-            <div className="flex items-center gap-3 justify-center sm:justify-start">
-              <stat.icon className={`h-5 w-5 ${stat.color.split(' ')[1]}`} />
-              <div>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold hidden sm:block">{stat.label}</p>
-                <p className="text-xl font-bold text-zinc-950">{stat.value}</p>
-              </div>
-            </div>
+          <Card key={i} className="border border-zinc-200/80 shadow-xs rounded-2xl bg-white p-3.5 sm:p-4 text-center">
+            <stat.icon className={`mx-auto mb-1.5 h-5 w-5 ${stat.color.split(' ')[0]}`} />
+            <p className="text-xl sm:text-2xl font-bold text-zinc-950 font-mono">{stat.value}</p>
+            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{stat.label}</p>
           </Card>
         ))}
+      </div>
+
+      {/* Search & Filter pills */}
+      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div className="relative flex-1 w-full">
+          <input
+            type="text"
+            placeholder="Search bookings by event or ashram..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full h-9 pl-9 pr-4 text-xs rounded-full border border-zinc-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F6D4E]/30"
+          />
+          <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" />
+        </div>
+
+        <div className="flex items-center gap-1.5 self-start sm:self-auto overflow-x-auto pb-1 sm:pb-0">
+          {(
+            [
+              { id: 'all', label: 'All' },
+              { id: 'confirmed', label: 'Confirmed' },
+              { id: 'pending', label: 'Pending' },
+            ] as const
+          ).map((tab) => (
+            <Button
+              key={tab.id}
+              type="button"
+              size="sm"
+              variant={statusFilter === tab.id ? 'default' : 'outline'}
+              onClick={() => setStatusFilter(tab.id)}
+              className={`rounded-full h-8 text-xs font-bold px-3.5 ${
+                statusFilter === tab.id ? 'bg-[#0F6D4E] hover:bg-[#0c593f] text-white' : 'border-zinc-200 text-zinc-700'
+              }`}
+            >
+              {tab.label}
+            </Button>
+          ))}
+        </div>
       </div>
 
       {loading ? (
         <div className="space-y-3">
           {[1, 2].map((n) => (
-            <div key={n} className="h-28 rounded-3xl bg-zinc-100 animate-pulse" />
+            <div key={n} className="h-28 rounded-2xl bg-zinc-100 animate-pulse" />
           ))}
         </div>
-      ) : rows.length === 0 ? (
-        <Card className="p-12 text-center border-dashed rounded-3xl bg-white">
-          <Calendar className="h-12 w-12 mx-auto mb-3 text-zinc-300" />
-          <h3 className="text-sm font-bold text-zinc-900">No Bookings Yet</h3>
-          <p className="text-xs text-zinc-400 mt-1 mb-6">Schedule visits or register for events</p>
-          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+      ) : filteredRows.length === 0 ? (
+        <Card className="p-10 text-center border-dashed rounded-3xl bg-white space-y-3">
+          <Calendar className="h-10 w-10 mx-auto text-zinc-300" />
+          <div>
+            <h3 className="text-sm font-bold text-zinc-900">No Bookings Found</h3>
+            <p className="text-xs text-zinc-400 mt-0.5">Schedule a visit or register for upcoming events</p>
+          </div>
+          <div className="flex gap-2 justify-center pt-1">
             <Button variant="outline" size="sm" className="rounded-full text-xs font-bold" onClick={() => navigate('/events')}>
               Browse Events
             </Button>
-            <Button size="sm" className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white text-xs font-bold border-none" onClick={() => navigate('/')}>
+            <Button size="sm" className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white text-xs font-bold border-none" onClick={() => navigate('/visit-book/ashram-1')}>
               Book a Visit
             </Button>
           </div>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {rows.map((row) => {
+        <div className="space-y-3">
+          {filteredRows.map((row) => {
             const b = row.booking;
             const isEvent = row.kind === 'event';
             const event = isEvent ? getEventDetails((b as EventBookingRecord).eventId) : null;
             const ashram = !isEvent ? ashramById.get((b as VisitBookingRecord).ashramId) : null;
 
             const title = isEvent ? event!.title : `Ashram Visit — ${ashram?.name ?? 'Organization'}`;
-            const location = isEvent ? event!.location : ashram?.location ?? ' नागपुर ';
+            const location = isEvent ? event!.location : ashram?.location ?? 'Nagpur, Maharashtra';
             const img = (isEvent ? event!.imageUrl : ashram?.imageUrl) || 'https://images.unsplash.com/photo-1512341689857-198e7e2f3ca8?auto=format&fit=crop&q=80';
 
             return (
-              <Card key={`${row.kind}-${b.id}`} className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
+              <Card key={`${row.kind}-${b.id}`} className="border border-zinc-200/80 shadow-xs rounded-2xl overflow-hidden bg-white hover:border-[#0F6D4E]/40 transition-all">
                 <CardContent className="p-0 flex flex-col sm:flex-row">
-                  <div className="w-full sm:w-32 h-32 shrink-0 bg-zinc-100 overflow-hidden">
+                  <div className="w-full sm:w-36 h-36 shrink-0 bg-zinc-100 overflow-hidden relative">
                     <img src={img} alt="" className="w-full h-full object-cover" />
+                    <Badge className="absolute top-2 left-2 bg-black/70 text-white border-none font-bold text-[9px] uppercase px-2 py-0.5">
+                      {isEvent ? 'Event' : 'Site Visit'}
+                    </Badge>
                   </div>
                   
-                  <div className="flex-1 p-5 flex flex-col justify-between">
+                  <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between space-y-3">
                     <div className="flex justify-between items-start gap-4">
                       <div>
-                        <h4 className="font-bold text-zinc-950 font-serif line-clamp-1">{title}</h4>
-                        <p className="text-xs text-zinc-400 mt-1 flex items-center gap-1.5 font-medium">
-                          <MapPin className="h-3.5 w-3.5" />
+                        <h4 className="font-bold text-zinc-950 font-serif text-sm sm:text-base line-clamp-1">{title}</h4>
+                        <p className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1.5 font-medium">
+                          <MapPin className="h-3.5 w-3.5 text-[#0F6D4E]" />
                           {location}
                         </p>
                       </div>
 
-                      <div className="flex flex-col items-end gap-1.5">
-                        <Badge className="bg-zinc-100 text-zinc-700 hover:bg-zinc-100 border-none font-bold text-[8px] uppercase py-0.5 px-2">
-                          {isEvent ? 'Event' : 'Site Visit'}
-                        </Badge>
-                        <Badge className={`font-bold border-none uppercase text-[8px] py-0.5 px-2 ${
-                          b.status === 'confirmed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {b.status ?? 'pending'}
-                        </Badge>
-                      </div>
+                      <Badge className={`font-bold border-none uppercase text-[9px] px-2.5 py-1 shrink-0 ${
+                        b.status === 'confirmed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                      }`}>
+                        {b.status ?? 'pending'}
+                      </Badge>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-zinc-100 text-xs text-zinc-600 font-medium">
-                      <div className="space-y-1.5">
-                        <p className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-[#0F6D4E]" />
+                    <div className="grid grid-cols-2 gap-3 pt-2 border-t border-zinc-100 text-xs text-zinc-600 font-medium">
+                      <div className="space-y-1">
+                        <p className="flex items-center gap-1.5">
+                          <Calendar className="h-3.5 w-3.5 text-[#0F6D4E]" />
                           {b.date ? new Date(b.date + 'T12:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
                         </p>
-                        <p className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-[#0F6D4E]" />
+                        <p className="flex items-center gap-1.5">
+                          <Clock className="h-3.5 w-3.5 text-[#0F6D4E]" />
                           {b.time || b.timeSlot || '—'}
                         </p>
                       </div>
 
-                      <div className="space-y-1.5">
-                        <p className="flex items-center gap-2">
-                          <Users className="h-4 w-4 text-[#0F6D4E]" />
+                      <div className="space-y-1">
+                        <p className="flex items-center gap-1.5">
+                          <Users className="h-3.5 w-3.5 text-[#0F6D4E]" />
                           {isEvent
-                            ? `${(b as EventBookingRecord).guests ?? 1} guest${((b as EventBookingRecord).guests ?? 1) > 1 ? 's' : ''}`
-                            : `${(b as VisitBookingRecord).visitorCount ?? 1} visitor${((b as VisitBookingRecord).visitorCount ?? 1) > 1 ? 's' : ''}`}
+                            ? `${(b as EventBookingRecord).guests ?? 1} guest(s)`
+                            : `${(b as VisitBookingRecord).visitorCount ?? 1} visitor(s)`}
                         </p>
                         {!isEvent && (b as VisitBookingRecord).purpose && (
                           <p className="text-[10px] text-zinc-500 italic truncate">
@@ -207,24 +271,13 @@ export function MyBookings() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-3 mt-5 items-center bg-zinc-50 p-3 rounded-2xl border text-xs text-zinc-500">
-                      <p className="flex items-center gap-1.5 truncate">
-                        <Mail className="h-3.5 w-3.5 text-zinc-400" />
-                        {b.email || '—'}
-                      </p>
-                      <p className="flex items-center gap-1.5">
-                        <Phone className="h-3.5 w-3.5 text-zinc-400" />
-                        {b.phone || '—'}
-                      </p>
-                    </div>
-
                     {b.status !== 'cancelled' && (
-                      <div className="mt-4 flex justify-end">
+                      <div className="pt-2 flex justify-end border-t border-zinc-100">
                         <Button
                           size="sm"
-                          variant="outline"
+                          variant="ghost"
                           onClick={() => handleCancel(row)}
-                          className="rounded-full text-xs font-bold text-red-600 border-red-100 hover:bg-red-50 hover:text-red-700 h-8"
+                          className="h-7 px-3 text-[11px] font-bold text-red-600 hover:bg-red-50 rounded-full"
                         >
                           Cancel Booking
                         </Button>

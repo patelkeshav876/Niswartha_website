@@ -100,18 +100,19 @@ export function AdminDashboard() {
           {/* Quick Actions Row */}
           <div className="space-y-3">
             <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Quick Actions</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               {[
-                { label: 'Add New Kid', icon: Plus, link: '/admin/children' },
+                { label: 'Post Urgent Need', icon: Plus, link: '/admin/needs' },
+                { label: 'Add New Student', icon: Plus, link: '/admin/children' },
                 { label: 'Add Gov Scheme', icon: Plus, link: '/admin/schemes' },
                 { label: 'Create Album', icon: Plus, link: '/admin/gallery' },
                 { label: 'Create Event', icon: Plus, link: '/admin/events/create' },
               ].map((act, idx) => (
                 <Link key={idx} to={act.link} className="block">
                   <Card className="hover:bg-zinc-50 border border-zinc-200/50 hover:border-zinc-300 transition-all cursor-pointer h-full rounded-2xl">
-                    <CardContent className="p-3.5 flex flex-col items-center justify-center gap-2 text-center">
+                    <CardContent className="p-3 flex flex-col items-center justify-center gap-2 text-center">
                       <div className="h-8 w-8 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-500">
-                        <act.icon className="h-4.5 w-4.5" />
+                        <act.icon className="h-4 w-4" />
                       </div>
                       <span className="text-[11px] font-bold text-zinc-700 leading-tight">{act.label}</span>
                     </CardContent>
@@ -139,7 +140,13 @@ export function AdminDashboard() {
                 <div className="space-y-3">
                   {team.slice(0, 3).map((member) => (
                     <div key={member.id} className="flex items-center gap-3 bg-zinc-50 p-2.5 rounded-2xl border border-zinc-100/50">
-                      <img src={member.imageUrl || 'https://i.pravatar.cc/150?u=staff'} alt="" className="h-9 w-9 rounded-full object-cover border border-zinc-200" />
+                      {member.imageUrl ? (
+                        <img src={member.imageUrl} alt="" className="h-9 w-9 rounded-full object-cover border border-zinc-200 shrink-0" />
+                      ) : (
+                        <div className="h-9 w-9 rounded-full bg-[#0F6D4E]/10 border border-[#0F6D4E]/30 text-[#0F6D4E] flex items-center justify-center font-bold text-xs font-serif shrink-0">
+                          {member.name?.charAt(0)?.toUpperCase() || 'T'}
+                        </div>
+                      )}
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-bold text-zinc-900 truncate">{member.name}</p>
                         <p className="text-[10px] text-[#0F6D4E] font-medium truncate">{member.role}</p>
@@ -203,7 +210,7 @@ export function AdminDashboard() {
             <div className="space-y-6">
               <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider border-b pb-3 flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-[#0F6D4E]" />
-                Analytics & Goals
+                Analytics and Goals
               </h3>
 
               {/* Progress Metric 1 */}

@@ -1,31 +1,47 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
+import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Textarea } from '../components/ui/textarea';
-import { Switch } from '../components/ui/switch';
-import { ImageUploadWithCamera } from '../components/ImageUploadWithCamera';
 import { useUser } from '../context/UserContext';
 import { toast } from 'sonner';
-import { Shield, Mail, Bell, Activity } from 'lucide-react';
+import {
+  User,
+  Lock,
+  LogOut,
+  Camera,
+  CheckCircle2,
+  Edit2,
+  Calendar,
+  MapPin,
+  Mail,
+  ShieldCheck,
+  Check,
+} from 'lucide-react';
+import { ImageUploadWithCamera } from '../components/ImageUploadWithCamera';
+
+type SettingsTab = 'personal' | 'security';
 
 export function Settings() {
-  const { currentUser, token, updateProfile } = useUser();
+  const { currentUser, token, updateProfile, logout } = useUser();
+  const [activeTab, setActiveTab] = useState<SettingsTab>('personal');
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const [editData, setEditData] = useState({
-    name: currentUser?.name || '',
-    bio: currentUser?.bio || '',
-    phone: currentUser?.phone || '',
-    location: currentUser?.location || '',
-    avatarUrl: currentUser?.avatarUrl || '',
-    notificationPreferences: currentUser?.notificationPreferences || {
-      email: true,
-      push: true,
-      updates: true,
-    },
-  });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Split name into first and last name for exact match with Screenshot 1
+  const nameParts = (currentUser?.name || '').trim().split(' ');
+  const initialFirstName = nameParts[0] || '';
+  const initialLastName = nameParts.slice(1).join(' ') || '';
+
+  const [firstName, setFirstName] = useState(initialFirstName);
+  const [lastName, setLastName] = useState(initialLastName);
+  const [gender, setGender] = useState<'Male' | 'Female'>((currentUser as any)?.gender || 'Male');
+  const [email, setEmail] = useState(currentUser?.email || '');
+  const [phone, setPhone] = useState(currentUser?.phone || '');
+  const [location, setLocation] = useState(currentUser?.location || 'Nagpur, Maharashtra');
+  const [dateOfBirth, setDateOfBirth] = useState(currentUser?.dateOfBirth || '1996-12-15');
+  const [avatarUrl, setAvatarUrl] = useState(currentUser?.avatarUrl || '');
 
   const [securityData, setSecurityData] = useState({
     currentPassword: '',
@@ -35,24 +51,47 @@ export function Settings() {
 
   useEffect(() => {
     if (currentUser) {
-      setEditData({
-        name: currentUser.name || '',
-        bio: currentUser.bio || '',
-        phone: currentUser.phone || '',
-        location: currentUser.location || '',
-        avatarUrl: currentUser.avatarUrl || '',
-        notificationPreferences: currentUser.notificationPreferences || {
-          email: true,
-          push: true,
-          updates: true,
-        },
-      });
+      const parts = (currentUser.name || '').trim().split(' ');
+      setFirstName(parts[0] || '');
+      setLastName(parts.slice(1).join(' ') || '');
+      setGender((currentUser as any)?.gender || 'Male');
+      setEmail(currentUser.email || '');
+      setPhone(currentUser.phone || '');
+      setLocation(currentUser.location || 'Nagpur, Maharashtra');
+      setDateOfBirth(currentUser.dateOfBirth || '1996-12-15');
+      setAvatarUrl(currentUser.avatarUrl || '');
     }
   }, [currentUser]);
 
-  const handleProfileUpdate = async () => {
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setAvatarUrl(reader.result);
+        toast.success('Avatar selected! Click "Save Personal Information" to apply.');
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleSaveProfile = async () => {
     if (!currentUser?.id || !token) {
       toast.error('Session expired. Please log in again.');
+      return;
+    }
+
+    const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
+    if (!fullName) {
+      toast.error('First name is required');
       return;
     }
 
@@ -64,7 +103,14 @@ export function Settings() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(editData),
+        body: JSON.stringify({
+          name: fullName,
+          phone,
+          location,
+          avatarUrl,
+          dateOfBirth,
+          gender,
+        }),
       });
 
       if (!response.ok) {
@@ -74,9 +120,9 @@ export function Settings() {
 
       const updatedUser = await response.json();
       updateProfile(updatedUser);
-      toast.success('Profile details saved successfully!');
+      toast.success('Personal Information saved successfully!');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to update profile');
+      toast.error(error.message || 'Failed to update settings');
     } finally {
       setIsUpdating(false);
     }
@@ -132,198 +178,266 @@ export function Settings() {
   if (!currentUser) return null;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div className="border-b pb-4">
-        <h2 className="text-xl sm:text-2xl font-serif font-bold text-zinc-950">Account Settings</h2>
-        <p className="text-xs text-muted-foreground mt-0.5">Customize your personal profile, notification streams, and secure credentials</p>
-      </div>
+    <div className="max-w-5xl mx-auto space-y-6 animate-fade-up">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleAvatarChange}
+        accept="image/*"
+        className="hidden"
+      />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Main Settings Wrapper matching Screenshot 1 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
         
-        {/* Left Side: General Profile Info */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="border-none shadow-sm rounded-3xl bg-white p-6">
-            <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider mb-6">Profile Settings</h3>
-            
-            <div className="space-y-6">
-              {/* Profile Avatar editor */}
-              <div className="space-y-2 bg-zinc-50 border border-zinc-200/50 p-4 rounded-2xl border-dashed">
-                <Label className="text-xs font-bold text-zinc-700 uppercase tracking-wider block mb-1">Avatar / Profile Photo</Label>
-                <ImageUploadWithCamera
-                  value={editData.avatarUrl}
-                  onChange={(base64) => setEditData({ ...editData, avatarUrl: base64 })}
-                  aspectRatio="square"
-                  maxSizeKB={200}
-                />
+        {/* Left Column: Avatar & Sub-Nav (Exact Layout from Screenshot 1 & 2) */}
+        <Card className="border border-zinc-200/80 shadow-sm rounded-[32px] bg-white p-6 flex flex-col items-center text-center space-y-6">
+          {/* Squircle Avatar with Floating Camera Pencil Overlay in Corner */}
+          <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+            <div className="h-32 w-32 rounded-[32px] overflow-hidden border-4 border-amber-500/20 bg-zinc-100 shadow-md transition-all group-hover:scale-105 relative">
+              <img
+                src={avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(currentUser.name || 'User')}`}
+                alt={currentUser.name}
+                className="h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold">
+                Click to change
+              </div>
+            </div>
+
+            {/* Corner Orange Pencil Edit Badge Overlay (Matching Screenshot 1 & 2) */}
+            <div
+              className="absolute bottom-1 right-1 h-8 w-8 rounded-full bg-[#F97316] text-white flex items-center justify-center border-2 border-white shadow-lg cursor-pointer hover:scale-110 transition-transform"
+              title="Click to edit profile photo"
+            >
+              <Camera className="h-4 w-4" />
+            </div>
+          </div>
+
+          {/* User Name & Role */}
+          <div className="space-y-1">
+            <h3 className="text-lg font-bold font-serif text-zinc-900">{firstName} {lastName}</h3>
+            <p className="text-xs font-semibold text-zinc-500 capitalize">
+              {currentUser.role === 'super_admin' ? 'Super Admin' : currentUser.role === 'admin' ? 'Admin' : 'Donor / Supporter'}
+            </p>
+          </div>
+
+          {/* Sub Navigation List (Exact Style from Screenshot 1) */}
+          <div className="w-full space-y-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab('personal')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all ${
+                activeTab === 'personal'
+                  ? 'bg-[#FFF2E8] text-[#F97316] shadow-xs'
+                  : 'text-zinc-600 hover:bg-zinc-100'
+              }`}
+            >
+              <User className="h-4 w-4 text-[#F97316]" />
+              <span>Personal Information</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('security')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all ${
+                activeTab === 'security'
+                  ? 'bg-[#FFF2E8] text-[#F97316] shadow-xs'
+                  : 'text-zinc-600 hover:bg-zinc-100'
+              }`}
+            >
+              <Lock className="h-4 w-4 text-zinc-500" />
+              <span>Login And Password</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => logout()}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold text-red-600 hover:bg-red-50 transition-colors"
+            >
+              <LogOut className="h-4 w-4 text-red-500" />
+              <span>Log Out</span>
+            </button>
+          </div>
+        </Card>
+
+        {/* Right Column: Central Element Form (Exact Layout from Screenshot 1 & 2) */}
+        <div className="md:col-span-2 space-y-6">
+          {activeTab === 'personal' && (
+            <Card className="border border-zinc-200/80 shadow-sm rounded-[32px] bg-white p-6 sm:p-8 space-y-6">
+              <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
+                <h2 className="text-xl font-bold font-serif text-zinc-950">Personal Information</h2>
+                <Button
+                  onClick={handleSaveProfile}
+                  disabled={isUpdating}
+                  className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white font-bold text-xs px-5 h-9 shadow-md"
+                >
+                  {isUpdating ? 'Saving...' : 'Save Profile'}
+                </Button>
               </div>
 
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="fullname" className="text-zinc-700 font-semibold">Identified Full Name</Label>
-                  <Input
-                    id="fullname"
-                    value={editData.name}
-                    onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                    placeholder="Your name"
-                    className="rounded-xl border-zinc-200"
-                  />
+              <div className="space-y-6">
+                {/* Gender Radio Pill Selector (Matching Screenshot 1) */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-zinc-500">Gender</label>
+                  <div className="flex items-center gap-6">
+                    <label
+                      onClick={() => setGender('Male')}
+                      className="flex items-center gap-2 cursor-pointer text-xs font-bold text-zinc-800"
+                    >
+                      <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                        gender === 'Male' ? 'border-[#F97316] bg-white' : 'border-zinc-300'
+                      }`}>
+                        {gender === 'Male' && <div className="h-2.5 w-2.5 rounded-full bg-[#F97316]" />}
+                      </div>
+                      <span>Male</span>
+                    </label>
+
+                    <label
+                      onClick={() => setGender('Female')}
+                      className="flex items-center gap-2 cursor-pointer text-xs font-bold text-zinc-800"
+                    >
+                      <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                        gender === 'Female' ? 'border-[#F97316] bg-white' : 'border-zinc-300'
+                      }`}>
+                        {gender === 'Female' && <div className="h-2.5 w-2.5 rounded-full bg-[#F97316]" />}
+                      </div>
+                      <span>Female</span>
+                    </label>
+                  </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label htmlFor="bio" className="text-zinc-700 font-semibold">Personal Bio</Label>
-                  <Textarea
-                    id="bio"
-                    value={editData.bio}
-                    onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
-                    placeholder="Tell the community how you wish to support..."
-                    className="rounded-xl border-zinc-200 min-h-[90px]"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+                {/* First Name & Last Name Side by Side (Matching Screenshot 1) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="loc" className="text-zinc-700 font-semibold">Verified Location</Label>
-                    <Input
-                      id="loc"
-                      value={editData.location}
-                      onChange={(e) => setEditData({ ...editData, location: e.target.value })}
-                      placeholder="e.g. Shankar Nagar, Nagpur"
-                      className="rounded-xl border-zinc-200"
+                    <Label className="text-xs font-bold text-zinc-500">First Name</Label>
+                    <input
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      placeholder="First Name"
+                      className="w-full h-11 px-4 text-xs font-bold rounded-2xl bg-zinc-100/70 border-none text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#F97316]/30"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="tel" className="text-zinc-700 font-semibold">Contact Phone</Label>
-                    <Input
-                      id="tel"
-                      value={editData.phone}
-                      onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
-                      placeholder="e.g. +91 9876543210"
-                      className="rounded-xl border-zinc-200"
+                    <Label className="text-xs font-bold text-zinc-500">Last Name</Label>
+                    <input
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder="Last Name"
+                      className="w-full h-11 px-4 text-xs font-bold rounded-2xl bg-zinc-100/70 border-none text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#F97316]/30"
                     />
                   </div>
                 </div>
-              </div>
 
-              <Button
-                onClick={handleProfileUpdate}
-                disabled={isUpdating}
-                className="w-full rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white font-semibold text-xs tracking-wider uppercase py-3 shadow-md"
-              >
-                {isUpdating ? 'Saving...' : 'Save Profile Details'}
-              </Button>
-            </div>
-          </Card>
-
-          {/* Notifications Switches */}
-          <Card className="border-none shadow-sm rounded-3xl bg-white p-6">
-            <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider mb-6">Notification Streams</h3>
-            
-            <div className="space-y-4">
-              {[
-                { id: 'email', label: 'Email Alerts', desc: 'Campaign updates & monthly impact summaries', icon: Mail },
-                { id: 'push', label: 'Push Direct', desc: 'Realtime transaction/booking confirmations', icon: Bell },
-                { id: 'updates', label: 'General Updates', desc: 'NGO newsletters and program announcements', icon: Activity },
-              ].map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 border border-zinc-100">
-                  <div className="flex gap-3 items-center">
-                    <div className="h-9 w-9 rounded-xl bg-white border flex items-center justify-center text-[#0F6D4E]">
-                      <item.icon className="h-4.5 w-4.5" />
-                    </div>
-                    <div>
-                      <Label className="font-bold text-xs text-zinc-900">{item.label}</Label>
-                      <p className="text-[10px] text-zinc-400 font-medium">{item.desc}</p>
+                {/* Email with Verified Badge (Matching Screenshot 1) */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-zinc-500">Email</Label>
+                  <div className="relative flex items-center">
+                    <input
+                      type="email"
+                      value={email}
+                      readOnly
+                      className="w-full h-11 pl-4 pr-24 text-xs font-bold rounded-2xl bg-zinc-100/70 border-none text-zinc-900 cursor-not-allowed"
+                    />
+                    <div className="absolute right-3 flex items-center gap-1 bg-emerald-100/80 text-emerald-800 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-200">
+                      <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                      <span>Verified</span>
                     </div>
                   </div>
-                  <Switch
-                    checked={(editData.notificationPreferences as any)?.[item.id] ?? true}
-                    onCheckedChange={(val) =>
-                      setEditData({
-                        ...editData,
-                        notificationPreferences: {
-                          ...editData.notificationPreferences,
-                          [item.id]: val,
-                        } as any,
-                      })
-                    }
+                </div>
+
+                {/* Address / Location Soft Input (Matching Screenshot 1) */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-zinc-500">Address / Location</Label>
+                  <input
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="e.g. 3605 Parker Rd., Nagpur"
+                    className="w-full h-11 px-4 text-xs font-bold rounded-2xl bg-zinc-100/70 border-none text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#F97316]/30"
                   />
                 </div>
-              ))}
 
-              <Button
-                onClick={handleProfileUpdate}
-                disabled={isUpdating}
-                className="w-full rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white font-semibold text-xs tracking-wider uppercase py-3 mt-4"
-              >
-                {isUpdating ? 'Saving...' : 'Save Notification Preferences'}
-              </Button>
-            </div>
-          </Card>
-        </div>
+                {/* Date of Birth */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-zinc-500">Date of Birth</Label>
+                  <input
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                    className="w-full h-11 px-4 text-xs font-bold rounded-2xl bg-zinc-100/70 border-none text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#F97316]/30"
+                  />
+                </div>
 
-        {/* Right Side: Security & Credentials */}
-        <div className="space-y-6">
-          <Card className="border-none shadow-sm rounded-3xl bg-white p-6">
-            <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider mb-6">Change Password</h3>
-            
-            <form onSubmit={handlePasswordChange} className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="oldpass" className="text-zinc-700 font-semibold">Current Password</Label>
-                <Input
-                  id="oldpass"
-                  type="password"
-                  value={securityData.currentPassword}
-                  onChange={(e) => setSecurityData({ ...securityData, currentPassword: e.target.value })}
-                  placeholder="••••••••"
-                  className="rounded-xl border-zinc-200"
-                />
+                {/* Contact Phone */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-zinc-500">Contact Phone</Label>
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+91 9876543210"
+                    className="w-full h-11 px-4 text-xs font-bold rounded-2xl bg-zinc-100/70 border-none text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#F97316]/30"
+                  />
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {activeTab === 'security' && (
+            <Card className="border border-zinc-200/80 shadow-sm rounded-[32px] bg-white p-6 sm:p-8 space-y-6">
+              <div className="border-b border-zinc-100 pb-4">
+                <h2 className="text-xl font-bold font-serif text-zinc-950">Login And Password</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">Manage your credentials and security preferences</p>
               </div>
 
-              <div className="space-y-1.5 pt-2 border-t">
-                <Label htmlFor="newpass" className="text-zinc-700 font-semibold">New Password</Label>
-                <Input
-                  id="newpass"
-                  type="password"
-                  value={securityData.newPassword}
-                  onChange={(e) => setSecurityData({ ...securityData, newPassword: e.target.value })}
-                  placeholder="At least 6 characters"
-                  className="rounded-xl border-zinc-200"
-                />
-              </div>
+              <form onSubmit={handlePasswordChange} className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-zinc-500">Current Password</Label>
+                  <input
+                    type="password"
+                    value={securityData.currentPassword}
+                    onChange={(e) => setSecurityData({ ...securityData, currentPassword: e.target.value })}
+                    placeholder="••••••••"
+                    className="w-full h-11 px-4 text-xs font-bold rounded-2xl bg-zinc-100/70 border-none text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#F97316]/30"
+                  />
+                </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="confpass" className="text-zinc-700 font-semibold">Confirm New Password</Label>
-                <Input
-                  id="confpass"
-                  type="password"
-                  value={securityData.confirmPassword}
-                  onChange={(e) => setSecurityData({ ...securityData, confirmPassword: e.target.value })}
-                  placeholder="At least 6 characters"
-                  className="rounded-xl border-zinc-200"
-                />
-              </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-zinc-500">New Password</Label>
+                  <input
+                    type="password"
+                    value={securityData.newPassword}
+                    onChange={(e) => setSecurityData({ ...securityData, newPassword: e.target.value })}
+                    placeholder="At least 6 characters"
+                    className="w-full h-11 px-4 text-xs font-bold rounded-2xl bg-zinc-100/70 border-none text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#F97316]/30"
+                  />
+                </div>
 
-              <Button
-                type="submit"
-                disabled={isUpdating}
-                className="w-full rounded-full bg-zinc-950 text-white hover:bg-zinc-800 font-semibold text-xs tracking-wider uppercase py-3 mt-4"
-              >
-                {isUpdating ? 'Validating...' : 'Refresh Password'}
-              </Button>
-            </form>
-          </Card>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-zinc-500">Confirm New Password</Label>
+                  <input
+                    type="password"
+                    value={securityData.confirmPassword}
+                    onChange={(e) => setSecurityData({ ...securityData, confirmPassword: e.target.value })}
+                    placeholder="At least 6 characters"
+                    className="w-full h-11 px-4 text-xs font-bold rounded-2xl bg-zinc-100/70 border-none text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#F97316]/30"
+                  />
+                </div>
 
-          <Card className="border-none shadow-sm rounded-3xl bg-amber-50 border-amber-100 p-5">
-            <div className="flex gap-3">
-              <Shield className="h-5 w-5 text-amber-600 shrink-0" />
-              <div>
-                <h4 className="text-xs font-bold text-amber-800 uppercase tracking-wider">Session Security</h4>
-                <p className="text-[10px] text-amber-700 leading-relaxed mt-1">
-                  Keep your password unique and long. Change your password immediately if you suspect any unauthorized access to your account.
-                </p>
-              </div>
-            </div>
-          </Card>
+                <Button
+                  type="submit"
+                  disabled={isUpdating}
+                  className="w-full rounded-full bg-zinc-950 text-white hover:bg-zinc-800 font-bold text-xs py-3 mt-4 shadow-md"
+                >
+                  {isUpdating ? 'Updating...' : 'Update Password'}
+                </Button>
+              </form>
+            </Card>
+          )}
         </div>
       </div>
     </div>

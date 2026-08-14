@@ -103,7 +103,7 @@ export function FeedManagement() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-xl font-bold font-serif text-zinc-900">Manage Feed & News</h1>
+            <h1 className="text-xl font-bold font-serif text-zinc-900">Manage Feed and News</h1>
             <p className="text-xs text-muted-foreground">Publish announcements, visual blogs, and news updates</p>
           </div>
         </div>

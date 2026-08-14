@@ -1,6 +1,4 @@
-import { VISIT_SLOT_CAPACITY } from '../../lib/visitSlots';
-
-export const VISIT_MAX_PARTY = VISIT_SLOT_CAPACITY;
+export const VISIT_MAX_PARTY = 200;
 
 export const VISIT_PURPOSE_OPTIONS = [
   { id: 'visit', label: 'General visit' },

@@ -6,13 +6,15 @@ import { api } from '../../lib/api';
 type Props = {
   children: ReactNode;
   className?: string;
+  pageKey?: string;
 };
 
 /**
- * Premium Hero Backdrop supporting dynamic color gradients, cover images,
- * looping background videos, opacity overlays, and hardware-accelerated parallax shifts.
+ * Premium Dynamic Hero Backdrop supporting configurable page background images,
+ * video backgrounds, mobile fallback images, backdrop blur, brightness adjustments,
+ * overlay opacity, text alignment, and parallax scrolling.
  */
-export function PremiumHeroBackdrop({ children, className }: Props) {
+export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: Props) {
   const [config, setConfig] = useState<any>(null);
   const [scrollY, setScrollY] = useState(0);
 
@@ -20,8 +22,16 @@ export function PremiumHeroBackdrop({ children, className }: Props) {
     let active = true;
     (async () => {
       try {
-        const c = await api.getConfig();
-        if (active) setConfig(c);
+        const pageConf = await api.getHeroConfig(pageKey);
+        if (active && pageConf && pageConf.bgType) {
+          setConfig(pageConf);
+          return;
+        }
+        // Fallback to global config if page-specific config not found
+        const globalConf = await api.getConfig();
+        if (active && globalConf) {
+          setConfig(globalConf);
+        }
       } catch {
         // fallback
       }
@@ -29,11 +39,11 @@ export function PremiumHeroBackdrop({ children, className }: Props) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [pageKey]);
 
-  // Performance-optimized native scroll handler for parallax scrolling
+  // Scroll handler for hardware-accelerated parallax shift
   useEffect(() => {
-    if (!config?.heroParallax || config.heroBgType === 'gradient') return;
+    if (!config?.heroParallax && !config?.parallax) return;
     const onScroll = () => {
       setScrollY(window.scrollY);
     };
@@ -41,19 +51,56 @@ export function PremiumHeroBackdrop({ children, className }: Props) {
     return () => window.removeEventListener('scroll', onScroll);
   }, [config]);
 
-  const bgType = config?.heroBgType || 'gradient';
-  const bgUrl = config?.heroBgUrl || '';
-  const overlayOpacity = config?.heroOverlayOpacity !== undefined ? Number(config.heroOverlayOpacity) : 0.55;
-  const parallaxShift = config?.heroParallax ? scrollY * 0.45 : 0;
+  const bgType = config?.bgType || config?.heroBgType || 'gradient';
+  const bgUrl = config?.bgUrl || config?.heroBgUrl || '';
+  const bgVideoUrl = config?.bgVideoUrl || (bgType === 'video' ? bgUrl : '');
+  const mobileFallbackUrl = config?.mobileFallbackUrl || bgUrl || '';
+  const overlayOpacity = config?.overlayOpacity !== undefined ? Number(config.overlayOpacity) : (config?.heroOverlayOpacity !== undefined ? Number(config.heroOverlayOpacity) : 0.55);
+  const blurIntensity = config?.blurIntensity !== undefined ? Number(config.blurIntensity) : 0;
+  const brightness = config?.brightness !== undefined ? Number(config.brightness) : 1.0;
+  const textAlign = config?.textAlign || 'center';
+  const autoPlayVideo = config?.autoPlayVideo !== undefined ? Boolean(config.autoPlayVideo) : true;
+  const loopVideo = config?.loopVideo !== undefined ? Boolean(config.loopVideo) : true;
+  
+  const enableParallax = config?.parallax || config?.heroParallax;
+  const parallaxShift = enableParallax ? scrollY * 0.35 : 0;
+
+  const textAlignClass = {
+    left: 'text-left font-normal',
+    center: 'text-center',
+    right: 'text-right font-normal',
+  }[textAlign] || 'text-center';
+
+  const sizeMode = config?.sizeMode || 'standard';
+  const customHeight = config?.customHeight ? Number(config.customHeight) : 550;
+  const objectFit = config?.objectFit || 'cover';
+
+  const sizeClass = {
+    full: 'min-h-screen',
+    standard: 'min-h-[75vh] lg:min-h-[85vh]',
+    compact: 'min-h-[45vh] lg:min-h-[55vh]',
+    custom: '',
+  }[sizeMode] || 'min-h-[75vh] lg:min-h-[85vh]';
+
+  const fitClass = {
+    cover: 'object-cover',
+    contain: 'object-contain',
+    fill: 'object-fill',
+  }[objectFit] || 'object-cover';
 
   return (
     <div
       className={cn(
-        'relative overflow-hidden text-white bg-[#0e1118]',
+        'relative overflow-hidden text-white bg-[#0e1118] pt-20 lg:pt-24 pb-12 flex flex-col justify-center',
+        sizeClass,
         className
       )}
+      style={{
+        filter: blurIntensity > 0 || brightness !== 1.0 ? `brightness(${brightness})` : undefined,
+        minHeight: sizeMode === 'custom' && customHeight ? `${customHeight}px` : undefined,
+      }}
     >
-      {/* ──── Backdrops ──── */}
+      {/* ──── Gradient Fill ──── */}
       {bgType === 'gradient' && (
         <>
           <div className="absolute inset-0 bg-gradient-to-b from-[#12151f] via-[#0e1118] to-[#080a10]" />
@@ -63,37 +110,57 @@ export function PremiumHeroBackdrop({ children, className }: Props) {
         </>
       )}
 
+      {/* ──── Image Fill ──── */}
       {bgType === 'image' && bgUrl && (
-        <div 
+        <div
           className="absolute inset-0 w-full h-[120%] pointer-events-none"
-          style={{ 
+          style={{
             transform: `translateY(${parallaxShift}px) translateZ(0)`,
-            transition: 'transform 0.1s ease-out'
+            filter: blurIntensity > 0 ? `blur(${blurIntensity}px)` : undefined,
+            transition: 'transform 0.1s ease-out',
           }}
         >
-          <img src={bgUrl} className="w-full h-full object-cover object-center" alt="" />
+          <img src={bgUrl} className={cn('w-full h-full object-center', fitClass)} alt="" loading="eager" />
         </div>
       )}
 
-      {bgType === 'video' && bgUrl && (
-        <video
-          src={bgUrl}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-[120%] object-cover pointer-events-none"
-          style={{ 
-            transform: `translateY(${parallaxShift}px) translateZ(0)`,
-            transition: 'transform 0.1s ease-out'
-          }}
-        />
+      {/* ──── Video Fill ──── */}
+      {bgType === 'video' && bgVideoUrl && (
+        <>
+          {/* Desktop/Tablet Video */}
+          <video
+            src={bgVideoUrl}
+            autoPlay={autoPlayVideo}
+            loop={loopVideo}
+            muted
+            playsInline
+            className={cn('hidden md:block absolute inset-0 w-full h-[120%] pointer-events-none', fitClass)}
+            style={{
+              transform: `translateY(${parallaxShift}px) translateZ(0)`,
+              filter: blurIntensity > 0 ? `blur(${blurIntensity}px)` : undefined,
+              transition: 'transform 0.1s ease-out',
+            }}
+          />
+          {/* Mobile Fallback Image */}
+          <div
+            className="md:hidden absolute inset-0 w-full h-full pointer-events-none"
+            style={{
+              filter: blurIntensity > 0 ? `blur(${blurIntensity}px)` : undefined,
+            }}
+          >
+            {mobileFallbackUrl ? (
+              <img src={mobileFallbackUrl} className={cn('w-full h-full', fitClass)} alt="" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-b from-[#12151f] via-[#0e1118] to-[#080a10]" />
+            )}
+          </div>
+        </>
       )}
 
-      {/* Opacity Overlay to maintain high contrast for readable text */}
+      {/* Opacity Overlay */}
       {bgType !== 'gradient' && (
-        <div 
-          className="absolute inset-0 bg-black pointer-events-none" 
+        <div
+          className="absolute inset-0 bg-black pointer-events-none"
           style={{ opacity: overlayOpacity }}
         />
       )}
@@ -110,7 +177,7 @@ export function PremiumHeroBackdrop({ children, className }: Props) {
         transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      <div className="relative z-10">
+      <div className={cn('relative z-10', textAlignClass)}>
         {children}
       </div>
     </div>

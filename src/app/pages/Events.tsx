@@ -190,7 +190,7 @@ export function Events() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* ════════════ Hero Banner ════════════ */}
-      <PremiumHeroBackdrop>
+      <PremiumHeroBackdrop pageKey="events">
         <div className="relative py-20 lg:py-28">
           <div className="section-container text-center">
             <motion.h1

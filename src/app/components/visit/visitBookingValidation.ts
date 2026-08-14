@@ -2,7 +2,7 @@ export type VisitBookingFormState = {
   name: string;
   email: string;
   phone: string;
-  orgType: 'NGO' | 'College' | 'School' | 'Corporate' | 'Individual' | '';
+  orgType: 'NGO' | 'College' | 'School' | 'Corporate' | 'Individual' | 'Other' | '';
   orgName: string;
   userLocation: string;
   visitorCount: number;
@@ -30,12 +30,15 @@ export function validateVisitBookingForm(
   if (!opts.selectedSlotId) return 'Select a time slot';
 
   if (!f.name.trim()) return 'Name is required';
+  if (/[0-9]/.test(f.name)) return 'Full Name should contain letters only (no numbers)';
   if (!f.email.trim() || !emailRe.test(f.email.trim())) return 'Valid email is required';
-  if (!f.phone.trim() || f.phone.replace(/\D/g, '').length < 10) return 'Valid 10-digit mobile number is required';
+
+  const cleanPhone = f.phone.replace(/\D/g, '');
+  if (cleanPhone.length !== 10) return 'Mobile number must be exactly 10 digits';
 
   if (!f.orgType) return 'Select organization type';
   if (f.orgType !== 'Individual' && !f.orgName.trim()) {
-    return 'Organization name is required';
+    return 'Organization name / detail is required';
   }
 
   if (!f.userLocation.trim()) return 'Your city / location is required';
@@ -47,10 +50,12 @@ export function validateVisitBookingForm(
   if (f.visitorNames.length !== n) return 'Enter each visitor name';
   for (let i = 0; i < n; i++) {
     if (!f.visitorNames[i]?.trim()) return `Visitor ${i + 1} name is required`;
+    if (/[0-9]/.test(f.visitorNames[i])) return `Visitor ${i + 1} name should contain letters only`;
   }
 
   if (!f.emergencyContactName.trim()) return 'Emergency contact name is required';
-  if (!f.emergencyContactPhone.trim()) return 'Emergency contact phone is required';
+  const cleanEmergencyPhone = f.emergencyContactPhone.replace(/\D/g, '');
+  if (cleanEmergencyPhone.length !== 10) return 'Emergency contact phone must be 10 digits';
 
   return null;
 }

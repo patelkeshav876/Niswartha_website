@@ -3,8 +3,11 @@ import { useParams, useNavigate, useSearchParams } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
 import { mockAshrams, mockNeeds } from '../data/mock';
-import { Check, CreditCard, ArrowLeft, PlusCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { getBadgeForDonation, type SuperheroBadge } from '../lib/superheroBadges';
+import { Check, CreditCard, ArrowLeft, PlusCircle, Sparkles, Award } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useUser } from '../context/UserContext';
 import { api } from '../lib/api';
@@ -64,6 +67,8 @@ export function Donation() {
   const [processing, setProcessing] = useState(false);
   const [lastBreakdown, setLastBreakdown] = useState<{ title: string; amount: number }[]>([]);
   const [lastTotal, setLastTotal] = useState(0);
+  const [unlockedBadge, setUnlockedBadge] = useState<SuperheroBadge | null>(null);
+  const [badgeModalOpen, setBadgeModalOpen] = useState(false);
 
   const hasNeedCart = cartLines.length > 0;
 
@@ -278,9 +283,11 @@ export function Donation() {
         name: ashram.name,
         description: 'Donation',
         handler: async () => {
-          await recordDonation();
-          setStep(4);
-          toast.success('Payment successful! Thank you.');
+        const earnedBadge = getBadgeForDonation(Date.now());
+        setUnlockedBadge(earnedBadge);
+        setBadgeModalOpen(true);
+        setStep(4);
+        toast.success(`Payment successful! You unlocked the ${earnedBadge.hero} Honor Badge!`);
         },
         prefill: {
           name: currentUser.name,
@@ -324,25 +331,30 @@ export function Donation() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col pb-10">
-      <header className="p-4 flex items-center border-b border-border/60 bg-background/95 backdrop-blur">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-6 w-6" />
-        </Button>
-        <div className="ml-3 min-w-0">
-          <h1 className="text-lg font-bold truncate">Donate</h1>
-          <p className="text-xs text-muted-foreground truncate">{ashram.name}</p>
+    <div className="min-h-screen bg-background flex flex-col pb-12">
+      <main className="flex-1 section-container max-w-4xl mx-auto pt-24 lg:pt-28 pb-10 w-full space-y-6">
+        {/* Top Ashram & Tax Info Bar */}
+        <div className="bg-white p-4 rounded-2xl border border-zinc-200/80 shadow-xs flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="rounded-full h-9 w-9">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-base font-serif font-bold text-zinc-950 leading-tight">Contribution Portal</h1>
+              <p className="text-xs text-[#0F6D4E] font-semibold">{ashram.name}</p>
+            </div>
+          </div>
+          <Badge className="bg-emerald-100 text-[#0F6D4E] border-none font-bold text-[10px] px-2.5 py-1">
+            ✓ 80G Tax Exemption Eligible
+          </Badge>
         </div>
-      </header>
-
-      <main className="flex-1 p-6 max-w-lg mx-auto w-full">
         <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.div
               key="s1"
-              initial={{ opacity: 0, x: 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -16 }}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
               className="space-y-6"
             >
               {hasNeedCart ? (
@@ -651,6 +663,66 @@ export function Donation() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Post-Payment Superhero Badge Celebration Dialog */}
+        <Dialog open={badgeModalOpen} onOpenChange={setBadgeModalOpen}>
+          <DialogContent className="max-w-sm rounded-3xl bg-zinc-950 text-white p-6 border-amber-400/40 shadow-2xl text-center space-y-4">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-serif font-bold text-amber-400 flex items-center justify-center gap-2">
+                <Sparkles className="h-6 w-6 text-amber-400 animate-spin" />
+                New Badge Unlocked!
+              </DialogTitle>
+            </DialogHeader>
+
+            {unlockedBadge && (
+              <div className="space-y-4 py-2 flex flex-col items-center">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-amber-400/30 rounded-full blur-xl animate-pulse" />
+                  <div
+                    className={`h-24 w-24 rounded-full bg-gradient-to-tr ${unlockedBadge.bgGradient} border-4 ${unlockedBadge.accentBorder} flex items-center justify-center text-white font-black text-3xl shadow-2xl relative z-10 overflow-hidden`}
+                  >
+                    {unlockedBadge.imageUrl ? (
+                      <img src={unlockedBadge.imageUrl} alt={unlockedBadge.hero} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="drop-shadow-lg">{unlockedBadge.iconSymbol}</span>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <Badge className="bg-amber-400/20 text-amber-300 border border-amber-400/30 font-bold text-[10px] uppercase px-3 py-0.5">
+                    {unlockedBadge.universe} Hero Badge
+                  </Badge>
+                  <h3 className="text-lg font-bold text-white mt-1.5">{unlockedBadge.hero} Honor</h3>
+                  <p className="text-xs text-zinc-400 mt-0.5">{unlockedBadge.name}</p>
+                </div>
+
+                <p className="text-xs text-amber-200/90 bg-amber-950/60 p-3 rounded-2xl border border-amber-800/40">
+                  🎉 Thank you for your generous contribution! This official superhero honor has been added to your profile badge collection.
+                </p>
+
+                <div className="w-full space-y-2 pt-2">
+                  <Button
+                    onClick={() => {
+                      setBadgeModalOpen(false);
+                      navigate('/profile');
+                    }}
+                    className="w-full rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs shadow-lg"
+                  >
+                    View in My Profile
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setBadgeModalOpen(false)}
+                    className="w-full rounded-full border-zinc-800 text-zinc-300 text-xs bg-zinc-900"
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );

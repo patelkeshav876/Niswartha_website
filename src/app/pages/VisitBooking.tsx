@@ -318,7 +318,7 @@ export function VisitBooking() {
   );
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] py-12">
+    <div className="min-h-screen bg-[#FDFBF7] pt-24 lg:pt-28 pb-12">
       <div className="section-container space-y-8">
         {/* Back Link */}
         <div className="flex items-center gap-3">
@@ -400,13 +400,15 @@ export function VisitBooking() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Full name */}
                 <div className="space-y-2">
-                  <Label htmlFor="vb-name" className="text-zinc-700 font-medium">Full Name</Label>
+                  <Label htmlFor="vb-name" className="text-zinc-700 font-medium">Full Name (Letters Only)</Label>
                   <Input
                     id="vb-name"
                     value={form.name}
-                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') }))
+                    }
                     className="rounded-xl border-zinc-200"
-                    placeholder="Enter your full name"
+                    placeholder="Enter full name (letters only)"
                   />
                 </div>
 
@@ -425,13 +427,16 @@ export function VisitBooking() {
 
                 {/* Mobile */}
                 <div className="space-y-2">
-                  <Label htmlFor="vb-phone" className="text-zinc-700 font-medium">Mobile Number</Label>
+                  <Label htmlFor="vb-phone" className="text-zinc-700 font-medium">Mobile Number (10 Digits)</Label>
                   <Input
                     id="vb-phone"
                     type="tel"
+                    maxLength={10}
                     value={form.phone}
-                    onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                    className="rounded-xl border-zinc-200"
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, phone: e.target.value.replace(/[^0-9]/g, '').slice(0, 10) }))
+                    }
+                    className="rounded-xl border-zinc-200 font-mono"
                     placeholder="10-digit mobile number"
                   />
                 </div>
@@ -465,9 +470,9 @@ export function VisitBooking() {
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent position="popper" className="z-[100]">
-                      {['Individual', 'NGO', 'College', 'School', 'Corporate'].map((type) => (
+                      {['Individual', 'NGO', 'College', 'School', 'Corporate', 'Other'].map((type) => (
                         <SelectItem key={type} value={type}>
-                          {type}
+                          {type === 'Other' ? 'Other / Enter by user' : type}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -477,13 +482,15 @@ export function VisitBooking() {
                 {/* Organization Name (Conditional) */}
                 {form.orgType && form.orgType !== 'Individual' && (
                   <div className="space-y-2">
-                    <Label htmlFor="vb-orgname" className="text-zinc-700 font-medium">Organization Name</Label>
+                    <Label htmlFor="vb-orgname" className="text-zinc-700 font-medium">
+                      {form.orgType === 'Other' ? 'Custom Organization / Institution Name' : 'Organization Name'}
+                    </Label>
                     <Input
                       id="vb-orgname"
                       value={form.orgName}
                       onChange={(e) => setForm((f) => ({ ...f, orgName: e.target.value }))}
                       className="rounded-xl border-zinc-200"
-                      placeholder="Enter organization/college name"
+                      placeholder="Enter organization / group details"
                     />
                   </div>
                 )}
@@ -500,29 +507,23 @@ export function VisitBooking() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Visitor count */}
                 <div className="space-y-2">
-                  <Label className="text-zinc-700 font-medium">Number of Visitors</Label>
-                  <Select
-                    value={String(form.visitorCount)}
-                    onValueChange={(v) => {
-                      const n = Math.min(VISIT_MAX_PARTY, Math.max(1, Number(v) || 1));
+                  <Label htmlFor="vb-vcount" className="text-zinc-700 font-medium">Number of Visitors (Any Group Size)</Label>
+                  <Input
+                    id="vb-vcount"
+                    type="number"
+                    min={1}
+                    max={200}
+                    value={form.visitorCount}
+                    onChange={(e) => {
+                      const n = Math.min(200, Math.max(1, Number(e.target.value) || 1));
                       setForm((f) => ({
                         ...f,
                         visitorCount: n,
                         visitorNames: Array.from({ length: n }, (_, i) => f.visitorNames[i] ?? ''),
                       }));
                     }}
-                  >
-                    <SelectTrigger className="rounded-xl border-zinc-200">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent position="popper" className="z-[100]">
-                      {Array.from({ length: VISIT_MAX_PARTY }, (_, i) => i + 1).map((n) => (
-                        <SelectItem key={n} value={String(n)}>
-                          {n} {n === 1 ? 'person' : 'people'}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    className="rounded-xl border-zinc-200"
+                  />
                 </div>
 
                 {/* Purpose */}
@@ -550,7 +551,7 @@ export function VisitBooking() {
 
               {/* Visitor names inputs */}
               <div className="space-y-3">
-                <Label className="text-zinc-700 font-medium">Visitor Names</Label>
+                <Label className="text-zinc-700 font-medium">Visitor Names (Letters Only)</Label>
                 <p className="text-xs text-muted-foreground mt-0.5">Please provide names for each person attending.</p>
                 {form.visitorNames.map((name, i) => (
                   <Input
@@ -559,12 +560,12 @@ export function VisitBooking() {
                     onChange={(e) =>
                       setForm((f) => {
                         const next = [...f.visitorNames];
-                        next[i] = e.target.value;
+                        next[i] = e.target.value.replace(/[^a-zA-Z\s]/g, '');
                         return { ...f, visitorNames: next };
                       })
                     }
                     className="rounded-xl border-zinc-200"
-                    placeholder={`Visitor ${i + 1} full name`}
+                    placeholder={`Visitor ${i + 1} full name (letters only)`}
                   />
                 ))}
               </div>

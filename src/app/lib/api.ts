@@ -229,6 +229,28 @@ export const api = {
   restoreDatabase: (data: Record<string, unknown>) =>
     fetchAPI<any>('/super-admin/restore', { method: 'POST', body: JSON.stringify(data) }),
 
+  // --- Centralized Media Library API ---
+  getMediaItems: (params?: { type?: string; folder?: string; search?: string }) => {
+    const q = new URLSearchParams();
+    if (params?.type) q.append('type', params.type);
+    if (params?.folder) q.append('folder', params.folder);
+    if (params?.search) q.append('search', params.search);
+    const queryString = q.toString();
+    return fetchAPI<any[]>(`/media${queryString ? `?${queryString}` : ''}`);
+  },
+  uploadMediaItem: (data: Record<string, unknown>) =>
+    fetchAPI<any>('/media/upload', { method: 'POST', body: JSON.stringify(data) }),
+  updateMediaItem: (id: string, data: Record<string, unknown>) =>
+    fetchAPI<any>(`/media/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteMediaItem: (id: string) =>
+    fetchAPI<any>(`/media/${id}`, { method: 'DELETE' }),
+
+  // --- Page Hero Background Configurations API ---
+  getAllHeroConfigs: () => fetchAPI<Record<string, any>>('/hero-config'),
+  getHeroConfig: (pageKey: string) => fetchAPI<any>(`/hero-config/${encodeURIComponent(pageKey)}`),
+  updateHeroConfig: (pageKey: string, data: Record<string, unknown>) =>
+    fetchAPI<any>(`/hero-config/${encodeURIComponent(pageKey)}`, { method: 'PUT', body: JSON.stringify(data) }),
+
   initData: (payload: Record<string, unknown>) =>
     fetchAPI('/init-data', { method: 'POST', body: JSON.stringify(payload) }),
 };

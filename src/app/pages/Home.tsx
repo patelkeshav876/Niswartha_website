@@ -89,19 +89,23 @@ export function Home() {
     mockEvents.slice(0, 3),
   );
 
+  const [config, setConfig] = useState<any>(null);
+
   useEffect(() => {
-    loadData();
+    void loadData();
   }, []);
 
   const loadData = async () => {
     try {
-      const [needsData, ashramsData, eventsData] = await Promise.all([
+      const [needsData, ashramsData, eventsData, configData] = await Promise.all([
         api.getNeeds(),
         api.getAshrams(),
         api.getEvents(),
+        api.getConfig(),
       ]);
       if (needsData.length > 0) setNeeds(needsData);
       if (ashramsData.length > 0) setAshram(ashramsData[0]);
+      if (configData) setConfig(configData);
       if (eventsData && Array.isArray(eventsData)) {
         const sorted = [...eventsData].sort(
           (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
@@ -125,7 +129,7 @@ export function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* ════════════ HERO SECTION ════════════ */}
-      <PremiumHeroBackdrop className="min-h-[85vh] lg:min-h-[90vh]">
+      <PremiumHeroBackdrop pageKey="home" className="min-h-[85vh] lg:min-h-[90vh]">
         <div className="section-container relative flex min-h-[85vh] lg:min-h-[90vh] flex-col items-center justify-center py-20 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -146,7 +150,7 @@ export function Home() {
             className="mx-auto max-w-4xl font-serif text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl lg:text-7xl"
           >
             Empowering Every Child
-            <span className="block text-primary/90"> With Hope & Education</span>
+            <span className="block text-primary/90"> With Hope and Education</span>
           </motion.h1>
 
           <motion.p
@@ -455,20 +459,35 @@ export function Home() {
                   </div>
                 </div>
 
-                {/* Donate CTA Card */}
-                <Card className="overflow-hidden border-0 bg-gradient-to-br from-primary to-primary/80 shadow-xl shadow-primary/15 rounded-2xl">
-                  <CardContent className="p-8 text-center text-white lg:p-10">
+                {/* Donate CTA Card with Custom Admin Image Support */}
+                <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-primary to-primary/80 shadow-xl shadow-primary/15 rounded-2xl">
+                  {config?.supportCauseBgUrl && (
+                    <>
+                      <img
+                        src={config.supportCauseBgUrl}
+                        alt="Support Our Cause"
+                        loading="lazy"
+                        decoding="async"
+                        className="absolute inset-0 w-full h-full object-cover object-center"
+                      />
+                      <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]" />
+                    </>
+                  )}
+
+                  <CardContent className="relative z-10 p-8 text-center text-white lg:p-10">
                     <Sparkles className="mx-auto mb-4 h-12 w-12 opacity-80" />
-                    <h3 className="text-2xl font-bold mb-3 lg:text-3xl">Support Our Cause</h3>
-                    <p className="text-sm text-white/85 mb-6 leading-relaxed max-w-md mx-auto">
-                      Your generous contribution helps us provide better care, education, and opportunities to our children.
+                    <h3 className="text-2xl font-bold mb-3 lg:text-3xl">
+                      {config?.supportCauseTitle || 'Support Our Cause'}
+                    </h3>
+                    <p className="text-sm text-white/90 mb-6 leading-relaxed max-w-md mx-auto font-medium">
+                      {config?.supportCauseSubtitle || 'Your generous contribution helps us provide better care, education, and opportunities to our children.'}
                     </p>
                     <Button
                       size="lg"
-                      className="h-14 w-full max-w-xs rounded-full bg-white text-primary font-semibold hover:bg-white/90 shadow-lg"
+                      className="h-14 w-full max-w-xs rounded-full bg-white text-primary font-bold hover:bg-white/90 shadow-xl transition-transform hover:scale-105"
                       onClick={() => navigate(`/donate/${ashram.id}`)}
                     >
-                      Support Our Mission <Heart className="ml-2 h-5 w-5" />
+                      {config?.donationWording || 'Support Our Mission'} <Heart className="ml-2 h-5 w-5 fill-primary" />
                     </Button>
                   </CardContent>
                 </Card>

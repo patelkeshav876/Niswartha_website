@@ -9,6 +9,7 @@ export interface User {
   bio?: string;
   phone?: string;
   location?: string;
+  dateOfBirth?: string; // YYYY-MM-DD
   notificationPreferences?: {
     email: boolean;
     push: boolean;

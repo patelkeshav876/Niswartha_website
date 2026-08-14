@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
-import { Heart, MapPin, Phone, Mail, Facebook, ArrowRight } from 'lucide-react';
+import { MapPin, Phone, Mail, Facebook, ArrowRight } from 'lucide-react';
 import { mockAshrams } from '../data/mock';
+import { HandSupportIcon } from './HandSupportIcon';
 
 export function Footer() {
   const ashram = mockAshrams[0];
@@ -19,11 +20,11 @@ export function Footer() {
             {/* Brand Column */}
             <div className="lg:col-span-1">
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/25">
-                  <Heart className="h-5 w-5 text-white" fill="white" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-white shadow-md border border-white/20">
+                  <img src="/logo.png" alt="Niswartha Logo" className="h-full w-full object-cover" />
                 </div>
                 <div>
-                  <p className="text-lg font-bold tracking-tight font-serif">Niswartha</p>
+                  <p className="text-lg font-bold tracking-tight font-serif text-white">Niswartha</p>
                   <p className="-mt-1 text-[10px] font-medium uppercase tracking-[0.15em] text-white/50">Selfless Service</p>
                 </div>
               </div>
@@ -64,9 +65,8 @@ export function Footer() {
                   <li key={link.to}>
                     <Link
                       to={link.to}
-                      className="group flex items-center gap-2 text-sm text-white/50 transition-colors hover:text-primary"
+                      className="text-sm text-white/60 hover:text-emerald-400 transition-colors py-0.5 inline-block"
                     >
-                      <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
                       {link.label}
                     </Link>
                   </li>
@@ -81,15 +81,14 @@ export function Footer() {
                 {[
                   { to: '/donate/ashram-1', label: 'Support Our Mission' },
                   { to: '/events/suggest', label: 'Suggest Event' },
-                  { to: '/help', label: 'Help & FAQ' },
+                  { to: '/help', label: 'Help and FAQ' },
                   { to: '/profile', label: 'My Account' },
                 ].map((link) => (
                   <li key={link.to}>
                     <Link
                       to={link.to}
-                      className="group flex items-center gap-2 text-sm text-white/50 transition-colors hover:text-primary"
+                      className="text-sm text-white/60 hover:text-emerald-400 transition-colors py-0.5 inline-block"
                     >
-                      <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
                       {link.label}
                     </Link>
                   </li>
@@ -129,7 +128,7 @@ export function Footer() {
               © {currentYear} Niswartha — Deaf and Dumb Industrial Institute, Shankar Nagar, Nagpur. All rights reserved.
             </p>
             <p className="text-xs text-white/30 flex items-center gap-1">
-              Built with <Heart className="h-3 w-3 text-primary" fill="currentColor" /> for a better tomorrow
+              Built with <HandSupportIcon className="h-3.5 w-3.5 text-emerald-400 inline" /> for a better tomorrow
             </p>
           </div>
         </div>

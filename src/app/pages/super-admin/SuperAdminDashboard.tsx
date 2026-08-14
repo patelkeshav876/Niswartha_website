@@ -23,22 +23,54 @@ import {
   TrendingUp,
   Download,
   Upload,
-  AlertTriangle
+  AlertTriangle,
+  Image as ImageIcon,
+  Layers,
+  Crop,
+  Eye,
+  ExternalLink,
+  Award,
+  Sparkles,
+  Palette,
 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { toast } from 'sonner';
+import { MediaLibrary } from '../../components/MediaLibrary';
+import { HeroManager } from '../../components/HeroManager';
+import { MediaPickerModal } from '../../components/MediaPickerModal';
+import { ImageUploadWithCamera } from '../../components/ImageUploadWithCamera';
+import { BadgeCanvaStudio } from '../../components/BadgeCanvaStudio';
+import { ThemePaletteStudio } from '../../components/ThemePaletteStudio';
+import { SUPERHERO_BADGES, type SuperheroBadge } from '../../lib/superheroBadges';
 
-type ActiveTab = 'health' | 'users' | 'ads' | 'logs' | 'configs' | 'backup';
+type ActiveTab = 'health' | 'users' | 'ads' | 'logs' | 'configs' | 'hero' | 'media' | 'backup' | 'badges' | 'templates';
 
 export function SuperAdminDashboard() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('health');
   const location = useLocation();
+
+  const [badgeList, setBadgeList] = useState<any[]>(SUPERHERO_BADGES);
+  const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
+  const [badgePickerOpen, setBadgePickerOpen] = useState(false);
+  const [canvaStudioOpen, setCanvaStudioOpen] = useState(false);
+  const [editingBadgeId, setEditingBadgeId] = useState<string | null>(null);
+
+  const [badgeForm, setBadgeForm] = useState({
+    name: 'Gryffindor Lion of Courage',
+    hero: 'Gryffindor',
+    universe: 'Harry Potter',
+    iconSymbol: '🦁',
+    imageUrl: '',
+    amount: 500,
+  });
 
   useEffect(() => {
     if (location.pathname.endsWith('/users')) setActiveTab('users');
     else if (location.pathname.endsWith('/ads')) setActiveTab('ads');
     else if (location.pathname.endsWith('/logs')) setActiveTab('logs');
     else if (location.pathname.endsWith('/configs')) setActiveTab('configs');
+    else if (location.pathname.endsWith('/hero')) setActiveTab('hero');
+    else if (location.pathname.endsWith('/media')) setActiveTab('media');
     else if (location.pathname.endsWith('/backup')) setActiveTab('backup');
     else setActiveTab('health');
   }, [location.pathname]);
@@ -51,17 +83,28 @@ export function SuperAdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [logsFilter, setLogsFilter] = useState<'all' | 'email' | 'security' | 'audit'>('all');
   
-  // Ad modal states
+  // Ad modal & picker states
   const [isAdModalOpen, setIsAdModalOpen] = useState(false);
   const [editingAd, setEditingAd] = useState<any>(null);
+  const [previewAd, setPreviewAd] = useState<any>(null);
+  const [adPickerOpen, setAdPickerOpen] = useState(false);
+  const [causePickerOpen, setCausePickerOpen] = useState(false);
+  const [aboutHeroPickerOpen, setAboutHeroPickerOpen] = useState(false);
+  const [aboutAssemblyPickerOpen, setAboutAssemblyPickerOpen] = useState(false);
+  const [aboutAwardPickerOpen, setAboutAwardPickerOpen] = useState(false);
+  const [aboutPrincipalPickerOpen, setAboutPrincipalPickerOpen] = useState(false);
   const [adForm, setAdForm] = useState({
     title: '',
     bannerUrl: '',
     targetUrl: '',
     placement: 'home_top',
+    bannerHeight: 180,
+    aspectRatio: '4/1',
+    customWidth: '100%',
     startDate: '',
     endDate: '',
-    enabled: true
+    enabled: true,
+    popupDelay: 3,
   });
 
   // Simulated metrics for System Health
@@ -170,6 +213,9 @@ export function SuperAdminDashboard() {
         bannerUrl: adToEdit.bannerUrl,
         targetUrl: adToEdit.targetUrl,
         placement: adToEdit.placement,
+        bannerHeight: adToEdit.bannerHeight ? Number(adToEdit.bannerHeight) : 180,
+        aspectRatio: adToEdit.aspectRatio || '4/1',
+        customWidth: adToEdit.customWidth || '100%',
         startDate: adToEdit.startDate.split('T')[0],
         endDate: adToEdit.endDate.split('T')[0],
         enabled: adToEdit.enabled
@@ -181,6 +227,9 @@ export function SuperAdminDashboard() {
         bannerUrl: '',
         targetUrl: '',
         placement: 'home_top',
+        bannerHeight: 180,
+        aspectRatio: '4/1',
+        customWidth: '100%',
         startDate: new Date().toISOString().split('T')[0],
         endDate: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString().split('T')[0],
         enabled: true
@@ -195,28 +244,33 @@ export function SuperAdminDashboard() {
       return;
     }
     try {
+      const { _id, ...cleanData } = adForm as any;
       if (editingAd) {
-        await api.updateAdvertisement(editingAd.id, adForm);
+        await api.updateAdvertisement(editingAd.id, cleanData);
         toast.success('Ad campaign modified.');
       } else {
-        await api.createAdvertisement(adForm);
+        await api.createAdvertisement(cleanData);
         toast.success('Ad campaign launched.');
       }
       setIsAdModalOpen(false);
       void fetchAds();
-    } catch {
-      toast.error('Failed to save ad campaign.');
+    } catch (e: any) {
+      console.error('Failed to save ad campaign:', e);
+      toast.error(e?.message || 'Failed to save ad campaign.');
     }
   };
 
-  const handleDeleteAd = async (id: string) => {
-    if (!confirm('Cancel and delete this ad campaign?')) return;
+  const handleDeleteAd = async (adItem: any) => {
+    const targetId = adItem.id || adItem._id;
+    if (!targetId || !confirm(`Cancel and delete advertisement "${adItem.title}"?`)) return;
     try {
-      await api.deleteAdvertisement(id);
-      toast.success('Ad deleted.');
+      setAds((prev) => prev.filter((a) => a.id !== targetId && a._id !== targetId && a.id !== adItem.id && a._id !== adItem._id));
+      await api.deleteAdvertisement(targetId);
+      toast.success('Ad campaign deleted.');
       void fetchAds();
-    } catch {
-      toast.error('Failed to delete ad.');
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to delete ad.');
+      void fetchAds();
     }
   };
 
@@ -273,8 +327,12 @@ export function SuperAdminDashboard() {
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide border-b border-zinc-200">
         {[
           { id: 'health' as const, label: 'System Health', icon: Activity },
+          { id: 'templates' as const, label: 'Theme Studio & Palette', icon: Palette },
+          { id: 'media' as const, label: 'Media Library', icon: ImageIcon },
+          { id: 'hero' as const, label: 'Page Hero Manager', icon: Layers },
           { id: 'users' as const, label: 'User Management', icon: Users },
           { id: 'ads' as const, label: 'Ads Manager', icon: Megaphone },
+          { id: 'badges' as const, label: 'Superhero Badges', icon: Award },
           { id: 'logs' as const, label: 'System Logs', icon: FileText },
           { id: 'configs' as const, label: 'Configurations', icon: Settings },
           { id: 'backup' as const, label: 'Backup / Restore', icon: Database }
@@ -296,6 +354,258 @@ export function SuperAdminDashboard() {
 
       {/* Tab Contents */}
       <div className="pt-2">
+        {activeTab === 'templates' && <ThemePaletteStudio />}
+
+        {activeTab === 'badges' && (
+          <div className="space-y-6 animate-fade-up">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
+              <div>
+                <h2 className="text-xl font-serif font-bold text-zinc-950 flex items-center gap-2">
+                  <Award className="h-5 w-5 text-amber-500" />
+                  Superhero Badges and Honors Manager
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Configure circular Marvel & DC badges awarded when donors make contributions
+                </p>
+              </div>
+              <Button
+                onClick={() => setIsBadgeModalOpen(true)}
+                className="rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs gap-1.5 shadow"
+              >
+                <Plus className="h-4 w-4" /> Create New Badge
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {badgeList.map((badge, idx) => (
+                <Card key={badge.id || idx} className="border border-zinc-200 shadow-xs rounded-2xl bg-white p-4 space-y-3 hover:border-amber-400 transition-all flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-12 w-12 rounded-full bg-gradient-to-tr from-zinc-900 via-amber-500 to-black border-2 border-amber-400 flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-md overflow-hidden">
+                        {badge.imageUrl ? (
+                          <img src={badge.imageUrl} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          badge.iconSymbol || '🛡️'
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-bold text-xs text-zinc-900 truncate">{badge.hero}</h4>
+                        <p className="text-[10px] text-amber-600 font-semibold truncate">{badge.name}</p>
+                        <Badge className="bg-zinc-100 text-zinc-700 border-none font-bold text-[9px] mt-1">
+                          {badge.universe || 'Marvel'}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="pt-2 border-t flex items-center justify-between text-[11px] font-medium text-zinc-500">
+                      <span>Unlock Threshold:</span>
+                      <span className="font-bold text-[#0F6D4E]">₹{(badge.amount || 500).toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-zinc-100 flex items-center justify-between">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setEditingBadgeId(badge.id);
+                        setBadgeForm({
+                          name: badge.name || '',
+                          hero: badge.hero || '',
+                          universe: badge.universe || 'Marvel',
+                          iconSymbol: badge.iconSymbol || '🛡️',
+                          imageUrl: badge.imageUrl || '',
+                          amount: badge.amount || 500,
+                        });
+                        setIsBadgeModalOpen(true);
+                      }}
+                      className="text-[11px] font-bold text-amber-600 h-7 px-2 hover:bg-amber-50 rounded-lg gap-1"
+                    >
+                      <Edit2 className="h-3 w-3" /> Edit Badge
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        if (confirm(`Delete badge "${badge.hero}"?`)) {
+                          setBadgeList((prev) => prev.filter((b) => b.id !== badge.id));
+                          toast.success('Badge deleted.');
+                        }
+                      }}
+                      className="h-7 w-7 rounded-lg text-rose-600 hover:bg-rose-50"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            {/* Create / Edit Badge Dialog */}
+            <Dialog open={isBadgeModalOpen} onOpenChange={setIsBadgeModalOpen}>
+              <DialogContent className="max-w-md rounded-3xl bg-white p-6 shadow-2xl overflow-y-auto max-h-[85vh]">
+                <DialogHeader>
+                  <DialogTitle className="text-lg font-serif font-bold text-zinc-950">
+                    {editingBadgeId ? 'Edit Superhero / Harry Potter Badge' : 'Add New Superhero / Harry Potter Badge'}
+                  </DialogTitle>
+                </DialogHeader>
+
+                <div className="space-y-4 py-2 text-xs">
+                  {/* Badge Custom Image Upload & Canva Studio Button */}
+                  <div className="space-y-2 flex flex-col items-center pb-3 border-b border-dashed border-zinc-200">
+                    <label className="font-bold text-zinc-700 uppercase text-[10px] self-start">
+                      Badge Circular Image / Logo *
+                    </label>
+                    <ImageUploadWithCamera
+                      value={badgeForm.imageUrl}
+                      onChange={(img) => setBadgeForm({ ...badgeForm, imageUrl: img })}
+                      aspectRatio="square"
+                      maxSizeKB={200}
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCanvaStudioOpen(true)}
+                        className="rounded-full text-[10px] font-bold text-amber-700 bg-amber-50 border-amber-200 gap-1.5 h-7"
+                      >
+                        <Sparkles className="h-3 w-3 text-amber-500" />
+                        Canva Badge Studio
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setBadgePickerOpen(true)}
+                        className="text-[10px] text-[#0F6D4E] h-7 font-bold"
+                      >
+                        Media Library
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="font-bold text-zinc-700 uppercase text-[10px]">Badge Honor Title *</label>
+                    <Input
+                      value={badgeForm.name}
+                      onChange={(e) => setBadgeForm({ ...badgeForm, name: e.target.value })}
+                      placeholder="e.g. Lion of Courage Honor"
+                      className="rounded-xl text-xs"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-zinc-700 uppercase text-[10px]">Hero / House Name *</label>
+                      <Input
+                        value={badgeForm.hero}
+                        onChange={(e) => setBadgeForm({ ...badgeForm, hero: e.target.value })}
+                        placeholder="e.g. Gryffindor"
+                        className="rounded-xl text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-zinc-700 uppercase text-[10px]">Universe</label>
+                      <select
+                        value={badgeForm.universe}
+                        onChange={(e) => setBadgeForm({ ...badgeForm, universe: e.target.value })}
+                        className="w-full h-9 rounded-xl border border-zinc-200 text-xs px-2 bg-white font-medium"
+                      >
+                        <option value="Harry Potter">Harry Potter</option>
+                        <option value="Marvel">Marvel</option>
+                        <option value="DC">DC</option>
+                        <option value="Custom">Custom</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-zinc-700 uppercase text-[10px]">Unlock Threshold (₹) *</label>
+                      <Input
+                        type="number"
+                        value={badgeForm.amount}
+                        onChange={(e) => setBadgeForm({ ...badgeForm, amount: Number(e.target.value) })}
+                        placeholder="500"
+                        className="rounded-xl text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-zinc-700 uppercase text-[10px]">Emoji / Icon Fallback</label>
+                      <Input
+                        value={badgeForm.iconSymbol}
+                        onChange={(e) => setBadgeForm({ ...badgeForm, iconSymbol: e.target.value })}
+                        placeholder="e.g. 🦁"
+                        className="rounded-xl text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsBadgeModalOpen(false)} className="rounded-full text-xs">
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      if (!badgeForm.hero.trim() || !badgeForm.name.trim()) {
+                        toast.error('Hero and Badge title are required.');
+                        return;
+                      }
+                      if (editingBadgeId) {
+                        setBadgeList((prev) =>
+                          prev.map((b) => (b.id === editingBadgeId ? { ...b, ...badgeForm } : b))
+                        );
+                        toast.success(`Updated ${badgeForm.hero} Badge!`);
+                      } else {
+                        const newB = {
+                          id: `badge-${Date.now()}`,
+                          ...badgeForm,
+                          bgGradient: 'from-amber-600 via-[#0F6D4E] to-black',
+                          accentBorder: 'border-amber-400',
+                        };
+                        setBadgeList((prev) => [newB, ...prev]);
+                        toast.success(`Created ${badgeForm.hero} Badge!`);
+                      }
+                      setIsBadgeModalOpen(false);
+                      setEditingBadgeId(null);
+                    }}
+                    className="rounded-full bg-amber-500 text-zinc-950 font-bold text-xs"
+                  >
+                    {editingBadgeId ? 'Save Badge Changes' : 'Save & Publish Badge'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Media Picker Modal for Badge Image */}
+            <MediaPickerModal
+              isOpen={badgePickerOpen}
+              onClose={() => setBadgePickerOpen(false)}
+              onSelectImage={(url) => {
+                setBadgeForm({ ...badgeForm, imageUrl: url });
+                setBadgePickerOpen(false);
+              }}
+              title="Select Badge Image"
+            />
+
+            {/* Canva Badge Studio & Creative Designer Modal */}
+            <BadgeCanvaStudio
+              isOpen={canvaStudioOpen}
+              onClose={() => setCanvaStudioOpen(false)}
+              onApplyImage={(graphicUrl) => {
+                setBadgeForm({ ...badgeForm, imageUrl: graphicUrl });
+              }}
+              initialTitle={badgeForm.name}
+              initialHero={badgeForm.hero}
+              initialSymbol={badgeForm.iconSymbol}
+            />
+          </div>
+        )}
+        {activeTab === 'media' && <MediaLibrary />}
+        {activeTab === 'hero' && <HeroManager />}
         {activeTab === 'health' && (
           <div className="space-y-6 animate-fade-up">
             {/* System overview counters */}
@@ -457,10 +767,13 @@ export function SuperAdminDashboard() {
                     </div>
 
                     <div className="flex gap-2 justify-end mt-4 pt-3 border-t">
+                      <Button variant="outline" size="sm" className="rounded-full text-xs h-8" onClick={() => setPreviewAd(ad)}>
+                        <Eye className="h-3 w-3 mr-1.5" /> Preview
+                      </Button>
                       <Button variant="outline" size="sm" className="rounded-full text-xs h-8" onClick={() => openAdModal(ad)}>
                         <Edit2 className="h-3 w-3 mr-1.5" /> Edit
                       </Button>
-                      <Button variant="ghost" size="sm" className="rounded-full text-xs text-destructive hover:bg-destructive/5 h-8" onClick={() => handleDeleteAd(ad.id)}>
+                      <Button variant="ghost" size="sm" className="rounded-full text-xs text-destructive hover:bg-destructive/5 h-8" onClick={() => handleDeleteAd(ad)}>
                         <Trash2 className="h-3 w-3 mr-1.5" /> Delete
                       </Button>
                     </div>
@@ -557,7 +870,7 @@ export function SuperAdminDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Mode controls */}
                 <div className="space-y-4">
-                  <h3 className="font-serif font-bold text-zinc-850 text-sm">Policies & Announcement Banners</h3>
+                  <h3 className="font-serif font-bold text-zinc-850 text-sm">Policies and Announcement Banners</h3>
                   
                   <div className="flex items-center justify-between border p-3 rounded-xl bg-zinc-50/50">
                     <div>
@@ -580,6 +893,39 @@ export function SuperAdminDashboard() {
                       placeholder="e.g. Donation receipts for 80G tax benefits are now available."
                       className="rounded-xl text-xs"
                     />
+                  </div>
+
+                  {/* Marquee Motion Speed Control */}
+                  <div className="space-y-2 border p-3 rounded-xl bg-emerald-50/40 border-emerald-100">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-zinc-900 uppercase flex items-center gap-1.5">
+                        <Sparkles className="h-3.5 w-3.5 text-[#0F6D4E]" />
+                        Staff Roster Marquee Speed (Seconds)
+                      </label>
+                      <span className="text-xs font-mono font-bold text-[#0F6D4E]">
+                        {config.marqueeSpeed || 35}s {Number(config.marqueeSpeed || 35) <= 20 ? '(Fast)' : Number(config.marqueeSpeed || 35) >= 50 ? '(Slow)' : '(Normal)'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min={10}
+                        max={80}
+                        step={5}
+                        value={config.marqueeSpeed || 35}
+                        onChange={(e) => setConfig({ ...config, marqueeSpeed: Number(e.target.value) })}
+                        className="w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-[#0F6D4E]"
+                      />
+                      <Input
+                        type="number"
+                        min={10}
+                        max={80}
+                        value={config.marqueeSpeed || 35}
+                        onChange={(e) => setConfig({ ...config, marqueeSpeed: Number(e.target.value) })}
+                        className="w-20 rounded-xl text-xs font-bold font-mono h-8"
+                      />
+                    </div>
+                    <p className="text-[10px] text-zinc-500">Lower seconds = faster continuous motion, higher seconds = smooth slow motion.</p>
                   </div>
                 </div>
 
@@ -624,6 +970,51 @@ export function SuperAdminDashboard() {
                         placeholder="Welcome message when users open chat..."
                         className="text-xs min-h-[70px] rounded-xl"
                       />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Support Our Cause Element Settings */}
+                <div className="space-y-4">
+                  <h3 className="font-serif font-bold text-zinc-850 text-sm">"Support Our Cause" Element Settings</h3>
+                  <div className="space-y-3 bg-zinc-50 p-4 rounded-2xl border">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-zinc-700 uppercase">Card Title</label>
+                      <Input
+                        value={config.supportCauseTitle || 'Support Our Cause'}
+                        onChange={(e) => setConfig({ ...config, supportCauseTitle: e.target.value })}
+                        placeholder="e.g. Support Our Cause"
+                        className="rounded-xl text-xs bg-white"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-zinc-700 uppercase">Subtitle Description</label>
+                      <Textarea
+                        value={config.supportCauseSubtitle || 'Your generous contribution helps us provide better care, education, and opportunities to our children.'}
+                        onChange={(e) => setConfig({ ...config, supportCauseSubtitle: e.target.value })}
+                        placeholder="Description text..."
+                        className="text-xs min-h-[60px] rounded-xl bg-white"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-zinc-700 uppercase">Background / Featured Image URL</label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={config.supportCauseBgUrl || ''}
+                          onChange={(e) => setConfig({ ...config, supportCauseBgUrl: e.target.value })}
+                          placeholder="Paste image URL or choose from Media Library..."
+                          className="rounded-xl text-xs bg-white flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="rounded-xl text-xs whitespace-nowrap bg-white"
+                          onClick={() => setCausePickerOpen(true)}
+                        >
+                          Media Library
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -679,6 +1070,200 @@ export function SuperAdminDashboard() {
                         onChange={(e) => setConfig({ ...config, heroParallax: e.target.checked })}
                         className="h-4 w-4 text-primary border-zinc-300 rounded focus:ring-primary"
                       />
+                    </div>
+                  </div>
+                </div>
+
+                {/* About Us Custom Page Images */}
+                <div className="space-y-4 md:col-span-2 border-t pt-4">
+                  <h3 className="font-serif font-bold text-zinc-850 text-sm">About Us Custom Page Images</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-zinc-50 p-4 rounded-2xl border">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-zinc-700 uppercase">Hero Section Photo URL</label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={config.aboutHeroImgUrl || ''}
+                          onChange={(e) => setConfig({ ...config, aboutHeroImgUrl: e.target.value })}
+                          placeholder="Default school building entrance..."
+                          className="rounded-xl text-xs bg-white flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="rounded-xl text-xs whitespace-nowrap bg-white"
+                          onClick={() => setAboutHeroPickerOpen(true)}
+                        >
+                          Pick Photo
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-zinc-700 uppercase">School Assembly Photo URL</label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={config.aboutAssemblyImgUrl || ''}
+                          onChange={(e) => setConfig({ ...config, aboutAssemblyImgUrl: e.target.value })}
+                          placeholder="Default assembly ground image..."
+                          className="rounded-xl text-xs bg-white flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="rounded-xl text-xs whitespace-nowrap bg-white"
+                          onClick={() => setAboutAssemblyPickerOpen(true)}
+                        >
+                          Pick Photo
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-zinc-700 uppercase">National Award Photo URL</label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={config.aboutAwardImgUrl || ''}
+                          onChange={(e) => setConfig({ ...config, aboutAwardImgUrl: e.target.value })}
+                          placeholder="Default award certificate photo..."
+                          className="rounded-xl text-xs bg-white flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="rounded-xl text-xs whitespace-nowrap bg-white"
+                          onClick={() => setAboutAwardPickerOpen(true)}
+                        >
+                          Pick Photo
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-zinc-700 uppercase">Principal Photo URL</label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={config.aboutPrincipalImgUrl || ''}
+                          onChange={(e) => setConfig({ ...config, aboutPrincipalImgUrl: e.target.value })}
+                          placeholder="Default principal portrait..."
+                          className="rounded-xl text-xs bg-white flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="rounded-xl text-xs whitespace-nowrap bg-white"
+                          onClick={() => setAboutPrincipalPickerOpen(true)}
+                        >
+                          Pick Photo
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Gen-Z User Profile Banner & Car Graphic Settings */}
+                <div className="space-y-4 md:col-span-2 border-t pt-4">
+                  <h3 className="font-serif font-bold text-zinc-850 text-sm flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-red-500" />
+                    User Profile Banner & Car Asset Settings (Crop, Rotate, Opacity & Fitting Controls)
+                  </h3>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-zinc-50 p-4 rounded-2xl border">
+                    {/* Profile Banner Background Image */}
+                    <div className="space-y-3">
+                      <label className="text-xs font-bold text-zinc-700 uppercase">
+                        Profile Banner Background Image (Flag / Racing Backdrop)
+                      </label>
+                      <ImageUploadWithCamera
+                        value={config.profileBgUrl || '/f1-flag.jpg'}
+                        onChange={(img) => setConfig({ ...config, profileBgUrl: img })}
+                        aspectRatio="video"
+                        maxSizeKB={800}
+                      />
+                      
+                      <div className="grid grid-cols-3 gap-2 pt-1 text-xs">
+                        <div>
+                          <label className="text-[10px] font-bold text-zinc-600 uppercase">Banner Opacity</label>
+                          <input
+                            type="range"
+                            min="0.1"
+                            max="1.0"
+                            step="0.05"
+                            value={config.profileOverlayOpacity !== undefined ? config.profileOverlayOpacity : 0.9}
+                            onChange={(e) => setConfig({ ...config, profileOverlayOpacity: Number(e.target.value) })}
+                            className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#0F6D4E]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-zinc-600 uppercase">Orientation / Rotation</label>
+                          <select
+                            value={config.profileBgRotation !== undefined ? config.profileBgRotation : 0}
+                            onChange={(e) => setConfig({ ...config, profileBgRotation: Number(e.target.value) })}
+                            className="w-full h-8 rounded-lg border border-zinc-200 text-xs px-1.5 bg-white font-bold"
+                          >
+                            <option value={0}>0° Horizontal (Default)</option>
+                            <option value={-90}>-90° Rotated</option>
+                            <option value={90}>90° Vertical</option>
+                            <option value={180}>180° Inverted</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-zinc-600 uppercase">Fitting Mode</label>
+                          <select
+                            value={config.profileBgObjectFit || 'cover'}
+                            onChange={(e) => setConfig({ ...config, profileBgObjectFit: e.target.value })}
+                            className="w-full h-8 rounded-lg border border-zinc-200 text-xs px-1.5 bg-white font-bold"
+                          >
+                            <option value="cover">Cover (Fill)</option>
+                            <option value="contain">Contain (Fit)</option>
+                            <option value="fill">Stretch Fill</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Profile Car Graphic Image */}
+                    <div className="space-y-3">
+                      <label className="text-xs font-bold text-zinc-700 uppercase">
+                        Profile Car Image (Placed Below Edit Profile Button)
+                      </label>
+                      <ImageUploadWithCamera
+                        value={config.profileCarUrl || '/f1-car.png'}
+                        onChange={(img) => setConfig({ ...config, profileCarUrl: img })}
+                        aspectRatio="banner"
+                        maxSizeKB={500}
+                      />
+
+                      <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
+                        <div>
+                          <label className="text-[10px] font-bold text-zinc-600 uppercase">Car Rotation</label>
+                          <select
+                            value={config.profileCarRotation || 0}
+                            onChange={(e) => setConfig({ ...config, profileCarRotation: Number(e.target.value) })}
+                            className="w-full h-8 rounded-lg border border-zinc-200 text-xs px-2 bg-white font-bold"
+                          >
+                            <option value={0}>0° Normal</option>
+                            <option value={90}>90° Clockwise</option>
+                            <option value={180}>180° Inverted</option>
+                            <option value={270}>270° Counter</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-zinc-600 uppercase">Car Fitting Mode</label>
+                          <select
+                            value={config.profileCarObjectFit || 'contain'}
+                            onChange={(e) => setConfig({ ...config, profileCarObjectFit: e.target.value })}
+                            className="w-full h-8 rounded-lg border border-zinc-200 text-xs px-2 bg-white font-bold"
+                          >
+                            <option value="contain">Contain (Fit)</option>
+                            <option value="cover">Cover (Crop)</option>
+                            <option value="fill">Stretch Fill</option>
+                          </select>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -764,13 +1349,25 @@ export function SuperAdminDashboard() {
             </div>
             <div className="space-y-1">
               <label className="text-xs font-bold text-zinc-700 uppercase">Banner Image Link URL *</label>
-              <Input
-                value={adForm.bannerUrl}
-                onChange={(e) => setAdForm({ ...adForm, bannerUrl: e.target.value })}
-                placeholder="Paste banner cover photo URL..."
-                className="rounded-xl text-xs"
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={adForm.bannerUrl}
+                  onChange={(e) => setAdForm({ ...adForm, bannerUrl: e.target.value })}
+                  placeholder="Paste banner photo URL or pick from Media Library..."
+                  className="rounded-xl text-xs flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl text-xs whitespace-nowrap"
+                  onClick={() => setAdPickerOpen(true)}
+                >
+                  Media Library
+                </Button>
+              </div>
             </div>
+
             <div className="space-y-1">
               <label className="text-xs font-bold text-zinc-700 uppercase">Click Destination Link URL *</label>
               <Input
@@ -779,6 +1376,61 @@ export function SuperAdminDashboard() {
                 placeholder="Paste sponsor target URL..."
                 className="rounded-xl text-xs"
               />
+            </div>
+
+            {/* Ad Resizing & Dimensions */}
+            <div className="space-y-3 bg-zinc-50 p-3.5 rounded-2xl border">
+              <p className="text-xs font-bold text-zinc-800 uppercase flex items-center justify-between">
+                <span>Ad Dimensions & Sizing</span>
+                <span className="text-primary font-mono">{adForm.bannerHeight}px height</span>
+              </p>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-600 uppercase">Banner Height (px)</label>
+                  <input
+                    type="range"
+                    min="80"
+                    max="350"
+                    step="10"
+                    value={adForm.bannerHeight}
+                    onChange={(e) => setAdForm({ ...adForm, bannerHeight: Number(e.target.value) })}
+                    className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-600 uppercase">Aspect Ratio</label>
+                  <select
+                    value={adForm.aspectRatio}
+                    onChange={(e) => setAdForm({ ...adForm, aspectRatio: e.target.value })}
+                    className="text-xs bg-white border rounded-xl w-full px-2 py-1.5"
+                  >
+                    <option value="5/1">5:1 Slim Banner</option>
+                    <option value="4/1">4:1 Standard Banner</option>
+                    <option value="3/1">3:1 High Banner</option>
+                    <option value="16/9">16:9 Video Banner</option>
+                    <option value="1/1">1:1 Square</option>
+                    <option value="auto">Auto Aspect</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Live Ad Dimension Test Box */}
+              {adForm.bannerUrl && (
+                <div className="space-y-1 pt-1 border-t">
+                  <p className="text-[10px] font-bold text-zinc-500 uppercase">Live Ad Size Test Preview:</p>
+                  <div
+                    className="relative rounded-xl overflow-hidden border bg-zinc-900 mx-auto"
+                    style={{ height: `${Math.min(adForm.bannerHeight, 140)}px` }}
+                  >
+                    <img src={adForm.bannerUrl} className="w-full h-full object-cover" alt="" />
+                    <span className="absolute bottom-1.5 right-1.5 bg-black/70 text-white rounded px-1.5 py-0.5 text-[9px]">
+                      {adForm.bannerHeight}px · {adForm.aspectRatio}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -793,6 +1445,9 @@ export function SuperAdminDashboard() {
                   <option value="home_bottom">Home Bottom Banner</option>
                   <option value="explore_sidebar">Explore Page Sidebar</option>
                   <option value="about_bottom">About Us Bottom Slot</option>
+                  <option value="popup_center">Center Screen Pop-Up Modal</option>
+                  <option value="popup_bottom_left">Bottom-Left Corner Floating Pop-Up</option>
+                  <option value="popup_bottom_right">Bottom-Right Corner Floating Pop-Up</option>
                 </select>
               </div>
 
@@ -806,6 +1461,25 @@ export function SuperAdminDashboard() {
                 />
               </div>
             </div>
+
+            {adForm.placement.startsWith('popup') && (
+              <div className="space-y-1 bg-amber-50/60 p-3 rounded-2xl border border-amber-200">
+                <div className="flex justify-between items-center text-xs font-bold text-amber-900 uppercase">
+                  <span>Pop-Up Display Delay</span>
+                  <span className="text-primary font-mono">{adForm.popupDelay || 3} seconds</span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="30"
+                  step="1"
+                  value={adForm.popupDelay || 3}
+                  onChange={(e) => setAdForm({ ...adForm, popupDelay: Number(e.target.value) })}
+                  className="w-full h-1.5 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                />
+                <p className="text-[10px] text-amber-700">Ad will automatically pop up after {adForm.popupDelay || 3} seconds on public pages.</p>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -838,6 +1512,140 @@ export function SuperAdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Ad Banner Media Picker */}
+      <MediaPickerModal
+        open={adPickerOpen}
+        onOpenChange={setAdPickerOpen}
+        allowedTypes="image"
+        title="Select Advertisement Banner Image"
+        onSelectMedia={(media) => {
+          setAdForm({ ...adForm, bannerUrl: media.url });
+        }}
+      />
+
+      {/* Support Our Cause Media Picker */}
+      <MediaPickerModal
+        open={causePickerOpen}
+        onOpenChange={setCausePickerOpen}
+        allowedTypes="image"
+        title="Select Support Our Cause Image"
+        onSelectMedia={(media) => {
+          setConfig({ ...config, supportCauseBgUrl: media.url });
+        }}
+      />
+
+      {/* Ad Campaign Preview Modal */}
+      {previewAd && (
+        <Dialog open={Boolean(previewAd)} onOpenChange={() => setPreviewAd(null)}>
+          <DialogContent className="max-w-xl rounded-3xl p-6 bg-white">
+            <DialogHeader className="border-b pb-3">
+              <DialogTitle className="font-serif text-lg font-bold flex items-center justify-between">
+                <span>Ad Campaign Preview</span>
+                <Badge className="bg-primary text-white text-[10px] uppercase font-bold px-2.5 py-0.5">
+                  {previewAd.placement}
+                </Badge>
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 py-3">
+              <div>
+                <h4 className="font-bold text-sm text-zinc-900 mb-1">{previewAd.title}</h4>
+                <p className="text-xs text-zinc-500">
+                  Target Link: <a href={previewAd.targetUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline">{previewAd.targetUrl}</a>
+                </p>
+              </div>
+
+              {/* Live Placement Banner Preview Box */}
+              <div className="space-y-1 bg-zinc-950 p-4 rounded-2xl border text-white">
+                <div className="flex justify-between items-center text-[10px] text-zinc-400 font-bold uppercase mb-2">
+                  <span>Live Placement Banner Render</span>
+                  <span>{previewAd.bannerHeight || 180}px Height · {previewAd.aspectRatio || '4/1'}</span>
+                </div>
+                <div
+                  className="relative w-full rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800"
+                  style={{
+                    height: previewAd.bannerHeight ? `${previewAd.bannerHeight}px` : '160px',
+                    maxHeight: '260px',
+                  }}
+                >
+                  <img src={previewAd.bannerUrl} alt={previewAd.title} className="w-full h-full object-cover" />
+                  <span className="absolute bottom-2 right-2 text-[9px] font-bold text-white bg-black/70 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    Sponsored
+                  </span>
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-3 bg-zinc-50 p-3 rounded-2xl border text-center text-xs">
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase">Impressions</p>
+                  <p className="font-bold text-zinc-900 text-base mt-0.5">{previewAd.views || 0}</p>
+                </div>
+                <div className="border-l">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase">Clicks</p>
+                  <p className="font-bold text-zinc-900 text-base mt-0.5">{previewAd.clicks || 0}</p>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="border-t pt-4">
+              <Button variant="outline" className="rounded-full text-xs" onClick={() => setPreviewAd(null)}>
+                Close Preview
+              </Button>
+              <a href={previewAd.targetUrl} target="_blank" rel="noopener noreferrer">
+                <Button className="rounded-full text-xs gap-1.5 shadow">
+                  <ExternalLink className="h-3.5 w-3.5" /> Test Click Target
+                </Button>
+              </a>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* About Page Hero Picker */}
+      <MediaPickerModal
+        open={aboutHeroPickerOpen}
+        onOpenChange={setAboutHeroPickerOpen}
+        allowedTypes="image"
+        title="Select About Page Hero Photo"
+        onSelectMedia={(media) => {
+          setConfig({ ...config, aboutHeroImgUrl: media.url });
+        }}
+      />
+
+      {/* About Page Assembly Picker */}
+      <MediaPickerModal
+        open={aboutAssemblyPickerOpen}
+        onOpenChange={setAboutAssemblyPickerOpen}
+        allowedTypes="image"
+        title="Select School Assembly Photo"
+        onSelectMedia={(media) => {
+          setConfig({ ...config, aboutAssemblyImgUrl: media.url });
+        }}
+      />
+
+      {/* About Page Award Picker */}
+      <MediaPickerModal
+        open={aboutAwardPickerOpen}
+        onOpenChange={setAboutAwardPickerOpen}
+        allowedTypes="image"
+        title="Select National Award Certificate Photo"
+        onSelectMedia={(media) => {
+          setConfig({ ...config, aboutAwardImgUrl: media.url });
+        }}
+      />
+
+      {/* About Page Principal Picker */}
+      <MediaPickerModal
+        open={aboutPrincipalPickerOpen}
+        onOpenChange={setAboutPrincipalPickerOpen}
+        allowedTypes="image"
+        title="Select School Principal Photo"
+        onSelectMedia={(media) => {
+          setConfig({ ...config, aboutPrincipalImgUrl: media.url });
+        }}
+      />
     </div>
   );
 }

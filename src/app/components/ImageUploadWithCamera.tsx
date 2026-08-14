@@ -1,14 +1,15 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
-import { Camera, Upload, RefreshCw, X, Check } from 'lucide-react';
+import { Input } from './ui/input';
+import { Upload, RefreshCw, X, Check, RotateCw, Crop, Sliders, Eye, Trash2, Paintbrush, Eraser } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ImageUploadWithCameraProps {
   value?: string;
   onChange: (base64Value: string) => void;
   label?: string;
-  aspectRatio?: 'square' | 'video' | 'any';
+  aspectRatio?: 'square' | 'video' | 'banner' | 'any';
   maxSizeKB?: number;
 }
 
@@ -17,32 +18,107 @@ export function ImageUploadWithCamera({
   onChange,
   label = 'Upload Image',
   aspectRatio = 'any',
-  maxSizeKB = 300,
+  maxSizeKB = 500,
 }: ImageUploadWithCameraProps) {
-  const [cameraOpen, setCameraOpen] = useState(false);
-  const [stream, setStream] = useState<MediaStream | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [rawImage, setRawImage] = useState<string | null>(null);
 
-  // Stop camera stream on unmount or close
-  useEffect(() => {
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
+  // Image Edit States
+  const [rotation, setRotation] = useState(0); // 0, 90, 180, 270
+  const [opacity, setOpacity] = useState(1.0); // 0.1 to 1.0
+  const [zoom, setZoom] = useState(1.0); // 0.5 to 2.0
+  const [fitMode, setFitMode] = useState<'cover' | 'contain' | 'fill'>('cover');
+
+  // Blur Brush States
+  const [blurBrushMode, setBlurBrushMode] = useState(false);
+  const [brushSize, setBrushSize] = useState(30); // 10px to 80px
+  const [blurIntensity, setBlurIntensity] = useState(15); // 5px to 30px
+  const [isBrushing, setIsBrushing] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const blurCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setRawImage(reader.result);
+        setRotation(0);
+        setOpacity(1.0);
+        setZoom(1.0);
+        setEditorOpen(true);
+        clearBlurCanvas();
       }
     };
-  }, [stream]);
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
 
-  // Image compression using Canvas
-  const compressAndProcessImage = (dataUrl: string) => {
+  const clearBlurCanvas = () => {
+    const canvas = blurCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  // Handle Blur Brushing on Overlay Canvas
+  const drawBlurStroke = (clientX: number, clientY: number) => {
+    const canvas = blurCanvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = ((clientX - rect.left) / rect.width) * canvas.width;
+    const y = ((clientY - rect.top) / rect.height) * canvas.height;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.save();
+    ctx.filter = `blur(${blurIntensity}px)`;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+    ctx.beginPath();
+    ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (!blurBrushMode) return;
+    setIsBrushing(true);
+    drawBlurStroke(e.clientX, e.clientY);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isBrushing || !blurBrushMode) return;
+    drawBlurStroke(e.clientX, e.clientY);
+  };
+
+  const handlePointerUp = () => {
+    setIsBrushing(false);
+  };
+
+  // Render & Process Edited Image + Blur Layer onto Final Canvas
+  const processAndApplyImage = () => {
+    if (!rawImage) return;
+
     const img = new Image();
+    img.crossOrigin = 'anonymous';
     img.onload = () => {
       const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
       let width = img.width;
       let height = img.height;
 
-      // Restrict max dimensions to keep size under control
-      const MAX_DIM = 800;
+      const MAX_DIM = 900;
       if (width > MAX_DIM || height > MAX_DIM) {
         if (width > height) {
           height = Math.round((height * MAX_DIM) / width);
@@ -53,111 +129,45 @@ export function ImageUploadWithCamera({
         }
       }
 
-      canvas.width = width;
-      canvas.height = height;
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        onChange(dataUrl);
-        return;
-      }
-
-      ctx.drawImage(img, 0, 0, width, height);
-
-      // Compress to JPEG with 0.75 quality
-      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.75);
-      
-      // Check size
-      const sizeInBytes = Math.round((compressedDataUrl.length * 3) / 4);
-      const sizeInKB = sizeInBytes / 1024;
-
-      if (sizeInKB > maxSizeKB) {
-        // Compress more if too large
-        const highlyCompressed = canvas.toDataURL('image/jpeg', 0.5);
-        onChange(highlyCompressed);
+      if (rotation === 90 || rotation === 270) {
+        canvas.width = height;
+        canvas.height = width;
       } else {
-        onChange(compressedDataUrl);
+        canvas.width = width;
+        canvas.height = height;
       }
+
+      ctx.save();
+      ctx.globalAlpha = opacity;
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.scale(zoom, zoom);
+      ctx.drawImage(img, -width / 2, -height / 2, width, height);
+      ctx.restore();
+
+      // Composite Blur Brush Layer if drawn
+      const blurCanvas = blurCanvasRef.current;
+      if (blurCanvas) {
+        ctx.save();
+        ctx.filter = `blur(${blurIntensity}px)`;
+        ctx.drawImage(blurCanvas, 0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+
+      const processedDataUrl = canvas.toDataURL('image/png', 0.85);
+      onChange(processedDataUrl);
+      setEditorOpen(false);
+      toast.success('Image applied with custom edits & blur brush!');
     };
-    img.src = dataUrl;
+    img.src = rawImage;
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        compressAndProcessImage(reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const startCamera = async () => {
-    setCameraOpen(true);
-    setStream(null);
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
-        audio: false,
-      });
-      setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('Unable to access camera. Please check permissions.');
-      setCameraOpen(false);
-    }
-  };
-
-  const closeCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      setStream(null);
-    }
-    setCameraOpen(false);
-  };
-
-  const capturePhoto = () => {
-    if (!videoRef.current) return;
-
-    const video = videoRef.current;
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      // Mirror image for user convenience
-      ctx.translate(canvas.width, 0);
-      ctx.scale(-1, 1);
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-      compressAndProcessImage(dataUrl);
-      toast.success('Photo captured successfully');
-    }
-
-    closeCamera();
-  };
-
-  const clearImage = () => {
-    onChange('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+  const handleRotate = () => {
+    setRotation((prev) => (prev + 90) % 360);
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <input
         type="file"
         ref={fileInputRef}
@@ -166,96 +176,243 @@ export function ImageUploadWithCamera({
         className="hidden"
       />
 
-      <div className="flex flex-col sm:flex-row items-center gap-4">
-        {/* Preview Frame */}
-        <div
-          className={`relative border-2 border-dashed border-zinc-200 bg-zinc-50 rounded-2xl overflow-hidden flex items-center justify-center shrink-0 transition-all ${
-            aspectRatio === 'square'
-              ? 'h-24 w-24'
-              : aspectRatio === 'video'
-              ? 'aspect-video w-40'
-              : 'h-24 w-32'
-          }`}
-        >
-          {value ? (
-            <>
-              <img src={value} alt="Preview" className="w-full h-full object-cover" />
-              <button
-                type="button"
-                onClick={clearImage}
-                className="absolute top-1 right-1 h-5 w-5 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-black"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </>
-          ) : (
-            <div className="text-center p-2 text-zinc-400">
-              <Camera className="h-5 w-5 mx-auto mb-1 opacity-60" />
-              <span className="text-[10px] font-semibold uppercase tracking-wider block">No Image</span>
+      {value ? (
+        <div className="relative group rounded-2xl border border-zinc-200/80 bg-zinc-50 p-2 overflow-hidden flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <img
+              src={value}
+              alt="Preview"
+              className="h-12 w-16 object-cover rounded-xl border border-zinc-200 shrink-0 bg-white"
+            />
+            <div className="truncate text-xs">
+              <p className="font-bold text-zinc-800 truncate">{label}</p>
+              <p className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                <Check className="h-3 w-3" /> Ready
+              </p>
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* Upload Buttons */}
-        <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            className="rounded-xl text-xs gap-1.5 h-9"
-          >
-            <Upload className="h-3.5 w-3.5" />
-            Upload File
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={startCamera}
-            className="rounded-xl text-xs gap-1.5 h-9"
-          >
-            <Camera className="h-3.5 w-3.5" />
-            Take Photo
-          </Button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              className="rounded-full text-xs h-8 px-3 gap-1 font-semibold"
+            >
+              <Upload className="h-3.5 w-3.5" /> Replace
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => onChange('')}
+              className="rounded-full h-8 w-8 text-destructive hover:bg-destructive/10"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => fileInputRef.current?.click()}
+          className="w-full h-11 rounded-2xl border-dashed border-zinc-300 hover:border-emerald-500 hover:bg-emerald-50/30 text-xs font-bold text-zinc-700 gap-2 transition-all"
+        >
+          <Upload className="h-4 w-4 text-emerald-600" />
+          {label}
+        </Button>
+      )}
 
-      {/* Camera Capture Dialog */}
-      <Dialog open={cameraOpen} onOpenChange={(open) => !open && closeCamera()}>
-        <DialogContent className="max-w-md rounded-3xl bg-white border-none p-6 shadow-2xl">
+      {/* Interactive Crop, Rotate, Opacity & Blur Brush Studio Modal */}
+      <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
+        <DialogContent className="max-w-lg rounded-3xl p-6 bg-white space-y-4">
           <DialogHeader>
-            <DialogTitle className="text-md font-bold font-serif text-zinc-950">Capture Photo</DialogTitle>
+            <DialogTitle className="text-lg font-serif font-bold text-zinc-900 flex items-center gap-2">
+              <Paintbrush className="h-5 w-5 text-[#0F6D4E]" />
+              Image Studio & Blur Brush Tool
+            </DialogTitle>
           </DialogHeader>
 
-          <div className="relative aspect-video rounded-2xl overflow-hidden bg-black flex items-center justify-center border border-zinc-200">
-            {stream ? (
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                className="w-full h-full object-cover -scale-x-100"
-              />
-            ) : (
-              <div className="flex flex-col items-center gap-2 text-zinc-500">
-                <RefreshCw className="h-6 w-6 animate-spin text-zinc-400" />
-                <span className="text-xs">Initializing camera stream...</span>
+          {/* Interactive Live Preview Box + Blur Canvas Overlay */}
+          <div
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            className={`relative aspect-video w-full rounded-2xl bg-zinc-950/90 border border-zinc-200 overflow-hidden flex items-center justify-center p-4 select-none touch-none ${
+              blurBrushMode ? 'cursor-crosshair ring-2 ring-amber-400' : ''
+            }`}
+          >
+            {rawImage && (
+              <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+                <img
+                  src={rawImage}
+                  alt="Edit preview"
+                  style={{
+                    transform: `rotate(${rotation}deg) scale(${zoom})`,
+                    opacity: opacity,
+                    objectFit: fitMode,
+                  }}
+                  className="max-h-full max-w-full transition-transform duration-200 ease-out pointer-events-none"
+                />
+                <canvas
+                  ref={blurCanvasRef}
+                  width={500}
+                  height={300}
+                  className="absolute inset-0 w-full h-full pointer-events-none"
+                />
+              </div>
+            )}
+            <div className="absolute top-2 right-2 bg-black/75 backdrop-blur-md px-2.5 py-1 rounded-full text-[9px] font-mono text-emerald-300 font-bold border border-white/10">
+              {rotation}° | {Math.round(opacity * 100)}% Opacity | {zoom.toFixed(1)}x Zoom
+            </div>
+            {blurBrushMode && (
+              <div className="absolute bottom-2 left-2 bg-amber-400 text-zinc-950 text-[9px] font-black uppercase px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
+                <Paintbrush className="h-3 w-3" /> Blur Brush Active (Drag to paint blur)
               </div>
             )}
           </div>
 
-          <DialogFooter className="mt-4 flex gap-2">
-            <Button type="button" variant="outline" onClick={closeCamera} className="rounded-full flex-1">
+          {/* Blur Brush Tool Controls */}
+          <div className="bg-amber-50/60 border border-amber-200/80 p-3 rounded-2xl space-y-2 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-amber-900 flex items-center gap-1.5">
+                <Paintbrush className="h-4 w-4 text-amber-600" /> Blur Brush Tool
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setBlurBrushMode(!blurBrushMode)}
+                  className={`h-7 px-3 text-[10px] font-bold rounded-full gap-1 border-amber-400/60 ${
+                    blurBrushMode ? 'bg-amber-400 text-zinc-950 hover:bg-amber-300' : 'bg-white text-amber-800 hover:bg-amber-100'
+                  }`}
+                >
+                  <Paintbrush className="h-3 w-3" />
+                  {blurBrushMode ? 'Brushing ON' : 'Turn ON Blur Brush'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearBlurCanvas}
+                  className="h-7 px-2 text-[10px] font-bold text-amber-800 hover:bg-amber-200/50 rounded-full gap-1"
+                >
+                  <Eraser className="h-3 w-3" /> Clear Blur
+                </Button>
+              </div>
+            </div>
+
+            {blurBrushMode && (
+              <div className="grid grid-cols-2 gap-3 pt-1 text-[11px]">
+                <div className="space-y-1">
+                  <div className="flex justify-between font-bold text-amber-900">
+                    <span>Brush Radius:</span>
+                    <span className="font-mono">{brushSize}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="10"
+                    max="80"
+                    value={brushSize}
+                    onChange={(e) => setBrushSize(Number(e.target.value))}
+                    className="w-full h-1.5 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex justify-between font-bold text-amber-900">
+                    <span>Blur Strength:</span>
+                    <span className="font-mono">{blurIntensity}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="5"
+                    max="30"
+                    value={blurIntensity}
+                    onChange={(e) => setBlurIntensity(Number(e.target.value))}
+                    className="w-full h-1.5 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Rotate, Zoom & Fitting Controls */}
+          <div className="space-y-3 text-xs font-medium">
+            <div className="grid grid-cols-2 gap-4 items-center">
+              <div className="space-y-1">
+                <label className="font-bold text-zinc-700 uppercase text-[10px] flex items-center gap-1">
+                  <RotateCw className="h-3.5 w-3.5 text-[#0F6D4E]" /> Rotate Picture
+                </label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRotate}
+                  className="w-full rounded-xl text-xs font-bold gap-1.5 h-8"
+                >
+                  <RotateCw className="h-3.5 w-3.5" /> Rotate 90° ({rotation}°)
+                </Button>
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex justify-between font-bold text-zinc-700 uppercase text-[10px]">
+                  <span className="flex items-center gap-1"><Crop className="h-3.5 w-3.5 text-[#0F6D4E]" /> Zoom / Scale</span>
+                  <span className="font-mono">{zoom.toFixed(1)}x</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2.0"
+                  step="0.1"
+                  value={zoom}
+                  onChange={(e) => setZoom(Number(e.target.value))}
+                  className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#0F6D4E]"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 items-center">
+              <div className="space-y-1">
+                <div className="flex justify-between font-bold text-zinc-700 uppercase text-[10px]">
+                  <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5 text-[#0F6D4E]" /> Opacity Transparency</span>
+                  <span className="font-mono">{Math.round(opacity * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="1.0"
+                  step="0.05"
+                  value={opacity}
+                  onChange={(e) => setOpacity(Number(e.target.value))}
+                  className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#0F6D4E]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-zinc-700 uppercase text-[10px]">Fitting Mode</label>
+                <select
+                  value={fitMode}
+                  onChange={(e) => setFitMode(e.target.value as any)}
+                  className="w-full h-8 rounded-xl border border-zinc-200 text-xs px-2.5 bg-white font-bold text-zinc-800"
+                >
+                  <option value="cover">Cover (Fill Container)</option>
+                  <option value="contain">Contain (Fit Whole Image)</option>
+                  <option value="fill">Fill (Stretch Aspect)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 pt-2">
+            <Button variant="outline" onClick={() => setEditorOpen(false)} className="rounded-full text-xs">
               Cancel
             </Button>
-            <Button
-              type="button"
-              onClick={capturePhoto}
-              disabled={!stream}
-              className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white flex-1 gap-1.5 font-semibold"
-            >
-              <Check className="h-4 w-4" />
-              Capture
+            <Button onClick={processAndApplyImage} className="rounded-full bg-[#0F6D4E] text-white hover:bg-[#0c593f] text-xs font-bold">
+              Apply & Save Edits
             </Button>
           </DialogFooter>
         </DialogContent>

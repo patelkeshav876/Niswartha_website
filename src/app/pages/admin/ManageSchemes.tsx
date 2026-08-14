@@ -146,13 +146,21 @@ export function ManageSchemes() {
   };
 
   const togglePublishStatus = async (scheme: GovScheme) => {
+    const targetId = scheme.id || (scheme as any)._id;
+    if (!targetId) return;
     try {
-      const nextStatus = !scheme.published;
-      await api.updateScheme(scheme.id, { ...scheme, published: nextStatus });
-      toast.success(`Scheme ${nextStatus ? 'published' : 'unpublished'}`);
+      const nextStatus = scheme.published === false ? true : false;
+      const { _id, ...cleanScheme } = scheme as any;
+      setSchemes((prev) =>
+        prev.map((s) => (s.id === targetId || (s as any)._id === targetId ? { ...s, published: nextStatus } : s))
+      );
+      await api.updateScheme(targetId, { ...cleanScheme, published: nextStatus });
+      toast.success(`Scheme ${nextStatus ? 'published' : 'moved to drafts'}`);
       await loadSchemes();
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error('Failed to toggle status');
+      await loadSchemes();
     }
   };
 

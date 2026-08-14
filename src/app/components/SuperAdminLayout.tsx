@@ -15,12 +15,16 @@ import {
   FileText,
   AlertCircle,
   Home,
-  Megaphone
+  Megaphone,
+  Image as ImageIcon,
+  Layers,
 } from 'lucide-react';
 import { Button } from './ui/button';
 
 const SIDEBAR_ITEMS = [
   { to: '/super-admin', label: 'System Health', icon: Activity, end: true },
+  { to: '/super-admin/media', label: 'Media Library', icon: ImageIcon },
+  { to: '/super-admin/hero', label: 'Page Hero Manager', icon: Layers },
   { to: '/super-admin/users', label: 'User Directory', icon: Users },
   { to: '/super-admin/ads', label: 'Ad Placements', icon: Megaphone },
   { to: '/super-admin/logs', label: 'System Audit Logs', icon: FileText },

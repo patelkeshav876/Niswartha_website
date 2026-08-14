@@ -56,7 +56,7 @@
   - Donation History (Donors)
   - Favorite Ashrams (Donors)
   - Settings (All users)
-  - Help & Support (All users)
+  - Help and Support (All users)
 - **Styled logout button**
 
 ### 3. New Pages

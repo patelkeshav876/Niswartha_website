@@ -10,6 +10,7 @@ import { api } from '../lib/api';
 import type { Need } from '../types';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { AdBanner } from '../components/AdBanner';
+import { PremiumHeroBackdrop } from '../components/home/PremiumHeroBackdrop';
 
 export function Needs() {
   const [filter, setFilter] = useState('All');
@@ -38,7 +39,14 @@ export function Needs() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <div className="sticky top-16 lg:top-20 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+      <PremiumHeroBackdrop pageKey="needs">
+        <div className="section-container py-12 lg:py-16 text-center">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-white mb-2">Urgent Ashram Needs</h1>
+          <p className="text-sm text-white/80 max-w-xl mx-auto">Browse real-time needs verified by ashram administrators and support our children directly.</p>
+        </div>
+      </PremiumHeroBackdrop>
+
+      <div className="bg-background border-b">
         <div className="section-container py-4 lg:py-6">
           <h1 className="text-2xl font-serif font-bold text-primary mb-4 lg:text-3xl">Urgent Needs</h1>
           

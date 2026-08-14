@@ -16,11 +16,11 @@ export const mockUsers: User[] = [
     avatarUrl: 'https://i.pravatar.cc/150?u=sita',
   },
   {
-    id: 'admin-keshav',
+    id: 'super-admin-keshav',
     name: 'Keshav Patel',
-    email: 'keshavpaterl3690@gmail.com',
-    role: 'admin',
-    avatarUrl: 'https://i.pravatar.cc/150?u=keshav',
+    email: 'keshavpatel3690@gmail.com',
+    role: 'super_admin',
+    avatarUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=Keshav%20Patel',
   },
 ];
 

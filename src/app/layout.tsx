@@ -7,6 +7,8 @@ import { Toaster } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import { WhatsAppButton } from './components/WhatsAppButton';
 import { api } from './lib/api';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { AdPopupModal } from './components/AdPopupModal';
 import { ShieldAlert } from 'lucide-react';
 
 export function Layout() {
@@ -49,13 +51,15 @@ export function Layout() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 rounded-xl bg-primary shadow-lg shadow-primary/25 flex items-center justify-center animate-pulse">
-            <svg className="h-5 w-5 text-white" fill="white" viewBox="0 0 24 24">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-            </svg>
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="w-36 h-36 flex items-center justify-center">
+            <DotLottieReact
+              src="https://lottie.host/f1920018-4203-4927-a43e-aa0bff45eb09/I8cwfrA9rp.json"
+              loop
+              autoplay
+            />
           </div>
-          <p className="text-sm text-muted-foreground font-medium">Loading...</p>
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest animate-pulse">Loading Niswartha...</p>
         </div>
       </div>
     );
@@ -111,8 +115,13 @@ export function Layout() {
 
       {!hideNavFooter && <Footer />}
 
-      {/* Floating support widgets on public pages */}
-      {isPublicPage && <WhatsAppButton />}
+      {/* Floating support widgets and popups on public pages */}
+      {isPublicPage && (
+        <>
+          <WhatsAppButton />
+          <AdPopupModal />
+        </>
+      )}
 
       <Toaster position="top-center" expand={true} richColors closeButton />
     </div>

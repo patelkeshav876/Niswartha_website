@@ -201,8 +201,8 @@ export function DonationFlow() {
   }
 
   return (
-    <div className="mx-auto min-h-screen max-w-[480px] bg-background pb-24">
-      <div className="sticky top-0 z-20 border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <div className="mx-auto min-h-screen max-w-[540px] bg-background pt-16 lg:pt-20 pb-24">
+      <div className="sticky top-16 lg:top-20 z-20 border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-xs">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"

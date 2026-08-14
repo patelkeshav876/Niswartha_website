@@ -25,6 +25,7 @@ import {
   FileText,
   Shield,
 } from 'lucide-react';
+import { HandSupportIcon } from './HandSupportIcon';
 
 const NAV_LINKS = [
   { to: '/', label: 'Home', icon: Home },
@@ -73,26 +74,35 @@ export function Navbar() {
     return location.pathname.startsWith(path);
   };
 
+  const heroRoutes = ['/', '/about', '/events', '/needs', '/gallery', '/schemes', '/help'];
+  const isHeroPage =
+    heroRoutes.includes(location.pathname) ||
+    location.pathname.startsWith('/visit-book') ||
+    location.pathname.startsWith('/donate') ||
+    location.pathname.startsWith('/ashram');
+
   return (
     <>
       <nav
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
-          scrolled
-            ? 'bg-background/80 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.08),0_8px_24px_-12px_rgba(0,0,0,0.06)] border-b border-border/50'
-            : 'bg-transparent',
+          'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+          isHeroPage
+            ? scrolled
+              ? 'bg-background/85 backdrop-blur-xl shadow-md border-b border-border/50 text-foreground'
+              : 'bg-transparent text-white border-b border-transparent'
+            : 'bg-background/90 backdrop-blur-xl shadow-sm border-b border-border/50 text-foreground'
         )}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between lg:h-20">
-            {/* Logo */}
+            {/* Official Logo */}
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/25 transition-transform duration-300 group-hover:scale-105">
-                <Heart className="h-5 w-5 text-white" fill="white" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-105 bg-white border border-zinc-200">
+                <img src="/logo.png" alt="Niswartha Logo" className="h-full w-full object-cover" />
               </div>
               <div className="hidden sm:block">
-                <p className="text-lg font-bold tracking-tight text-foreground font-serif">Niswartha</p>
-                <p className="-mt-1 text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">Selfless Service</p>
+                <p className="text-lg font-bold tracking-tight font-serif">Niswartha</p>
+                <p className="-mt-1 text-[10px] font-medium uppercase tracking-[0.15em] opacity-80">Selfless Service</p>
               </div>
             </Link>
 
@@ -304,8 +314,8 @@ export function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* Spacer to prevent content from being hidden behind fixed navbar */}
-      <div className="h-16 lg:h-20" />
+      {/* Spacer to prevent content from being hidden behind fixed navbar on non-hero pages */}
+      {!isHeroPage && <div className="h-16 lg:h-20" />}
     </>
   );
 }

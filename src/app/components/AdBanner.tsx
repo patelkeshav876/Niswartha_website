@@ -7,6 +7,9 @@ interface Ad {
   bannerUrl: string;
   targetUrl: string;
   placement: 'home_top' | 'home_bottom' | 'explore_sidebar' | 'about_bottom';
+  bannerHeight?: number;
+  aspectRatio?: string;
+  customWidth?: string;
   startDate: string;
   endDate: string;
   enabled: boolean;
@@ -40,10 +43,12 @@ export function AdBanner({ placement }: Props) {
           setAd(chosen);
 
           // Track ad view/impression
-          void api.trackAdView(chosen.id);
+          void api.trackAdView(chosen.id || chosen._id);
+        } else {
+          setAd(null);
         }
       } catch {
-        // fail silently
+        setAd(null);
       }
     })();
     return () => {
@@ -57,27 +62,39 @@ export function AdBanner({ placement }: Props) {
     void api.trackAdClick(ad.id);
   };
 
+  const bannerHeightStyle = ad.bannerHeight ? `${ad.bannerHeight}px` : undefined;
+
   return (
-    <div className="w-full my-4 overflow-hidden rounded-2xl border border-zinc-200/50 shadow-sm bg-white p-1 animate-fade-up">
-      <a
-        href={ad.targetUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={handleClick}
-        className="block group"
-      >
-        <div className="relative aspect-[3/1] md:aspect-[5/1] w-full rounded-xl overflow-hidden bg-zinc-50">
-          <img
-            src={ad.bannerUrl}
-            alt={ad.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-          />
-          {/* Subtle Sponsor badge */}
-          <span className="absolute bottom-2 right-2 text-[9px] font-bold text-white bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full select-none tracking-wider uppercase">
-            Sponsored
-          </span>
-        </div>
-      </a>
+    <div className="w-full my-4 flex justify-center">
+      <div className="w-full overflow-hidden rounded-2xl border border-zinc-200/50 shadow-sm bg-white p-1 animate-fade-up">
+        <a
+          href={ad.targetUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={handleClick}
+          className="block group"
+        >
+          <div
+            className="relative w-full rounded-xl overflow-hidden bg-zinc-50"
+            style={{
+              height: bannerHeightStyle,
+              aspectRatio: !bannerHeightStyle && ad.aspectRatio && ad.aspectRatio !== 'auto' ? ad.aspectRatio : undefined,
+            }}
+          >
+            <img
+              src={ad.bannerUrl}
+              alt={ad.title}
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+            />
+            {/* Subtle Sponsor badge */}
+            <span className="absolute bottom-2 right-2 text-[9px] font-bold text-white bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full select-none tracking-wider uppercase">
+              Sponsored
+            </span>
+          </div>
+        </a>
+      </div>
     </div>
   );
 }

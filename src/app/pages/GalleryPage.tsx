@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, X, Image as ImageIcon, Calendar } from 'luci
 import { api } from '../lib/api';
 import { mockAshrams } from '../data/mock';
 import type { Album } from '../types';
+import { PremiumHeroBackdrop } from '../components/home/PremiumHeroBackdrop';
 
 export function GalleryPage() {
   const [albums, setAlbums] = useState<Album[]>([]);
@@ -43,22 +44,22 @@ export function GalleryPage() {
             },
             {
               id: 'album-3',
-              name: 'Celebrations & Events',
-              description: 'Moments of festival functions, drawing competitions, and visits from special volunteers.',
+              name: 'Events & Celebrations',
+              description: 'Annual day celebrations, festival gatherings, and cultural performances by our students.',
               coverUrl: ashram.gallery?.[2] || ashram.imageUrl,
               images: ashram.gallery || [ashram.imageUrl],
               createdAt: new Date().toISOString(),
-            }
+            },
           ];
           setAlbums(mockData);
         }
-      } catch (err) {
-        console.error(err);
+      } catch {
+        // use fallback
       } finally {
         setLoading(false);
       }
     };
-    fetchAlbums();
+    void fetchAlbums();
   }, []);
 
   const openLightbox = (album: Album, index: number) => {
@@ -85,26 +86,25 @@ export function GalleryPage() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!activeAlbum) return;
+      if (e.key === 'Escape') closeLightbox();
       if (e.key === 'ArrowRight') nextPhoto();
       if (e.key === 'ArrowLeft') prevPhoto();
-      if (e.key === 'Escape') closeLightbox();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeAlbum]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background">
       {/* Hero Header */}
-      <div className="relative py-16 bg-[#0F6D4E] text-white overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.08),transparent_50%)]" />
-        <div className="section-container relative text-center space-y-3">
-          <h1 className="text-3xl font-bold font-serif sm:text-4xl md:text-5xl">Photo Gallery</h1>
-          <p className="text-white/80 max-w-xl mx-auto text-sm sm:text-base">
-            Take a look inside the daily life, events, and activities at Niswartha orphanage and deaf school.
+      <PremiumHeroBackdrop pageKey="gallery">
+        <div className="section-container py-16 lg:py-24 text-center">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-white mb-3">Photo Gallery and Campus Life</h1>
+          <p className="text-sm text-white/80 max-w-2xl mx-auto">
+            Explore daily life, vocational training, achievements, and celebrations at the Deaf and Dumb Industrial Institute, Nagpur.
           </p>
         </div>
-      </div>
+      </PremiumHeroBackdrop>
 
       {/* Main Grid */}
       <div className="section-container py-12">
