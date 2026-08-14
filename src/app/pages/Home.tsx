@@ -214,8 +214,8 @@ export function Home() {
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
               {[
                 {
-                  tint: 'bg-gradient-to-b from-primary/12 to-primary/5 ring-1 ring-primary/15',
-                  iconBg: 'text-primary',
+                  tint: 'bg-gradient-to-b from-primary-500/12 to-primary-500/5 ring-1 ring-primary-500/15',
+                  iconBg: 'text-primary-600',
                   title: 'Support Our Mission',
                   subtitle: 'Support our children with a contribution',
                   icon: <Heart className="h-7 w-7" />,
