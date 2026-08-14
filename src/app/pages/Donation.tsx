@@ -56,6 +56,7 @@ export function Donation() {
   const { currentUser } = useUser();
 
   const [ashram, setAshram] = useState<Ashram | null>(null);
+  const [loadingAshram, setLoadingAshram] = useState(true);
   const [cartLines, setCartLines] = useState<CartLine[]>([]);
   /** Per-need rupee amounts (need-specific donations) */
   const [needAmounts, setNeedAmounts] = useState<Record<string, number>>({});

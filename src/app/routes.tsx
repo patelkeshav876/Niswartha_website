@@ -51,9 +51,15 @@ const ManageBookings = lazy(() => import('./pages/admin/ManageBookings').then((m
 // Super Admin Pages
 const SuperAdminDashboard = lazy(() => import('./pages/super-admin/SuperAdminDashboard').then((m) => ({ default: m.SuperAdminDashboard })));
 
-// Helper wrapper for Lazy components in routes
+import { ErrorBoundary, RouteErrorFallback } from './components/ErrorBoundary';
+
+// Helper wrapper for Lazy components in routes with ErrorBoundary
 function SuspenseWrap({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={<PageSkeleton />}>{children}</Suspense>;
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
+    </ErrorBoundary>
+  );
 }
 
 // Wrapper component to provide UserContext to all routes
@@ -86,7 +92,14 @@ function SuperAdminRoute({ children }: { children: React.ReactNode }) {
 
 export const router = createBrowserRouter([
   {
-    element: <RootLayout><Layout /></RootLayout>,
+    element: (
+      <ErrorBoundary>
+        <RootLayout>
+          <Layout />
+        </RootLayout>
+      </ErrorBoundary>
+    ),
+    errorElement: <RouteErrorFallback />,
     children: [
       // Public pages
       { index: true, path: '/', element: <SuspenseWrap><Home /></SuspenseWrap> },
