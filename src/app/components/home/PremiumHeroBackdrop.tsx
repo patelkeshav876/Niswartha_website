@@ -9,6 +9,16 @@ type Props = {
   pageKey?: string;
 };
 
+function getYouTubeEmbedUrl(url: string): string | null {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  if (match && match[2].length === 11) {
+    return `https://www.youtube.com/embed/${match[2]}?autoplay=1&mute=1&loop=1&playlist=${match[2]}&controls=0&showinfo=0&autohide=1&modestbranding=1&enablejsapi=1`;
+  }
+  return null;
+}
+
 /**
  * Premium Dynamic Hero Backdrop supporting configurable page background images,
  * video backgrounds, mobile fallback images, backdrop blur, brightness adjustments,
@@ -124,23 +134,34 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
         </div>
       )}
 
-      {/* ──── Video Fill ──── */}
+      {/* ──── Video Fill (Supports YouTube links + Direct MP4/WebM URLs) ──── */}
       {bgType === 'video' && bgVideoUrl && (
         <>
-          {/* Desktop/Tablet Video */}
-          <video
-            src={bgVideoUrl}
-            autoPlay={autoPlayVideo}
-            loop={loopVideo}
-            muted
-            playsInline
-            className={cn('hidden md:block absolute inset-0 w-full h-[120%] pointer-events-none', fitClass)}
-            style={{
-              transform: `translateY(${parallaxShift}px) translateZ(0)`,
-              filter: blurIntensity > 0 ? `blur(${blurIntensity}px)` : undefined,
-              transition: 'transform 0.1s ease-out',
-            }}
-          />
+          {getYouTubeEmbedUrl(bgVideoUrl) ? (
+            <div className="hidden md:block absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
+              <iframe
+                src={getYouTubeEmbedUrl(bgVideoUrl)!}
+                className="absolute top-1/2 left-1/2 w-[160%] h-[160%] -translate-x-1/2 -translate-y-1/2 object-cover border-0 pointer-events-none"
+                allow="autoplay; encrypted-media"
+                title="Hero Background Video"
+              />
+            </div>
+          ) : (
+            <video
+              src={bgVideoUrl}
+              autoPlay={autoPlayVideo}
+              loop={loopVideo}
+              muted
+              playsInline
+              className={cn('hidden md:block absolute inset-0 w-full h-[120%] pointer-events-none', fitClass)}
+              style={{
+                transform: `translateY(${parallaxShift}px) translateZ(0)`,
+                filter: blurIntensity > 0 ? `blur(${blurIntensity}px)` : undefined,
+                transition: 'transform 0.1s ease-out',
+              }}
+            />
+          )}
+
           {/* Mobile Fallback Image */}
           <div
             className="md:hidden absolute inset-0 w-full h-full pointer-events-none"
