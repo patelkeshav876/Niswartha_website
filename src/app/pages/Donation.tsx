@@ -75,7 +75,10 @@ export function Donation() {
   const hasNeedCart = cartLines.length > 0;
 
   useEffect(() => {
-    if (!ashramId) return;
+    if (!ashramId) {
+      setLoadingAshram(false);
+      return;
+    }
     let cancelled = false;
     (async () => {
       try {
@@ -84,6 +87,8 @@ export function Donation() {
       } catch {
         const m = mockAshrams.find((x) => x.id === ashramId);
         if (!cancelled) setAshram(m || null);
+      } finally {
+        if (!cancelled) setLoadingAshram(false);
       }
     })();
     return () => {
