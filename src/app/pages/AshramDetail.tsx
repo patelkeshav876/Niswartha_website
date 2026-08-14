@@ -22,7 +22,10 @@ export function AshramDetail() {
   const [posts, setPosts] = useState<Post[]>(() => mockPosts.filter((p) => p.ashramId === id));
 
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      setLoading(false);
+      return;
+    }
     const fallbackAshram = mockAshrams.find((a) => a.id === id);
     if (fallbackAshram) {
       setAshram(fallbackAshram);
@@ -46,6 +49,8 @@ export function AshramDetail() {
         setPosts(p);
       } catch {
         /* mock already applied */
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -53,8 +58,32 @@ export function AshramDetail() {
     };
   }, [id]);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-16 w-16 rounded-2xl bg-[#0F6D4E] shadow-xl shadow-[#0F6D4E]/25 flex items-center justify-center animate-bounce">
+            <Heart className="h-8 w-8 text-white fill-white" />
+          </div>
+          <div className="flex items-center gap-2.5 text-sm font-semibold text-[#0F6D4E]">
+            <div className="h-4 w-4 rounded-full border-2 border-[#0F6D4E] border-t-transparent animate-spin" />
+            Loading Ashram Profile...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!ashram) {
-    return <div className="p-8 text-center">Ashram not found</div>;
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+        <h2 className="text-xl font-serif font-bold text-zinc-950 mb-2">Ashram Profile Not Found</h2>
+        <p className="text-sm text-muted-foreground mb-6">We could not find the specified ashram profile.</p>
+        <Button onClick={() => navigate('/')} className="rounded-full bg-[#0F6D4E] text-white px-6">
+          Return Home
+        </Button>
+      </div>
+    );
   }
 
   const handleDonate = () => {

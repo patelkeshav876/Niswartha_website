@@ -131,6 +131,7 @@ export function DonationFlow() {
   const [need, setNeed] = useState<Need | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  const [loading, setLoading] = useState(true);
   const [deliveryDate, setDeliveryDate] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
@@ -140,6 +141,7 @@ export function DonationFlow() {
   useEffect(() => {
     if (!ashramId || !needId) {
       setLoadError('Missing ashram or need.');
+      setLoading(false);
       return;
     }
     let cancelled = false;
@@ -168,6 +170,8 @@ export function DonationFlow() {
         setAshram(mA);
         setNeed(mN);
         setLoadError(null);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -188,14 +192,30 @@ export function DonationFlow() {
     setStep(4);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-16 w-16 rounded-2xl bg-[#0F6D4E] shadow-xl shadow-[#0F6D4E]/25 flex items-center justify-center animate-bounce">
+            <Package className="h-8 w-8 text-white" />
+          </div>
+          <div className="flex items-center gap-2.5 text-sm font-semibold text-[#0F6D4E]">
+            <div className="h-4 w-4 rounded-full border-2 border-[#0F6D4E] border-t-transparent animate-spin" />
+            Loading Donation Details...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (loadError || !ashram || !need) {
     return (
-      <div className="mx-auto flex min-h-screen max-w-[480px] flex-col bg-background px-4 pb-24 pt-4">
-        <Button variant="ghost" size="sm" className="mb-4 w-fit -ml-2" onClick={() => navigate(-1)}>
-          <ArrowLeft className="mr-1 h-4 w-4" />
-          Back
+      <div className="mx-auto flex min-h-screen max-w-[480px] flex-col bg-background px-4 pb-24 pt-20 items-center justify-center text-center">
+        <h2 className="text-xl font-serif font-bold text-zinc-950 mb-2">Item Not Found</h2>
+        <p className="text-sm text-muted-foreground mb-6">{loadError || 'The requested need could not be found.'}</p>
+        <Button onClick={() => navigate('/needs')} className="rounded-full bg-[#0F6D4E] text-white px-6">
+          Browse Active Needs
         </Button>
-        <p className="text-center text-muted-foreground">{loadError || 'Loading…'}</p>
       </div>
     );
   }
@@ -447,19 +467,20 @@ export function DonationFlow() {
                     id="fullname"
                     placeholder="e.g. Amara Osei"
                     value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    onChange={(e) => setFullName(e.target.value.replace(/[^a-zA-Z\s]/g, ''))}
                     className="rounded-xl"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Contact phone number</Label>
+                  <Label htmlFor="phone">Contact phone number (10 Digits)</Label>
                   <Input
                     id="phone"
                     type="tel"
-                    inputMode="tel"
-                    placeholder="e.g. +91 98765 43210"
+                    inputMode="numeric"
+                    maxLength={10}
+                    placeholder="e.g. 9876543210"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, '').slice(0, 10))}
                     className="rounded-xl"
                   />
                 </div>
