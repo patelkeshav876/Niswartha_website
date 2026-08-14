@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
+import { LottieLoader } from '../components/LottieLoader';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Tabs } from '../components/CustomTabs';
@@ -59,19 +60,7 @@ export function AshramDetail() {
   }, [id]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-16 w-16 rounded-2xl bg-[#0F6D4E] shadow-xl shadow-[#0F6D4E]/25 flex items-center justify-center animate-bounce">
-            <Heart className="h-8 w-8 text-white fill-white" />
-          </div>
-          <div className="flex items-center gap-2.5 text-sm font-semibold text-[#0F6D4E]">
-            <div className="h-4 w-4 rounded-full border-2 border-[#0F6D4E] border-t-transparent animate-spin" />
-            Loading Ashram Profile...
-          </div>
-        </div>
-      </div>
-    );
+    return <LottieLoader message="Loading Ashram Profile..." />;
   }
 
   if (!ashram) {
