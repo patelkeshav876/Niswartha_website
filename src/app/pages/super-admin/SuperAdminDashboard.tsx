@@ -365,6 +365,22 @@ export function SuperAdminDashboard() {
     reader.readAsText(file);
   };
 
+  const handleResetFactoryData = async () => {
+    if (!confirm('RESET ALL WEBSITE DATA? This will clear local cache, restore default ashrams, needs, events & configurations, and reload the application.')) return;
+    try {
+      setLoading(true);
+      localStorage.clear();
+      sessionStorage.clear();
+      toast.success('Website data reset to factory default! Reloading...');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1200);
+    } catch {
+      toast.error('Failed to reset data');
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Title bar */}
@@ -1341,7 +1357,7 @@ export function SuperAdminDashboard() {
                 Data Recovery Management
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
                 {/* Export Card */}
                 <div className="border rounded-2xl p-6 bg-zinc-50/50 flex flex-col justify-between">
                   <div>
@@ -1356,14 +1372,14 @@ export function SuperAdminDashboard() {
                 </div>
 
                 {/* Import Card */}
-                <div className="border border-red-200/50 rounded-2xl p-6 bg-red-50/10 flex flex-col justify-between">
+                <div className="border border-amber-200/60 rounded-2xl p-6 bg-amber-50/10 flex flex-col justify-between">
                   <div>
                     <h3 className="font-serif font-bold text-zinc-900 text-base mb-2 flex items-center gap-2">
-                      <AlertTriangle className="h-5 w-5 text-red-600 animate-pulse" />
+                      <Upload className="h-5 w-5 text-amber-600" />
                       Restore Database Backup
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed mb-6">
-                      Upload a previously exported backup JSON file to restore the system state. Warning: This clears all existing tables and overrides them.
+                      Upload a previously exported backup JSON file to restore system state. Warning: This overwrites existing tables.
                     </p>
                   </div>
                   <div className="relative">
@@ -1375,10 +1391,30 @@ export function SuperAdminDashboard() {
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       disabled={loading}
                     />
-                    <Button variant="outline" className="w-full rounded-full gap-2 h-11 border-red-200 text-red-700 bg-white hover:bg-red-50" disabled={loading}>
+                    <Button variant="outline" className="w-full rounded-full gap-2 h-11 border-amber-300 text-amber-900 bg-white hover:bg-amber-50 font-bold text-xs" disabled={loading}>
                       <Upload className="h-4 w-4" /> {loading ? 'Restoring Database...' : 'Upload & Restore Backup'}
                     </Button>
                   </div>
+                </div>
+
+                {/* Factory Reset Card */}
+                <div className="border border-red-300 rounded-2xl p-6 bg-red-50/30 flex flex-col justify-between">
+                  <div>
+                    <h3 className="font-serif font-bold text-red-950 text-base mb-2 flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-red-600 animate-pulse" />
+                      Factory Reset Website Data
+                    </h3>
+                    <p className="text-xs text-red-900/80 leading-relaxed mb-6">
+                      Clear browser cache, wipe temporary local storage overrides, and reset all ashrams, needs, events & configurations back to original seed defaults.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleResetFactoryData}
+                    disabled={loading}
+                    className="w-full rounded-full gap-2 h-11 bg-red-600 text-white hover:bg-red-700 font-bold text-xs shadow-md"
+                  >
+                    <RefreshCw className="h-4 w-4" /> Reset Data to Factory Defaults
+                  </Button>
                 </div>
               </div>
             </CardContent>
