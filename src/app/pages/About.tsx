@@ -37,45 +37,45 @@ import { AdBanner } from '../components/AdBanner';
 import { api } from '../lib/api';
 
 const DEFAULT_STAFF = [
-  { id: 't-1', name: 'Dr. Meenal Sudhir Sangole', role: 'School Principal', since: 'Since 1993', category: 'Management', imageUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80' },
+  { id: 't-1', name: 'Dr. Meenal Sudhir Sangole', role: 'School Principal', since: 'Since 1993', category: 'Management'},
   // Special Teachers
-  { id: 't-2', name: 'Draupadi Popat Chavan', role: 'Special Teacher', since: 'Since 1996', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-3', name: 'Uttara Narendra Patwardhan', role: 'Special Teacher', since: 'Since 1996', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-4', name: 'Jyoti Naneshwar Santpe', role: 'Special Teacher', since: 'Since 1998', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-5', name: 'Saral Sandesh Waghmare', role: 'Special Teacher', since: 'Since 1999', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-6', name: 'Neha Aparajit', role: 'Special Teacher', since: 'Since 2000', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-7', name: 'Jyoti Gajanan Solanke', role: 'Special Teacher', since: 'Since 2000', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-8', name: 'Hanumant Ambadas Rokade', role: 'Special Teacher', since: 'Since 2004', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-9', name: 'Monali Agalave', role: 'Special Teacher', since: 'Since 2008', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1554151228-14d9def656e4?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-10', name: 'Kajal Manoj Parteti', role: 'Special Teacher', since: 'Since 2008', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-11', name: 'Kapil Pratap Wase', role: 'Special Teacher', since: 'Since 2008', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-12', name: 'Varsha Parag Jadhav', role: 'Special Teacher', since: 'Since 2008', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-13', name: 'Kalpana Prashant Atkare', role: 'Special Teacher', since: 'Since 2009', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-14', name: 'Ashwini Naresh Wajbhakte', role: 'Special Teacher', since: 'Since 2010', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-15', name: 'Shalini Anil Bhuyar', role: 'Special Teacher', since: 'Since 2018', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80' },
+  { id: 't-2', name: 'Draupadi Popat Chavan', role: 'Special Teacher', since: 'Since 1996', category: 'Faculty'},
+  { id: 't-3', name: 'Uttara Narendra Patwardhan', role: 'Special Teacher', since: 'Since 1996', category: 'Faculty'},
+  { id: 't-4', name: 'Jyoti Naneshwar Santpe', role: 'Special Teacher', since: 'Since 1998', category: 'Faculty'},
+  { id: 't-5', name: 'Saral Sandesh Waghmare', role: 'Special Teacher', since: 'Since 1999', category: 'Faculty'},
+  { id: 't-6', name: 'Neha Aparajit', role: 'Special Teacher', since: 'Since 2000', category: 'Faculty'},
+  { id: 't-7', name: 'Jyoti Gajanan Solanke', role: 'Special Teacher', since: 'Since 2000', category: 'Faculty'},
+  { id: 't-8', name: 'Hanumant Ambadas Rokade', role: 'Special Teacher', since: 'Since 2004', category: 'Faculty'},
+  { id: 't-9', name: 'Monali Agalave', role: 'Special Teacher', since: 'Since 2008', category: 'Faculty'},
+  { id: 't-10', name: 'Kajal Manoj Parteti', role: 'Special Teacher', since: 'Since 2008', category: 'Faculty'},
+  { id: 't-11', name: 'Kapil Pratap Wase', role: 'Special Teacher', since: 'Since 2008', category: 'Faculty'},
+  { id: 't-12', name: 'Varsha Parag Jadhav', role: 'Special Teacher', since: 'Since 2008', category: 'Faculty'},
+  { id: 't-13', name: 'Kalpana Prashant Atkare', role: 'Special Teacher', since: 'Since 2009', category: 'Faculty'},
+  { id: 't-14', name: 'Ashwini Naresh Wajbhakte', role: 'Special Teacher', since: 'Since 2010', category: 'Faculty'},
+  { id: 't-15', name: 'Shalini Anil Bhuyar', role: 'Special Teacher', since: 'Since 2018', category: 'Faculty'},
   // Art Teachers
-  { id: 't-16', name: 'Madhuvanti Khode', role: 'Art Teacher', since: 'Since 1996', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-17', name: 'Shailesh Damodar Borkar', role: 'Art Teacher', since: 'Since 1996', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-18', name: 'Kavita Pille', role: 'Art Teacher', since: 'Since 1998', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-19', name: 'Pramod Nagarale', role: 'Art Teacher', since: 'Since 1998', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-20', name: 'Rajendra Bhaskar Aghav', role: 'Art Teacher', since: 'Since 2000', category: 'Faculty', imageUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80' },
+  { id: 't-16', name: 'Madhuvanti Khode', role: 'Art Teacher', since: 'Since 1996', category: 'Faculty'},
+  { id: 't-17', name: 'Shailesh Damodar Borkar', role: 'Art Teacher', since: 'Since 1996', category: 'Faculty'},
+  { id: 't-18', name: 'Kavita Pille', role: 'Art Teacher', since: 'Since 1998', category: 'Faculty' },
+  { id: 't-19', name: 'Pramod Nagarale', role: 'Art Teacher', since: 'Since 1998', category: 'Faculty'},
+  { id: 't-20', name: 'Rajendra Bhaskar Aghav', role: 'Art Teacher', since: 'Since 2000', category: 'Faculty'},
   // Accountants & Clerks
-  { id: 't-21', name: 'Rahul Sharad Rangari', role: 'Accountant', since: 'Since 2022', category: 'Staff', imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-22', name: 'Bhushan Kailas Bave', role: 'Junior Clerk', since: 'Since 2022', category: 'Staff', imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-23', name: 'Harish Dnyaneshwar Jogi', role: 'Junior Clerk', since: 'Since 2025', category: 'Staff', imageUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80' },
+  { id: 't-21', name: 'Rahul Sharad Rangari', role: 'Accountant', since: 'Since 2022', category: 'Staff'},
+  { id: 't-22', name: 'Bhushan Kailas Bave', role: 'Junior Clerk', since: 'Since 2022', category: 'Staff'},
+  { id: 't-23', name: 'Harish Dnyaneshwar Jogi', role: 'Junior Clerk', since: 'Since 2025', category: 'Staff'},
   // Hostel & Support Caretakers
-  { id: 't-24', name: 'Nandu Motiramji Padole', role: 'Hostel Superintendent', since: 'Since 2008', category: 'Staff', imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-25', name: 'Anil Tukaram Lute', role: 'Caretaker', since: 'Since 1989', category: 'Staff', imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-26', name: 'Arun Tukaram Mohule', role: 'Caretaker', since: 'Since 1996', category: 'Staff', imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-27', name: 'Meena Kishor Savarkar', role: 'Caretaker', since: 'Since 1998', category: 'Staff', imageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-28', name: 'Siddharth Narayan Gachhe', role: 'Caretaker', since: 'Since 2022', category: 'Staff', imageUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-29', name: 'Mangesh Gurudeorao Manne', role: 'Caretaker', since: 'Since 2023', category: 'Staff', imageUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-30', name: 'Shrikant Dattatraya Sutar', role: 'Caretaker', since: 'Since 2025', category: 'Staff', imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-31', name: 'Devidas Helonde', role: 'Office Peon', since: 'Since 1996', category: 'Staff', imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-32', name: 'Shila Udaram Lohi', role: 'Maid', since: 'Since 1997', category: 'Staff', imageUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-33', name: 'Sanjay Hazarilal Nahar', role: 'Watchman', since: 'Since 1991', category: 'Staff', imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-34', name: 'Sanmugam Mutyan Settiyar', role: 'Watchman', since: 'Since 1996', category: 'Staff', imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80' },
-  { id: 't-35', name: 'Lahu Raosaheb Gavare', role: 'Helper', since: 'Since 2017', category: 'Staff', imageUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80' }
+  { id: 't-24', name: 'Nandu Motiramji Padole', role: 'Hostel Superintendent', since: 'Since 2008', category: 'Staff'},
+  { id: 't-25', name: 'Anil Tukaram Lute', role: 'Caretaker', since: 'Since 1989', category: 'Staff'},
+  { id: 't-26', name: 'Arun Tukaram Mohule', role: 'Caretaker', since: 'Since 1996', category: 'Staff'},
+  { id: 't-27', name: 'Meena Kishor Savarkar', role: 'Caretaker', since: 'Since 1998', category: 'Staff'},
+  { id: 't-28', name: 'Siddharth Narayan Gachhe', role: 'Caretaker', since: 'Since 2022', category: 'Staff'},
+  { id: 't-29', name: 'Mangesh Gurudeorao Manne', role: 'Caretaker', since: 'Since 2023', category: 'Staff'},
+  { id: 't-30', name: 'Shrikant Dattatraya Sutar', role: 'Caretaker', since: 'Since 2025', category: 'Staff'},
+  { id: 't-31', name: 'Devidas Helonde', role: 'Office Peon', since: 'Since 1996', category: 'Staff'},
+  { id: 't-32', name: 'Shila Udaram Lohi', role: 'Maid', since: 'Since 1997', category: 'Staff'},
+  { id: 't-33', name: 'Sanjay Hazarilal Nahar', role: 'Watchman', since: 'Since 1991', category: 'Staff'},
+  { id: 't-34', name: 'Sanmugam Mutyan Settiyar', role: 'Watchman', since: 'Since 1996', category: 'Staff'},
+  { id: 't-35', name: 'Lahu Raosaheb Gavare', role: 'Helper', since: 'Since 2017', category: 'Staff'}
 ];
 
 export function About() {
@@ -426,9 +426,9 @@ export function About() {
             {/* Category Collapsible Dropdown Accordions */}
             <div className="section-container max-w-4xl mx-auto space-y-4">
               {[
-                { key: 'Management', label: 'Management & Leadership', desc: 'School Principal & Academic Lead' },
-                { key: 'Faculty', label: 'Special Educators & Art Instructors', desc: 'Qualified Special Teachers (Since 1996) & Art Teachers' },
-                { key: 'Staff', label: 'Support Staff, Caretakers & Accountants', desc: 'Hostel Superintendents, Caretakers, Clerks & Office Staff' },
+                { key: 'Management', label: 'Management & Leadership', desc: 'School Principal And Academic Lead' },
+                { key: 'Faculty', label: 'Special Educators & Art Instructors', desc: 'Qualified Special Teachers (Since 1996) And Art Teachers' },
+                { key: 'Staff', label: 'Support Staff, Caretakers & Accountants', desc: 'Hostel Superintendents, Caretakers, Clerks And Office Staff' },
               ].map((cat) => {
                 const members = team.filter((m) => m.category === cat.key);
                 const isOpen = activeCategory === 'All' ? openCategories.includes(cat.key) : activeCategory === cat.key;
