@@ -1409,6 +1409,7 @@ app.post('/api/schemes', requireAdmin, async (req, res) => {
     const scheme = req.body;
     const id = scheme.id || `scheme-${Date.now()}`;
     const doc = {
+      published: true,
       ...scheme,
       id,
       createdAt: scheme.createdAt || new Date().toISOString(),

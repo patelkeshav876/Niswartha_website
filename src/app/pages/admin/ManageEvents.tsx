@@ -111,23 +111,45 @@ export function ManageEvents() {
     }
   };
 
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  const confirmDeleteEvent = async () => {
+    if (!deleteConfirmId) return;
+    try {
+      await api.deleteEvent(deleteConfirmId);
+      setMyEvents((prev) => prev.filter((e) => e.id !== deleteConfirmId));
+      toast.success('Event deleted successfully');
+      setDeleteConfirmId(null);
+      await reload();
+    } catch {
+      setMyEvents((prev) => prev.filter((e) => e.id !== deleteConfirmId));
+      toast.success('Event removed');
+      setDeleteConfirmId(null);
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <div className="sticky top-0 z-40 border-b bg-background/95 px-6 py-4 backdrop-blur-md">
-        <div className="mb-4 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/admin')} className="h-9 w-9">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-lg font-bold">Manage Events</h1>
-            <p className="text-xs text-muted-foreground">Schedule and track events</p>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/admin')} className="h-9 w-9">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-xl font-serif font-bold text-zinc-950">Manage Events</h1>
+              <p className="text-xs text-muted-foreground">Schedule and manage institute events</p>
+            </div>
           </div>
+          <Button onClick={() => navigate('/admin/events/create')} className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white gap-1.5 text-xs font-bold px-4 py-2 shadow-sm">
+            <Plus className="h-4 w-4" /> Create New Event
+          </Button>
         </div>
 
         <div className="relative mb-3">
           <Input
             placeholder="Search events..."
-            className="border-none bg-muted/50 pl-10"
+            className="border-none bg-muted/50 pl-10 rounded-xl"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -137,7 +159,7 @@ export function ManageEvents() {
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           {(
             [
-              { id: 'all' as const, label: 'All' },
+              { id: 'all' as const, label: 'All Events' },
               { id: 'approved' as const, label: 'Approved' },
               { id: 'pending' as const, label: 'Pending Approval' },
             ] as const
@@ -147,7 +169,7 @@ export function ManageEvents() {
               type="button"
               size="sm"
               variant={filterTab === t.id ? 'default' : 'outline'}
-              className="shrink-0 rounded-full"
+              className="shrink-0 rounded-full text-xs"
               onClick={() => setFilterTab(t.id)}
             >
               {t.label}
@@ -156,35 +178,30 @@ export function ManageEvents() {
         </div>
       </div>
 
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-4 sm:p-6 max-w-6xl w-full mx-auto">
         <div className="mb-6 grid grid-cols-3 gap-3">
-          <Card className="border-none shadow-sm">
+          <Card className="border-none shadow-sm rounded-2xl bg-white">
             <CardContent className="p-4 text-center">
-              <Calendar className="mx-auto mb-2 h-5 w-5 text-primary" />
-              <p className="text-2xl font-bold">{filteredEvents.length}</p>
-              <p className="text-xs text-muted-foreground">Listed</p>
+              <Calendar className="mx-auto mb-1.5 h-5 w-5 text-[#0F6D4E]" />
+              <p className="text-xl font-bold text-zinc-950">{filteredEvents.length}</p>
+              <p className="text-[11px] text-muted-foreground">Total Listed</p>
             </CardContent>
           </Card>
-          <Card className="border-none shadow-sm">
+          <Card className="border-none shadow-sm rounded-2xl bg-white">
             <CardContent className="p-4 text-center">
-              <Users className="mx-auto mb-2 h-5 w-5 text-green-600" />
-              <p className="text-2xl font-bold">{totalRegistrations}</p>
-              <p className="text-xs text-muted-foreground">Registrations</p>
+              <Users className="mx-auto mb-1.5 h-5 w-5 text-emerald-600" />
+              <p className="text-xl font-bold text-zinc-950">{totalRegistrations}</p>
+              <p className="text-[11px] text-muted-foreground">Registrations</p>
             </CardContent>
           </Card>
-          <Card className="border-none shadow-sm">
+          <Card className="border-none shadow-sm rounded-2xl bg-white">
             <CardContent className="p-4 text-center">
-              <Clock className="mx-auto mb-2 h-5 w-5 text-orange-600" />
-              <p className="text-2xl font-bold">2</p>
-              <p className="text-xs text-muted-foreground">Upcoming</p>
+              <Clock className="mx-auto mb-1.5 h-5 w-5 text-amber-600" />
+              <p className="text-xl font-bold text-zinc-950">{myEvents.filter(e => e.status === 'pending_approval').length}</p>
+              <p className="text-[11px] text-muted-foreground">Pending Review</p>
             </CardContent>
           </Card>
         </div>
-
-        <Button className="mb-6 h-12 w-full gap-2" onClick={() => navigate('/admin/events/create')}>
-          <Plus className="h-5 w-5" />
-          Create New Event
-        </Button>
 
         <div className="space-y-4">
           {filteredEvents.map((event) => {
@@ -197,112 +214,125 @@ export function ManageEvents() {
             return (
               <Card
                 key={event.id}
-                className="border-none shadow-sm transition-shadow hover:shadow-md"
+                className="border-none shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all bg-white"
               >
-                <CardContent className="p-0">
-                  <div className="flex gap-4">
-                    <div className="h-32 w-24 flex-shrink-0">
+                <CardContent className="p-4 sm:p-5">
+                  <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center">
+                    <div className="h-44 sm:h-32 w-full sm:w-40 shrink-0 rounded-2xl overflow-hidden bg-zinc-100 relative">
                       <img
                         src={event.imageUrl || fallbackImg}
-                        className="h-full w-full rounded-l-lg object-cover"
+                        className="h-full w-full object-cover"
                         alt={event.title}
                       />
+                      {isPending && (
+                        <div className="absolute top-2 left-2">
+                          <Badge className="bg-amber-500 text-white font-bold text-[9px] border-none px-2 py-0.5">
+                            Pending Review
+                          </Badge>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="min-w-0 flex-1 py-3 pr-3">
-                      <div className="mb-2 flex items-start justify-between gap-2">
-                        <h3 className="line-clamp-1 flex-1 text-sm font-bold">{event.title}</h3>
-                        <div className="flex shrink-0 flex-col items-end gap-1">
-                          {isPending && (
-                            <Badge className="bg-orange-500 text-[10px] text-white hover:bg-orange-500">
-                              Awaiting Approval
-                            </Badge>
-                          )}
+                    <div className="min-w-0 flex-1 space-y-2 w-full">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <h3 className="text-base font-bold font-serif text-zinc-950">{event.title}</h3>
+                          <p className="text-xs text-zinc-500 line-clamp-1 mt-0.5">{event.description}</p>
+                        </div>
+                        <div className="flex items-center gap-1.5">
                           {showUserSuggested && (
-                            <Badge variant="secondary" className="text-[10px]">
+                            <Badge variant="secondary" className="text-[10px] rounded-full">
                               👤 User Suggested
                             </Badge>
                           )}
-                          <Badge variant="outline" className="text-[10px]">
+                          <Badge variant="outline" className="text-[10px] rounded-full font-mono">
                             {event.date}
                           </Badge>
                         </div>
                       </div>
 
-                      <div className="mb-3 space-y-1">
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          <span>
-                            {new Date(event.date).toLocaleDateString()} • {event.time}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <MapPin className="h-3 w-3" />
-                          <span className="line-clamp-1">{event.location}</span>
-                        </div>
+                      <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                        <span className="flex items-center gap-1.5">
+                          <Calendar className="h-3.5 w-3.5 text-[#0F6D4E]" />
+                          {new Date(event.date).toLocaleDateString()} • {event.time}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <MapPin className="h-3.5 w-3.5 text-[#0F6D4E]" />
+                          <span className="truncate max-w-[200px]">{event.location}</span>
+                        </span>
                       </div>
 
                       {bookingInfo.capacity > 0 && (
-                        <div className="mb-3">
-                          <div className="mb-1 flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">Registrations</span>
-                            <span className="font-medium">
+                        <div className="max-w-md pt-1">
+                          <div className="mb-1 flex items-center justify-between text-[11px]">
+                            <span className="text-zinc-500">Registrations</span>
+                            <span className="font-bold text-zinc-800">
                               {bookingInfo.registered}/{bookingInfo.capacity}
                             </span>
                           </div>
-                          <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                          <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-100">
                             <div
-                              className="h-full rounded-full bg-primary transition-all"
+                              className="h-full rounded-full bg-[#0F6D4E] transition-all"
                               style={{ width: `${fillPercentage}%` }}
                             />
                           </div>
                         </div>
                       )}
 
-                      {isPending ? (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            className="h-8 flex-1 gap-1 text-xs"
-                            onClick={() => approveEvent(event)}
-                          >
-                            <Check className="h-3.5 w-3.5" />
-                            Approve & Publish
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 flex-1 gap-1 border-destructive/50 text-xs text-destructive hover:bg-destructive/10"
-                            onClick={() => setDeclineTarget(event)}
-                          >
-                            <X className="h-3.5 w-3.5" />
-                            Decline
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 flex-1 text-xs"
-                            onClick={() => navigate(`/admin/events/bookings/${event.id}`)}
-                          >
-                            <Users className="mr-1 h-3 w-3" />
-                            View Bookings
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 px-2 text-xs"
-                            onClick={() => navigate(`/admin/events/edit/${event.id}`)}
-                          >
-                            <Edit2 className="h-3 w-3" />
-                          </Button>
-                          <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-destructive">
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      )}
+                      {/* Action Buttons Section */}
+                      <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-zinc-100">
+                        {isPending ? (
+                          <div className="flex gap-2 w-full sm:w-auto">
+                            <Button
+                              size="sm"
+                              className="h-9 rounded-full bg-[#0F6D4E] text-white text-xs font-bold px-4 gap-1.5"
+                              onClick={() => approveEvent(event)}
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                              Approve & Publish
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-9 rounded-full border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold px-4 gap-1.5"
+                              onClick={() => setDeclineTarget(event)}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                              Decline
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 flex-wrap w-full justify-end">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 rounded-full text-xs font-medium border-zinc-200"
+                              onClick={() => navigate(`/admin/events/bookings/${event.id}`)}
+                            >
+                              <Users className="mr-1.5 h-3.5 w-3.5 text-[#0F6D4E]" />
+                              View Bookings
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 rounded-full text-xs font-medium border-zinc-200 hover:bg-zinc-50"
+                              onClick={() => navigate(`/admin/events/edit/${event.id}`)}
+                            >
+                              <Edit2 className="mr-1.5 h-3.5 w-3.5 text-zinc-600" />
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 rounded-full text-xs font-medium border-red-200 text-red-600 hover:bg-red-50"
+                              onClick={() => setDeleteConfirmId(event.id)}
+                            >
+                              <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                              Delete
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -311,35 +341,57 @@ export function ManageEvents() {
           })}
 
           {filteredEvents.length === 0 && (
-            <Card className="border-dashed p-8 text-center">
-              <Calendar className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
-              <p className="mb-1 text-sm font-medium">No events found</p>
-              <p className="text-xs text-muted-foreground">Try another tab or search</p>
+            <Card className="border-dashed p-8 text-center bg-white rounded-3xl">
+              <Calendar className="mx-auto mb-3 h-12 w-12 text-zinc-300" />
+              <p className="mb-1 text-sm font-bold text-zinc-800">No events found</p>
+              <p className="text-xs text-muted-foreground">Try another tab or search filter</p>
             </Card>
           )}
         </div>
       </main>
 
+      {/* Decline Modal */}
       <Dialog open={!!declineTarget} onOpenChange={(o) => !o && setDeclineTarget(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md rounded-3xl p-6 bg-white border-none shadow-2xl">
           <DialogHeader>
-            <DialogTitle>Decline suggestion</DialogTitle>
+            <DialogTitle className="font-serif font-bold text-lg text-zinc-950">Decline Event Suggestion</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            Optional note (shown in a toast only — event will be removed from the list).
+          <p className="text-xs text-muted-foreground">
+            Provide an optional reason for declining this suggestion.
           </p>
           <Textarea
             placeholder="Reason for declining…"
             value={declineReason}
             onChange={(e) => setDeclineReason(e.target.value)}
             rows={3}
+            className="rounded-xl border-zinc-200 text-xs"
           />
           <DialogFooter className="gap-2">
-            <Button type="button" variant="outline" onClick={() => setDeclineTarget(null)}>
+            <Button type="button" variant="outline" className="rounded-full text-xs" onClick={() => setDeclineTarget(null)}>
               Cancel
             </Button>
-            <Button type="button" variant="destructive" disabled={declining} onClick={confirmDecline}>
-              {declining ? 'Removing…' : 'Decline & remove'}
+            <Button type="button" variant="destructive" className="rounded-full text-xs font-bold" disabled={declining} onClick={confirmDecline}>
+              {declining ? 'Removing…' : 'Decline & Remove'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={!!deleteConfirmId} onOpenChange={(o) => !o && setDeleteConfirmId(null)}>
+        <DialogContent className="max-w-md rounded-3xl p-6 bg-white border-none shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-serif font-bold text-lg text-zinc-950">Delete Event</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground">
+            Are you sure you want to permanently delete this event? This action cannot be undone.
+          </p>
+          <DialogFooter className="gap-2 pt-2">
+            <Button type="button" variant="outline" className="rounded-full text-xs" onClick={() => setDeleteConfirmId(null)}>
+              Cancel
+            </Button>
+            <Button type="button" variant="destructive" className="rounded-full text-xs font-bold" onClick={confirmDeleteEvent}>
+              Delete Event
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -36,47 +36,7 @@ import { PremiumHeroBackdrop } from '../components/home/PremiumHeroBackdrop';
 import { AdBanner } from '../components/AdBanner';
 import { api } from '../lib/api';
 
-const DEFAULT_STAFF = [
-  { id: 't-1', name: 'Dr. Meenal Sudhir Sangole', role: 'School Principal', since: 'Since 1993', category: 'Management'},
-  // Special Teachers
-  { id: 't-2', name: 'Draupadi Popat Chavan', role: 'Special Teacher', since: 'Since 1996', category: 'Faculty'},
-  { id: 't-3', name: 'Uttara Narendra Patwardhan', role: 'Special Teacher', since: 'Since 1996', category: 'Faculty'},
-  { id: 't-4', name: 'Jyoti Naneshwar Santpe', role: 'Special Teacher', since: 'Since 1998', category: 'Faculty'},
-  { id: 't-5', name: 'Saral Sandesh Waghmare', role: 'Special Teacher', since: 'Since 1999', category: 'Faculty'},
-  { id: 't-6', name: 'Neha Aparajit', role: 'Special Teacher', since: 'Since 2000', category: 'Faculty'},
-  { id: 't-7', name: 'Jyoti Gajanan Solanke', role: 'Special Teacher', since: 'Since 2000', category: 'Faculty'},
-  { id: 't-8', name: 'Hanumant Ambadas Rokade', role: 'Special Teacher', since: 'Since 2004', category: 'Faculty'},
-  { id: 't-9', name: 'Monali Agalave', role: 'Special Teacher', since: 'Since 2008', category: 'Faculty'},
-  { id: 't-10', name: 'Kajal Manoj Parteti', role: 'Special Teacher', since: 'Since 2008', category: 'Faculty'},
-  { id: 't-11', name: 'Kapil Pratap Wase', role: 'Special Teacher', since: 'Since 2008', category: 'Faculty'},
-  { id: 't-12', name: 'Varsha Parag Jadhav', role: 'Special Teacher', since: 'Since 2008', category: 'Faculty'},
-  { id: 't-13', name: 'Kalpana Prashant Atkare', role: 'Special Teacher', since: 'Since 2009', category: 'Faculty'},
-  { id: 't-14', name: 'Ashwini Naresh Wajbhakte', role: 'Special Teacher', since: 'Since 2010', category: 'Faculty'},
-  { id: 't-15', name: 'Shalini Anil Bhuyar', role: 'Special Teacher', since: 'Since 2018', category: 'Faculty'},
-  // Art Teachers
-  { id: 't-16', name: 'Madhuvanti Khode', role: 'Art Teacher', since: 'Since 1996', category: 'Faculty'},
-  { id: 't-17', name: 'Shailesh Damodar Borkar', role: 'Art Teacher', since: 'Since 1996', category: 'Faculty'},
-  { id: 't-18', name: 'Kavita Pille', role: 'Art Teacher', since: 'Since 1998', category: 'Faculty' },
-  { id: 't-19', name: 'Pramod Nagarale', role: 'Art Teacher', since: 'Since 1998', category: 'Faculty'},
-  { id: 't-20', name: 'Rajendra Bhaskar Aghav', role: 'Art Teacher', since: 'Since 2000', category: 'Faculty'},
-  // Accountants & Clerks
-  { id: 't-21', name: 'Rahul Sharad Rangari', role: 'Accountant', since: 'Since 2022', category: 'Staff'},
-  { id: 't-22', name: 'Bhushan Kailas Bave', role: 'Junior Clerk', since: 'Since 2022', category: 'Staff'},
-  { id: 't-23', name: 'Harish Dnyaneshwar Jogi', role: 'Junior Clerk', since: 'Since 2025', category: 'Staff'},
-  // Hostel & Support Caretakers
-  { id: 't-24', name: 'Nandu Motiramji Padole', role: 'Hostel Superintendent', since: 'Since 2008', category: 'Staff'},
-  { id: 't-25', name: 'Anil Tukaram Lute', role: 'Caretaker', since: 'Since 1989', category: 'Staff'},
-  { id: 't-26', name: 'Arun Tukaram Mohule', role: 'Caretaker', since: 'Since 1996', category: 'Staff'},
-  { id: 't-27', name: 'Meena Kishor Savarkar', role: 'Caretaker', since: 'Since 1998', category: 'Staff'},
-  { id: 't-28', name: 'Siddharth Narayan Gachhe', role: 'Caretaker', since: 'Since 2022', category: 'Staff'},
-  { id: 't-29', name: 'Mangesh Gurudeorao Manne', role: 'Caretaker', since: 'Since 2023', category: 'Staff'},
-  { id: 't-30', name: 'Shrikant Dattatraya Sutar', role: 'Caretaker', since: 'Since 2025', category: 'Staff'},
-  { id: 't-31', name: 'Devidas Helonde', role: 'Office Peon', since: 'Since 1996', category: 'Staff'},
-  { id: 't-32', name: 'Shila Udaram Lohi', role: 'Maid', since: 'Since 1997', category: 'Staff'},
-  { id: 't-33', name: 'Sanjay Hazarilal Nahar', role: 'Watchman', since: 'Since 1991', category: 'Staff'},
-  { id: 't-34', name: 'Sanmugam Mutyan Settiyar', role: 'Watchman', since: 'Since 1996', category: 'Staff'},
-  { id: 't-35', name: 'Lahu Raosaheb Gavare', role: 'Helper', since: 'Since 2017', category: 'Staff'}
-];
+const DEFAULT_STAFF: any[] = [];
 
 export function About() {
   const navigate = useNavigate();

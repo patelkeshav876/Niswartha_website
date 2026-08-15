@@ -52,14 +52,16 @@ export function SuperAdminLayout() {
     <div className="flex min-h-screen bg-zinc-50/70 text-zinc-800">
       {/* ──── Desktop Sidebar ──── */}
       <aside className="hidden lg:flex flex-col w-64 border-r border-zinc-200 bg-white shrink-0">
-        <div className="flex h-16 items-center gap-3 px-6 border-b">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500 text-white shadow-md shadow-amber-500/20">
-            <Shield className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-sm font-bold tracking-tight text-zinc-950 font-serif">Super Portal</p>
-            <p className="-mt-1 text-[9px] font-bold uppercase tracking-[0.1em] text-amber-600">Niswartha System</p>
-          </div>
+        <div className="flex h-20 items-center gap-3 px-6 border-b border-zinc-100">
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0F6D4E] text-white shadow-md shadow-[#0F6D4E]/20 transition-transform group-hover:scale-105">
+              <Heart className="h-5 w-5 text-white" fill="white" />
+            </div>
+            <div>
+              <p className="text-lg font-bold tracking-tight text-zinc-950 font-serif">Niswartha</p>
+              <p className="-mt-1 text-[9px] font-bold uppercase tracking-[0.15em] text-[#0F6D4E]">Super Admin</p>
+            </div>
+          </Link>
         </div>
 
         {/* Sidebar Nav links */}

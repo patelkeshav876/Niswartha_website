@@ -28,6 +28,7 @@ import { cn } from '../lib/utils';
 
 const ADMIN_LINKS = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/admin/needs', label: 'Needs Management', icon: Gift },
   { to: '/admin/feed', label: 'News & Updates', icon: MessageSquare },
   { to: '/admin/gallery', label: 'Gallery Management', icon: Image },
   { to: '/admin/schemes', label: 'Gov Schemes', icon: FileText },
@@ -59,13 +60,13 @@ export function AdminLayout() {
       {/* Brand Header */}
       <div className="flex h-20 items-center justify-between px-6 border-b border-zinc-200/30">
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-md shadow-primary/10">
-            <Heart className="h-4.5 w-4.5 text-white" fill="white" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0F6D4E] shadow-md shadow-[#0F6D4E]/20 transition-transform group-hover:scale-105">
+            <Heart className="h-5 w-5 text-white" fill="white" />
           </div>
           {!collapsed && (
             <div>
-              <p className="text-md font-bold tracking-tight font-serif text-zinc-900">Niswartha</p>
-              <p className="-mt-1 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Admin Portal</p>
+              <p className="text-lg font-bold tracking-tight font-serif text-zinc-950">Niswartha</p>
+              <p className="-mt-1 text-[9px] font-bold uppercase tracking-[0.15em] text-[#0F6D4E]">Admin Portal</p>
             </div>
           )}
         </Link>

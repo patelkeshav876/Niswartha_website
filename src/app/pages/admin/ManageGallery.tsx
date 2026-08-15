@@ -11,7 +11,6 @@ import { Plus, Search, Edit2, Trash2, Image as ImageIcon, Link as LinkIcon, X } 
 import { api } from '../../lib/api';
 import { toast } from 'sonner';
 import type { Album } from '../../types';
-import { ImageUploadWithCamera } from '../../components/ImageUploadWithCamera';
 
 export function ManageGallery() {
   const [albums, setAlbums] = useState<Album[]>([]);
@@ -118,6 +117,29 @@ export function ManageGallery() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleMultipleFilesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        if (result) {
+          setImages((prev) => {
+            if (prev.includes(result)) return prev;
+            return [...prev, result];
+          });
+          setCoverUrl((prev) => prev || result);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    toast.success(`Imported ${files.length} photo(s) directly!`);
+    e.target.value = '';
   };
 
   const confirmDelete = async () => {
@@ -259,25 +281,25 @@ export function ManageGallery() {
                 Album Photos ({images.length})
               </Label>
 
-              <div className="space-y-2 bg-zinc-50 border rounded-2xl p-3 border-dashed">
-                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Upload / Capture Image</p>
-                <ImageUploadWithCamera
-                  value=""
-                  onChange={(base64) => {
-                    if (base64) {
-                      setImages((prev) => [...prev, base64]);
-                      if (!coverUrl) {
-                        setCoverUrl(base64);
-                      }
-                    }
-                  }}
-                  aspectRatio="any"
-                  maxSizeKB={300}
+              <div className="space-y-2 bg-emerald-50/50 border border-emerald-200/80 rounded-2xl p-4 text-center border-dashed">
+                <p className="text-xs font-bold text-zinc-800 mb-1">Direct Multi-Photo Import</p>
+                <p className="text-[11px] text-zinc-500 mb-3">Select multiple images directly from your device to import all at once</p>
+                
+                <label htmlFor="gallery-multi-upload" className="inline-flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white text-xs font-bold shadow-sm transition-all">
+                  <ImageIcon className="h-4 w-4" /> Select & Import Multiple Images
+                </label>
+                <input
+                  id="gallery-multi-upload"
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleMultipleFilesUpload}
+                  className="hidden"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Or Paste Image URL</p>
+                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Or Optional Direct URL</p>
                 <div className="flex gap-2">
                   <Input
                     value={imageUrlInput}
