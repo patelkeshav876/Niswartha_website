@@ -4,6 +4,7 @@ import { useUser } from '../context/UserContext';
 import { cn } from '../lib/utils';
 import {
   Shield,
+  Heart,
   Activity,
   Users,
   Settings,
