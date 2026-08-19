@@ -102,11 +102,17 @@ export function ManageUsers() {
                   <tr key={u.id} className="hover:bg-zinc-50/50 transition-colors">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <img
-                          src={u.avatarUrl || `https://i.pravatar.cc/150?u=${u.id}`}
-                          alt=""
-                          className="h-9 w-9 rounded-full object-cover border border-zinc-200 shrink-0"
-                        />
+                        {u.avatarUrl ? (
+                          <img
+                            src={u.avatarUrl}
+                            alt={u.name}
+                            className="h-9 w-9 rounded-full object-cover border border-zinc-200 shrink-0"
+                          />
+                        ) : (
+                          <div className="h-9 w-9 rounded-full bg-[#0F6D4E]/10 text-[#0F6D4E] flex items-center justify-center font-bold text-xs font-serif shrink-0 border border-[#0F6D4E]/20">
+                            {u.name?.charAt(0)?.toUpperCase() || 'U'}
+                          </div>
+                        )}
                         <div className="min-w-0">
                           <p className="font-bold text-zinc-900 truncate leading-snug">{u.name}</p>
                           <p className="text-[10px] text-zinc-400 mt-0.5 flex items-center gap-1">

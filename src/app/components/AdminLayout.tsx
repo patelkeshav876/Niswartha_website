@@ -81,11 +81,17 @@ export function AdminLayout() {
       {!collapsed && (
         <div className="px-6 py-6 border-b border-zinc-200/30">
           <div className="flex items-center gap-3 bg-white/50 border border-white p-3 rounded-2xl shadow-sm">
-            <img
-              src={currentUser?.avatarUrl || `https://i.pravatar.cc/150?u=${currentUser?.id}`}
-              alt={currentUser?.name}
-              className="h-11 w-11 rounded-full object-cover border-2 border-primary/20 shadow-inner"
-            />
+            {currentUser?.avatarUrl ? (
+              <img
+                src={currentUser.avatarUrl}
+                alt={currentUser?.name}
+                className="h-11 w-11 rounded-full object-cover border-2 border-[#0F6D4E]/20 shadow-inner"
+              />
+            ) : (
+              <div className="h-11 w-11 rounded-full bg-[#0F6D4E] text-white flex items-center justify-center font-bold text-base font-serif shadow-sm">
+                {currentUser?.name?.charAt(0)?.toUpperCase() || 'A'}
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold truncate text-zinc-900">{currentUser?.name}</p>
               <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Super Admin</p>

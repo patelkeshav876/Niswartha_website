@@ -493,6 +493,50 @@ export function Profile() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              {/* Toggle Theme Off (Default Standard Profile Mode) */}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  const newThemeDisabled = !config?.disableProfileTheme;
+                  try {
+                    await api.updateConfig({ ...config, disableProfileTheme: newThemeDisabled });
+                    setConfig((prev: any) => ({ ...prev, disableProfileTheme: newThemeDisabled }));
+                    toast.success(newThemeDisabled ? 'Theme OFF: Standard Default Profile mode activated' : 'Theme ON: Custom Profile Theme activated');
+                  } catch {
+                    toast.error('Could not update theme setting');
+                  }
+                }}
+                className={`rounded-full text-xs font-bold h-8 px-3 gap-1.5 border-amber-400/50 ${
+                  config?.disableProfileTheme ? 'bg-amber-500 text-zinc-950' : 'bg-white/10 text-amber-300 hover:bg-white/20'
+                }`}
+              >
+                🎨 {config?.disableProfileTheme ? 'Theme: OFF (Standard Mode)' : 'Theme: ON (Custom Banner)'}
+              </Button>
+
+              {/* Toggle Superhero Badges Section */}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  const newBadgesDisabled = config?.enableSuperheroBadges === false ? true : false;
+                  try {
+                    await api.updateConfig({ ...config, enableSuperheroBadges: newBadgesDisabled });
+                    setConfig((prev: any) => ({ ...prev, enableSuperheroBadges: newBadgesDisabled }));
+                    toast.success(newBadgesDisabled ? 'Superhero Badges section enabled' : 'Superhero Badges section disabled');
+                  } catch {
+                    toast.error('Could not update badges setting');
+                  }
+                }}
+                className={`rounded-full text-xs font-bold h-8 px-3 gap-1.5 border-emerald-400/50 ${
+                  config?.enableSuperheroBadges === false ? 'bg-red-500/20 text-red-300 border-red-400/50' : 'bg-emerald-500/20 text-emerald-300'
+                }`}
+              >
+                🎖️ {config?.enableSuperheroBadges === false ? 'Badges: OFF' : 'Badges: ON'}
+              </Button>
+
               {/* Save Design as Reusable Template Button */}
               <Button
                 type="button"
@@ -808,32 +852,36 @@ export function Profile() {
         </Card>
       )}
 
-      {/* Top Profile Header Banner Card (Super Admin 1024px Free-Size Layer Studio) */}
+      {/* Top Profile Header Banner Card (Super Admin 1024px Free-Size Layer Studio / Standard Default Mode) */}
       <Card
         ref={cardRef}
         onPointerDown={(e) => handlePointerDown(e)}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        className={`w-full max-w-[1024px] mx-auto min-h-[240px] border border-red-500/40 shadow-2xl bg-zinc-950 text-white rounded-3xl overflow-hidden p-6 sm:p-8 relative select-none touch-none ${
-          dragMode ? 'ring-4 ring-amber-400/80 shadow-amber-500/20' : ''
-        }`}
+        className={`w-full max-w-[1024px] mx-auto min-h-[200px] shadow-2xl rounded-3xl overflow-hidden p-6 sm:p-8 relative select-none touch-none transition-all ${
+          config?.disableProfileTheme 
+            ? 'bg-gradient-to-br from-[#0F6D4E] to-emerald-900 text-white border-none' 
+            : 'border border-red-500/40 bg-zinc-950 text-white'
+        } ${dragMode && !config?.disableProfileTheme ? 'ring-4 ring-amber-400/80 shadow-amber-500/20' : ''}`}
       >
         {/* Configurable Drag-Repositioned Background Image */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <img
-            src={bgUrl}
-            alt="Profile Banner Background"
-            style={{
-              objectFit: bgObjectFit,
-              objectPosition: `${bgPosX}% ${bgPosY}%`,
-              opacity: bgOpacity,
-              transform: `scale(${bgZoom / 100}) ${bgRotation ? `rotate(${bgRotation}deg)` : ''}`,
-            }}
-            className="w-full h-full origin-center transition-transform duration-75 ease-out"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-red-950/75 via-black/45 to-black/80" />
-        </div>
+        {!config?.disableProfileTheme && (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <img
+              src={bgUrl}
+              alt="Profile Banner Background"
+              style={{
+                objectFit: bgObjectFit,
+                objectPosition: `${bgPosX}% ${bgPosY}%`,
+                opacity: bgOpacity,
+                transform: `scale(${bgZoom / 100}) ${bgRotation ? `rotate(${bgRotation}deg)` : ''}`,
+              }}
+              className="w-full h-full origin-center transition-transform duration-75 ease-out"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-red-950/75 via-black/45 to-black/80" />
+          </div>
+        )}
 
         {/* Free-Size Custom Image Layers Added by Super Admin */}
         {customElements.map((elem) => (
@@ -958,69 +1006,71 @@ export function Profile() {
       </Card>
 
       {/* Marvel & DC Superhero Circular Badges Showcase */}
-      <Card className="border-2 border-emerald-500/40 bg-gradient-to-br from-red-950/90 via-[#091510] to-emerald-950/95 text-white rounded-3xl p-6 shadow-2xl space-y-4 overflow-hidden relative shadow-emerald-950/30">
-        {/* Ambient Theme Color Rays */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(15,109,78,0.35),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(153,27,27,0.25),transparent_50%)] pointer-events-none" />
-        <div className="absolute top-0 right-0 p-8 opacity-15 pointer-events-none">
-          <Sparkles className="h-36 w-36 text-emerald-400" />
-        </div>
-
-        <div className="relative z-10 flex flex-wrap items-center justify-between border-b border-emerald-500/30 pb-3 gap-2">
-          <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-amber-300 shadow-md">
-              <Award className="h-5 w-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" />
-            </div>
-            <div>
-              <h3 className="font-serif font-bold text-base text-white tracking-tight flex items-center gap-2">
-                Superhero Honor Badges
-              </h3>
-              <p className="text-[11px] text-emerald-200/80">Awarded for each contribution supporting hearing-impaired children</p>
-            </div>
+      {config?.enableSuperheroBadges !== false && (
+        <Card className="border-2 border-emerald-500/40 bg-gradient-to-br from-red-950/90 via-[#091510] to-emerald-950/95 text-white rounded-3xl p-6 shadow-2xl space-y-4 overflow-hidden relative shadow-emerald-950/30">
+          {/* Ambient Theme Color Rays */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(15,109,78,0.35),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(153,27,27,0.25),transparent_50%)] pointer-events-none" />
+          <div className="absolute top-0 right-0 p-8 opacity-15 pointer-events-none">
+            <Sparkles className="h-36 w-36 text-emerald-400" />
           </div>
-          <Badge className="bg-emerald-400/20 text-emerald-300 border border-emerald-400/40 uppercase text-[9px] font-mono font-bold tracking-wider px-3 py-1 shadow-sm">
-            ✨ {stats.donationCount} Badges Earned
-          </Badge>
-        </div>
 
-        <div className="relative z-10 flex gap-4 overflow-x-auto pb-2 pt-1 scrollbar-hide">
-          {SUPERHERO_BADGES.map((badge, idx) => {
-            const isEarned = idx < Math.max(1, stats.donationCount);
-            return isEarned ? (
-              <div
-                key={badge.id}
-                className="flex flex-col items-center min-w-[100px] p-3 rounded-2xl border border-emerald-400/50 bg-emerald-950/40 backdrop-blur-md shadow-lg shadow-emerald-950/40 scale-105 transition-all hover:scale-110 hover:border-amber-400"
-              >
+          <div className="relative z-10 flex flex-wrap items-center justify-between border-b border-emerald-500/30 pb-3 gap-2">
+            <div className="flex items-center gap-2.5">
+              <div className="h-9 w-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-amber-300 shadow-md">
+                <Award className="h-5 w-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" />
+              </div>
+              <div>
+                <h3 className="font-serif font-bold text-base text-white tracking-tight flex items-center gap-2">
+                  Superhero Honor Badges
+                </h3>
+                <p className="text-[11px] text-emerald-200/80">Awarded for each contribution supporting hearing-impaired children</p>
+              </div>
+            </div>
+            <Badge className="bg-emerald-400/20 text-emerald-300 border border-emerald-400/40 uppercase text-[9px] font-mono font-bold tracking-wider px-3 py-1 shadow-sm">
+              ✨ {stats.donationCount} Badges Earned
+            </Badge>
+          </div>
+
+          <div className="relative z-10 flex gap-4 overflow-x-auto pb-2 pt-1 scrollbar-hide">
+            {SUPERHERO_BADGES.map((badge, idx) => {
+              const isEarned = idx < Math.max(1, stats.donationCount);
+              return isEarned ? (
                 <div
-                  className={`h-14 w-14 rounded-full bg-gradient-to-tr ${badge.bgGradient} border-2 border-emerald-300 flex items-center justify-center text-white font-black text-lg shadow-[0_0_14px_rgba(52,211,153,0.35)] mb-2 relative overflow-hidden`}
+                  key={badge.id}
+                  className="flex flex-col items-center min-w-[100px] p-3 rounded-2xl border border-emerald-400/50 bg-emerald-950/40 backdrop-blur-md shadow-lg shadow-emerald-950/40 scale-105 transition-all hover:scale-110 hover:border-amber-400"
                 >
-                  {badge.imageUrl ? (
-                    <img src={badge.imageUrl} alt={badge.hero} className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="drop-shadow-md">{badge.iconSymbol}</span>
-                  )}
-                  <div className="absolute inset-0 bg-white/10 rounded-full bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
+                  <div
+                    className={`h-14 w-14 rounded-full bg-gradient-to-tr ${badge.bgGradient} border-2 border-emerald-300 flex items-center justify-center text-white font-black text-lg shadow-[0_0_14px_rgba(52,211,153,0.35)] mb-2 relative overflow-hidden`}
+                  >
+                    {badge.imageUrl ? (
+                      <img src={badge.imageUrl} alt={badge.hero} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="drop-shadow-md">{badge.iconSymbol}</span>
+                    )}
+                    <div className="absolute inset-0 bg-white/10 rounded-full bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
+                  </div>
+                  <p className="text-[10px] font-bold text-center text-white truncate max-w-[90px]">{badge.hero}</p>
+                  <p className="text-[8px] text-emerald-300 font-mono mt-0.5 font-bold tracking-wider uppercase flex items-center gap-0.5">
+                    ⚡ UNLOCKED
+                  </p>
                 </div>
-                <p className="text-[10px] font-bold text-center text-white truncate max-w-[90px]">{badge.hero}</p>
-                <p className="text-[8px] text-emerald-300 font-mono mt-0.5 font-bold tracking-wider uppercase flex items-center gap-0.5">
-                  ⚡ UNLOCKED
-                </p>
-              </div>
-            ) : (
-              <div
-                key={badge.id}
-                className="flex flex-col items-center min-w-[100px] p-3 rounded-2xl border border-red-950/60 bg-black/60 opacity-60 transition-all hover:opacity-80"
-              >
-                <div className="h-14 w-14 rounded-full bg-gradient-to-tr from-zinc-900 via-zinc-800 to-red-950 border-2 border-red-900/60 flex items-center justify-center text-amber-400 font-black text-xl shadow-inner mb-2 relative overflow-hidden">
-                  <span className="drop-shadow-md opacity-80">🔒</span>
-                  <div className="absolute inset-0 bg-white/5 rounded-full bg-gradient-to-b from-white/20 to-transparent" />
+              ) : (
+                <div
+                  key={badge.id}
+                  className="flex flex-col items-center min-w-[100px] p-3 rounded-2xl border border-red-950/60 bg-black/60 opacity-60 transition-all hover:opacity-80"
+                >
+                  <div className="h-14 w-14 rounded-full bg-gradient-to-tr from-zinc-900 via-zinc-800 to-red-950 border-2 border-red-900/60 flex items-center justify-center text-amber-400 font-black text-xl shadow-inner mb-2 relative overflow-hidden">
+                    <span className="drop-shadow-md opacity-80">🔒</span>
+                    <div className="absolute inset-0 bg-white/5 rounded-full bg-gradient-to-b from-white/20 to-transparent" />
+                  </div>
+                  <p className="text-[10px] font-bold text-center text-zinc-400 truncate max-w-[90px]">Surprise Badge</p>
+                  <p className="text-[8px] text-zinc-500 font-mono mt-0.5">Mystery Hero</p>
                 </div>
-                <p className="text-[10px] font-bold text-center text-zinc-400 truncate max-w-[90px]">Surprise Badge</p>
-                <p className="text-[8px] text-zinc-500 font-mono mt-0.5">Mystery Hero</p>
-              </div>
-            );
-          })}
-        </div>
-      </Card>
+              );
+            })}
+          </div>
+        </Card>
+      )}
 
       {/* Main Grid: Impact Metrics & Profile Info */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
