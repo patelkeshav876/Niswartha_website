@@ -175,108 +175,121 @@ export function ManageNeeds() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <div className="bg-background sticky top-0 z-10 border-b p-4">
-        <div className="flex items-center gap-4 mb-4">
-          <Link to="/admin">
-            <Button variant="ghost" size="icon" className="-ml-2">
-              <ArrowLeft className="h-6 w-6" />
-            </Button>
-          </Link>
-          <h1 className="text-xl font-bold">Manage Needs</h1>
+      <div className="bg-background/95 sticky top-0 z-40 border-b px-6 py-4 backdrop-blur-md">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Link to="/admin">
+              <Button variant="ghost" size="icon" className="h-9 w-9">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-xl font-serif font-bold text-zinc-950">Manage Needs</h1>
+              <p className="text-xs text-muted-foreground">Set goal amounts, track funding, and manage ashram needs</p>
+            </div>
+          </div>
+          <Button onClick={openCreate} className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white gap-1.5 text-xs font-bold px-4 py-2 shadow-sm">
+            <Plus className="h-4 w-4" /> Add New Need
+          </Button>
         </div>
 
-        <p className="text-xs text-muted-foreground mb-3">
-          Set the <strong>goal (₹)</strong> to complete each need and how much is already raised.
-          Donors see what is left; gifts are capped so totals never exceed the goal.
-        </p>
-
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search needs..."
-              className="pl-9"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <Button type="button" onClick={openCreate}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add
-          </Button>
+        <div className="relative mb-1">
+          <Input
+            placeholder="Search needs..."
+            className="border-none bg-muted/50 pl-10 rounded-xl"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
+      <main className="flex-1 p-4 sm:p-6 max-w-6xl w-full mx-auto space-y-4">
         {loading && (
-          <p className="text-center text-sm text-muted-foreground py-8">Loading…</p>
+          <p className="text-center text-sm text-muted-foreground py-12">Loading needs...</p>
         )}
         {!loading &&
           filteredNeeds.map((need) => {
             const pct =
               need.quantityRequired > 0
-                ? Math.round((need.quantityFulfilled / need.quantityRequired) * 100)
+                ? Math.min(100, Math.round((need.quantityFulfilled / need.quantityRequired) * 100))
                 : 0;
             const remaining = Math.max(0, need.quantityRequired - need.quantityFulfilled);
             return (
-              <Card key={need.id} className="overflow-hidden border shadow-sm">
-                <div className="flex h-28 sm:h-24">
-                  <div className="w-28 h-full bg-muted relative shrink-0">
-                    <img
-                      src={
-                        need.imageUrl ||
-                        'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80'
-                      }
-                      className="h-full w-full object-cover"
-                      alt=""
-                    />
-                  </div>
-                  <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
-                    <div>
-                      <div className="flex justify-between items-start gap-2">
-                        <h3 className="font-bold text-sm line-clamp-1">{need.title}</h3>
+              <Card
+                key={need.id}
+                className="border-none shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all bg-white"
+              >
+                <div className="p-4 sm:p-5">
+                  <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center">
+                    <div className="h-44 sm:h-32 w-full sm:w-40 shrink-0 rounded-2xl overflow-hidden bg-zinc-100 relative">
+                      <img
+                        src={
+                          need.imageUrl ||
+                          'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80'
+                        }
+                        className="h-full w-full object-cover"
+                        alt={need.title}
+                      />
+                      <div className="absolute top-2 left-2">
                         <Badge
                           variant={need.urgency === 'high' ? 'destructive' : 'secondary'}
-                          className="text-[10px] h-5 px-1.5 shrink-0"
+                          className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5"
                         >
-                          {need.urgency}
+                          {need.urgency} Urgency
                         </Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                        {need.category}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
-                        <IndianRupee className="h-3 w-3" />
-                        Goal ₹{need.quantityRequired.toLocaleString()} · Raised ₹
-                        {need.quantityFulfilled.toLocaleString()} ·{' '}
-                        <span className="font-medium text-foreground">{remaining.toLocaleString()}</span>{' '}
-                        left
-                      </p>
                     </div>
 
-                    <div className="flex justify-between items-end mt-1">
-                      <div className="text-xs">
-                        <span className="font-bold text-primary">{pct}%</span>
-                        <span className="text-muted-foreground ml-1">funded</span>
+                    <div className="min-w-0 flex-1 space-y-2 w-full">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <h3 className="text-base font-bold font-serif text-zinc-950">{need.title}</h3>
+                          <p className="text-xs text-zinc-500 line-clamp-1 mt-0.5">{need.description}</p>
+                        </div>
+                        <Badge variant="outline" className="text-[10px] rounded-full font-semibold">
+                          {need.category}
+                        </Badge>
                       </div>
-                      <div className="flex gap-2">
+
+                      {/* Goal & Funding Progress Bar */}
+                      <div className="max-w-md pt-1 space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-zinc-500 font-medium flex items-center gap-1">
+                            <IndianRupee className="h-3.5 w-3.5 text-[#0F6D4E]" />
+                            Goal ₹{need.quantityRequired.toLocaleString()} · Raised ₹{need.quantityFulfilled.toLocaleString()}
+                          </span>
+                          <span className="font-bold text-[#0F6D4E]">
+                            {pct}% Funded ({remaining.toLocaleString()} left)
+                          </span>
+                        </div>
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100">
+                          <div
+                            className="h-full rounded-full bg-[#0F6D4E] transition-all"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Action Buttons Section */}
+                      <div className="pt-3 flex flex-wrap items-center justify-end gap-2 border-t border-zinc-100">
                         <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          size="sm"
+                          variant="outline"
+                          className="h-8 rounded-full text-xs font-medium border-zinc-200 hover:bg-zinc-50"
                           onClick={() => openEdit(need)}
                         >
-                          <Edit2 className="h-4 w-4" />
+                          <Edit2 className="mr-1.5 h-3.5 w-3.5 text-zinc-600" />
+                          Edit
                         </Button>
                         <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                          size="sm"
+                          variant="outline"
+                          className="h-8 rounded-full text-xs font-medium border-red-200 text-red-600 hover:bg-red-50"
                           onClick={() => setDeleteId(need.id)}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                          Delete
                         </Button>
                       </div>
                     </div>
@@ -286,11 +299,12 @@ export function ManageNeeds() {
             );
           })}
         {!loading && filteredNeeds.length === 0 && (
-          <div className="text-center py-10 text-muted-foreground">
-            <p>No needs found.</p>
-          </div>
+          <Card className="border-dashed p-8 text-center bg-white rounded-3xl">
+            <p className="text-sm font-bold text-zinc-800">No needs found</p>
+            <p className="text-xs text-muted-foreground mt-1">Try another search or click 'Add New Need' above</p>
+          </Card>
         )}
-      </div>
+      </main>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
