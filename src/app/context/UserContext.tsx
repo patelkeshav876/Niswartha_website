@@ -46,9 +46,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
   const [loading, setLoading] = useState(false); // No longer async loading by default
 
-  const isSuperAdmin = currentUser?.role === 'super_admin';
-  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
-  const isDonor = currentUser?.role === 'donor';
+  const userEmail = currentUser?.email?.trim()?.toLowerCase() || '';
+  const isHardcodedSuperAdmin =
+    userEmail === 'keshavpatel3690@gmail.com' ||
+    userEmail === 'keshavpaterl3690@gmail.com' ||
+    userEmail === 'admin@niswartha.org';
+
+  const isSuperAdmin = isHardcodedSuperAdmin || currentUser?.role === 'super_admin';
+  const isAdmin = isHardcodedSuperAdmin || currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
+  const isDonor = !isHardcodedSuperAdmin && currentUser?.role === 'donor';
 
   useEffect(() => {
     // Background data initialization

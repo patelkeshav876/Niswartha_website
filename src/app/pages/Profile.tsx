@@ -455,10 +455,11 @@ export function Profile() {
 
   if (!currentUser) return null;
 
-  const bgUrl = config?.profileBgUrl || '/f1-flag.jpg';
+  const DEFAULT_SITE_BG = 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=80';
+  const bgUrl = config?.profileBgUrl || DEFAULT_SITE_BG;
+  const bgObjectFit = config?.profileBgObjectFit || 'cover';
   const bgOpacity = config?.profileOverlayOpacity !== undefined ? Number(config.profileOverlayOpacity) : 0.9;
-  const bgObjectFit = (config?.profileBgObjectFit || 'cover') as 'cover' | 'contain' | 'fill';
-  const bgRotation = Number(config?.profileBgRotation || 0);
+  const bgRotation = config?.profileBgRotation !== undefined ? Number(config.profileBgRotation) : 0;
 
   const activeSelectedElem = customElements.find((x) => x.id === selectedElemId);
 
@@ -547,6 +548,26 @@ export function Profile() {
               >
                 <Sparkles className="h-3.5 w-3.5" />
                 💾 Save as Template
+              </Button>
+
+              {/* Reset / Delete Backdrop Photo */}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  try {
+                    await api.updateConfig({ ...config, profileBgUrl: DEFAULT_SITE_BG });
+                    setConfig((prev: any) => ({ ...prev, profileBgUrl: DEFAULT_SITE_BG }));
+                    toast.success('Backdrop reset to Niswartha normal site theme');
+                  } catch {
+                    toast.error('Could not reset backdrop image');
+                  }
+                }}
+                className="rounded-full text-xs font-bold h-8 px-3 gap-1.5 bg-red-500/20 text-red-300 border-red-400/50 hover:bg-red-600 hover:text-white"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Reset / Delete Backdrop
               </Button>
 
               {/* Add Free Size Image Button */}

@@ -337,11 +337,11 @@ export function VisitBooking() {
           </p>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start px-2 sm:px-0">
           {/* Form Side */}
           <div className="lg:col-span-2 space-y-8">
             {/* Step 1: Date & Time */}
-            <Card className="rounded-3xl border-none shadow-sm bg-white p-6">
+            <Card className="rounded-3xl border-none shadow-sm bg-white p-4 sm:p-6 w-[94%] sm:w-full max-w-sm sm:max-w-none mx-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Date picker */}
                 <div>
@@ -357,7 +357,7 @@ export function VisitBooking() {
                     disabled={(d) => isBefore(startOfDay(d), today) || isBefore(maxDate, startOfDay(d))}
                     fromDate={today}
                     toDate={maxDate}
-                    className="mx-auto border border-zinc-100 p-2 rounded-2xl"
+                    className="mx-auto border border-zinc-100 p-2 rounded-2xl max-w-full"
                     classNames={{
                       day_selected:
                         '!bg-[#0F6D4E] !text-white rounded-full hover:!bg-[#0c593f] hover:!text-white focus:!bg-[#0F6D4E]',
@@ -391,7 +391,7 @@ export function VisitBooking() {
             </Card>
 
             {/* Step 2: Visitors Details */}
-            <Card className="rounded-3xl border-none shadow-sm bg-white p-6 space-y-6">
+            <Card className="rounded-3xl border-none shadow-sm bg-white p-4 sm:p-6 space-y-6 w-[94%] sm:w-full max-w-sm sm:max-w-none mx-auto">
               <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider border-b pb-3 flex items-center gap-2">
                 <Building className="h-4 w-4 text-[#0F6D4E]" />
                 Visitor Details

@@ -24,9 +24,12 @@ export function ThemePaletteStudio() {
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  // Default site theme background URL
+  const DEFAULT_SITE_BG = 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=80';
+
   // Studio states
   const [dragMode, setDragMode] = useState(true);
-  const [bgUrl, setBgUrl] = useState('/f1-flag.jpg');
+  const [bgUrl, setBgUrl] = useState(DEFAULT_SITE_BG);
   const [bgPosX, setBgPosX] = useState(50);
   const [bgPosY, setBgPosY] = useState(50);
   const [bgZoom, setBgZoom] = useState(125);
@@ -480,7 +483,7 @@ export function ThemePaletteStudio() {
             <Badge className="bg-amber-400 text-zinc-950 font-black uppercase text-[10px] px-3 py-1 rounded-full shadow-lg">
               ✨ Live Theme Banner Canvas Studio
             </Badge>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
                 size="sm"
@@ -488,6 +491,17 @@ export function ThemePaletteStudio() {
                 className="h-7 text-[10px] font-bold bg-white/20 hover:bg-white/30 text-white rounded-full"
               >
                 Change Backdrop Photo
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => {
+                  setBgUrl(DEFAULT_SITE_BG);
+                  toast.success('Backdrop reset to Niswartha normal site theme');
+                }}
+                className="h-7 text-[10px] font-bold bg-red-500/80 hover:bg-red-600 text-white rounded-full gap-1"
+              >
+                <Trash2 className="h-3 w-3" /> Reset / Delete Backdrop
               </Button>
               <Button
                 type="button"

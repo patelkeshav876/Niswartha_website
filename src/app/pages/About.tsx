@@ -242,11 +242,11 @@ export function About() {
           <ScrollReveal>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
               <div className="lg:col-span-5 order-2 lg:order-1">
-                <div className="relative rounded-3xl overflow-hidden shadow-xl border border-emerald-100 bg-white p-2">
+                <div className="relative w-[90%] sm:w-full max-w-sm sm:max-w-none mx-auto rounded-3xl overflow-hidden shadow-xl border border-emerald-100 bg-white p-2">
                   <img
                     src={assemblyImage}
                     alt="School Assembly and Ground Activities"
-                    className="w-full h-80 object-cover rounded-2xl"
+                    className="w-full h-64 sm:h-80 object-cover rounded-2xl"
                   />
                   <div className="p-3 text-center">
                     <p className="text-xs font-bold text-zinc-700">Holistic Campus and School Assembly</p>
@@ -273,10 +273,10 @@ export function About() {
         {/* ──── National Award Recognition (Light Theme Upgrade) ──── */}
         <section className="section-container">
           <ScrollReveal>
-            <div className="rounded-3xl p-8 sm:p-12 bg-gradient-to-br from-[#0F6D4E]/5 via-emerald-50/60 to-white text-zinc-900 border border-[#0F6D4E]/20 shadow-sm">
+            <div className="rounded-3xl p-6 sm:p-12 bg-gradient-to-br from-[#0F6D4E]/5 via-emerald-50/60 to-white text-zinc-900 border border-[#0F6D4E]/20 shadow-sm">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 <div className="lg:col-span-5">
-                  <div className="relative rounded-2xl overflow-hidden border-2 border-emerald-500/30 bg-white p-3 shadow-md">
+                  <div className="relative w-[90%] sm:w-full max-w-sm sm:max-w-none mx-auto rounded-2xl overflow-hidden border-2 border-emerald-500/30 bg-white p-2.5 shadow-md">
                     <div className="aspect-[4/3] rounded-xl overflow-hidden bg-zinc-50 flex items-center justify-center">
                       <img
                         src={awardImage}
@@ -307,10 +307,10 @@ export function About() {
         <section className="section-container">
           <ScrollReveal>
             <Card className="border border-emerald-200/80 shadow-lg shadow-emerald-950/5 bg-gradient-to-br from-white via-emerald-50/30 to-white text-zinc-900 rounded-3xl overflow-hidden">
-              <CardContent className="p-8 sm:p-12">
+              <CardContent className="p-6 sm:p-12">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                   <div className="lg:col-span-4 flex justify-center">
-                    <div className="relative h-48 w-48 sm:h-56 sm:w-56 rounded-full overflow-hidden border-4 border-[#0F6D4E] shadow-xl">
+                    <div className="relative h-44 w-44 sm:h-56 sm:w-56 rounded-full overflow-hidden border-4 border-[#0F6D4E] shadow-xl mx-auto">
                       <img
                         src={principalImage}
                         alt="Dr. Meenal Sudhir Sangole"
