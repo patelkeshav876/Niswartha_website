@@ -309,7 +309,7 @@ export function Events() {
                     isPast && 'opacity-50',
                   )}
                 >
-                  <div className="relative h-48 w-full overflow-hidden">
+                  <div className="relative aspect-[16/10] sm:h-48 w-full overflow-hidden">
                     <img src={img} alt={event.title} className="h-full w-full object-cover transition-transform duration-500 hover:scale-105" />
                     <div className="absolute left-3 top-3 flex flex-col gap-1">
                       <div className="rounded-lg bg-background/90 px-2.5 py-1.5 text-center shadow-sm backdrop-blur-sm">

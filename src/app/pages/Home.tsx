@@ -382,7 +382,7 @@ export function Home() {
                   className="card-hover cursor-pointer overflow-hidden border-0 bg-card shadow-[0_8px_30px_-10px_rgba(15,23,42,0.1)] rounded-2xl ring-1 ring-border/50"
                   onClick={() => navigate('/events')}
                 >
-                  <div className="relative h-48 w-full overflow-hidden">
+                  <div className="relative aspect-[16/10] sm:h-48 w-full overflow-hidden">
                     <img
                       src={event.imageUrl}
                       alt={event.title}
@@ -419,8 +419,8 @@ export function Home() {
         </section>
 
         {/* ──── Contact / CTA Band ──── */}
-        <section className="bg-gradient-to-br from-primary/[0.06] via-background to-primary/[0.04] py-16 lg:py-20">
-          <div className="section-container">
+        <section className="bg-gradient-to-br from-primary/[0.06] via-background to-primary/[0.04] py-12 lg:py-20">
+          <div className="section-container px-4 sm:px-6">
             <ScrollReveal>
               <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center">
                 <div>
@@ -460,7 +460,7 @@ export function Home() {
                 </div>
 
                 {/* Donate CTA Card with Custom Admin Image Support */}
-                <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-primary to-primary/80 shadow-xl shadow-primary/15 rounded-2xl">
+                <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-primary to-primary/80 shadow-xl shadow-primary/15 rounded-3xl w-[92%] sm:w-full max-w-md lg:max-w-none mx-auto">
                   {config?.supportCauseBgUrl && (
                     <>
                       <img
@@ -474,20 +474,20 @@ export function Home() {
                     </>
                   )}
 
-                  <CardContent className="relative z-10 p-8 text-center text-white lg:p-10">
-                    <Sparkles className="mx-auto mb-4 h-12 w-12 opacity-80" />
-                    <h3 className="text-2xl font-bold mb-3 lg:text-3xl">
+                  <CardContent className="relative z-10 p-6 sm:p-10 text-center text-white">
+                    <Sparkles className="mx-auto mb-3 h-10 w-10 opacity-80" />
+                    <h3 className="text-xl sm:text-2xl font-bold mb-2 lg:text-3xl">
                       {config?.supportCauseTitle || 'Support Our Cause'}
                     </h3>
-                    <p className="text-sm text-white/90 mb-6 leading-relaxed max-w-md mx-auto font-medium">
+                    <p className="text-xs sm:text-sm text-white/90 mb-5 leading-relaxed max-w-md mx-auto font-medium">
                       {config?.supportCauseSubtitle || 'Your generous contribution helps us provide better care, education, and opportunities to our children.'}
                     </p>
                     <Button
                       size="lg"
-                      className="h-14 w-full max-w-xs rounded-full bg-white text-primary font-bold hover:bg-white/90 shadow-xl transition-transform hover:scale-105"
+                      className="h-12 sm:h-14 w-full max-w-xs rounded-full bg-white text-primary font-bold hover:bg-white/90 shadow-xl transition-transform hover:scale-105 text-sm sm:text-base"
                       onClick={() => navigate(`/donate/${ashram.id}`)}
                     >
-                      {config?.donationWording || 'Support Our Mission'} <Heart className="ml-2 h-5 w-5 fill-primary" />
+                      {config?.donationWording || 'Support Our Mission'} <Heart className="ml-2 h-4 w-4 sm:h-5 sm:w-5 fill-primary" />
                     </Button>
                   </CardContent>
                 </Card>
