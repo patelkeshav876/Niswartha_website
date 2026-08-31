@@ -1,12 +1,12 @@
 {
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/index.js"
+      "source": "/admin/:path*",
+      "destination": "https://deafanddumbschool.vercel.app/admin/:path*"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/super-admin/:path*",
+      "destination": "https://deafanddumbschool.vercel.app/super-admin/:path*"
     }
   ]
 }

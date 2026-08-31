@@ -18,6 +18,7 @@ const ManageChildren = lazy(() => import('./pages/ManageChildren').then((m) => (
 const ManageTeam = lazy(() => import('./pages/ManageTeam').then((m) => ({ default: m.ManageTeam })));
 const ManageUsers = lazy(() => import('./pages/ManageUsers').then((m) => ({ default: m.ManageUsers })));
 const AdminSettings = lazy(() => import('./pages/Settings').then((m) => ({ default: m.Settings })));
+const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m.NotFound })));
 
 // Super Admin Pages
 const SuperAdminDashboard = lazy(() => import('./pages/SuperAdminDashboard').then((m) => ({ default: m.SuperAdminDashboard })));
@@ -70,7 +71,8 @@ export function App() {
             <Route path="backup" element={<Suspense fallback={<LoadingFallback />}><SuperAdminDashboard activeTab="backup" /></Suspense>} />
           </Route>
 
-          <Route path="*" element={<Navigate to="/admin" replace />} />
+          {/* ──── 404 NOT FOUND ANIMATED PAGE ──── */}
+          <Route path="*" element={<Suspense fallback={<LoadingFallback />}><NotFound /></Suspense>} />
         </Routes>
       </BrowserRouter>
     </UserProvider>
