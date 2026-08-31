@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate, useLocation, Outlet } from 'react-router';
-import { motion, AnimatePresence } from 'motion/react';
 import { useUser } from '../context/UserContext';
 import { Button } from './ui/button';
 import {
@@ -12,17 +11,16 @@ import {
   Users,
   Settings,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
   BookOpen,
   Image,
   FileText,
   UserCheck,
-  Bell,
-  Search,
   Globe,
+  MapPin,
+  Shield,
   Menu,
   X,
+  Search,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -41,223 +39,142 @@ const ADMIN_LINKS = [
 ] as const;
 
 export function AdminLayout() {
-  const { currentUser, logout } = useUser();
+  const { currentUser, logout, isSuperAdmin } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
-  // Close mobile sidebar on navigate
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
 
-  const firstName = currentUser?.name ? currentUser.name.split(' ')[0].toUpperCase() : 'ADMIN';
-
-  const sidebarContent = (
-    <div className="flex h-full flex-col bg-[#F5F2EB] text-zinc-800 border-r border-zinc-200/50">
-      {/* Brand Header */}
-      <div className="flex h-20 items-center justify-between px-6 border-b border-zinc-200/30">
-        <Link to="/" className="flex items-center gap-3 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0F6D4E] shadow-md shadow-[#0F6D4E]/20 transition-transform group-hover:scale-105">
-            <Heart className="h-5 w-5 text-white" fill="white" />
-          </div>
-          {!collapsed && (
-            <div>
-              <p className="text-lg font-bold tracking-tight font-serif text-zinc-950">Niswartha</p>
-              <p className="-mt-1 text-[9px] font-bold uppercase tracking-[0.15em] text-[#0F6D4E]">Admin Portal</p>
-            </div>
-          )}
-        </Link>
-        {mobileOpen && (
-          <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)} className="rounded-full">
-            <X className="h-5 w-5" />
-          </Button>
-        )}
-      </div>
-
-      {/* Admin Profile Details */}
-      {!collapsed && (
-        <div className="px-6 py-6 border-b border-zinc-200/30">
-          <div className="flex items-center gap-3 bg-white/50 border border-white p-3 rounded-2xl shadow-sm">
-            {currentUser?.avatarUrl ? (
-              <img
-                src={currentUser.avatarUrl}
-                alt={currentUser?.name}
-                className="h-11 w-11 rounded-full object-cover border-2 border-[#0F6D4E]/20 shadow-inner"
-              />
-            ) : (
-              <div className="h-11 w-11 rounded-full bg-[#0F6D4E] text-white flex items-center justify-center font-bold text-base font-serif shadow-sm">
-                {currentUser?.name?.charAt(0)?.toUpperCase() || 'A'}
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold truncate text-zinc-900">{currentUser?.name}</p>
-              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Super Admin</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {collapsed && (
-        <div className="flex justify-center py-6 border-b border-zinc-200/30">
-          <img
-            src={currentUser?.avatarUrl || `https://i.pravatar.cc/150?u=${currentUser?.id}`}
-            alt={currentUser?.name}
-            className="h-9 w-9 rounded-full object-cover border-2 border-primary/20 shadow-sm"
-          />
-        </div>
-      )}
-
-      {/* Nav Links */}
-      <nav className="flex-1 space-y-1.5 px-4 py-6 overflow-y-auto scrollbar-hide">
-        {ADMIN_LINKS.map((link) => {
-          const Icon = link.icon;
-          return (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end={link.end}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200',
-                  isActive
-                    ? 'bg-[#E3DCCE] text-zinc-950 shadow-sm font-semibold border-l-4 border-primary pl-3'
-                    : 'text-zinc-600 hover:bg-zinc-200/40 hover:text-zinc-900',
-                  collapsed && 'justify-center px-2'
-                )
-              }
-            >
-              <Icon className="h-5 w-5 shrink-0" />
-              {!collapsed && <span>{link.label}</span>}
-            </NavLink>
-          );
-        })}
-      </nav>
-
-      {/* Log Out */}
-      <div className="p-4 border-t border-zinc-200/30">
-        <button
-          onClick={logout}
-          className={cn(
-            'flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/5',
-            collapsed && 'justify-center px-2'
-          )}
-        >
-          <LogOut className="h-5 w-5 shrink-0" />
-          {!collapsed && <span>Log Out</span>}
-        </button>
-      </div>
-    </div>
-  );
+  const isActive = (path: string, end?: boolean) => {
+    if (end) return location.pathname === path;
+    return location.pathname.startsWith(path);
+  };
 
   return (
-    <div className="flex min-h-screen bg-[#FDFBF7]">
-      {/* Desktop Sidebar (Persistent) */}
-      <aside className={cn('hidden md:block transition-all duration-300', collapsed ? 'w-20' : 'w-64')}>
-        <div className="sticky top-0 h-screen flex flex-col">
-          {sidebarContent}
+    <div className="min-h-screen bg-[#fafbfc] text-zinc-800 flex flex-col font-sans">
+      {/* ──── Top Public Header Bar (Exact match to Screenshot 2) ──── */}
+      <header className="h-16 bg-white border-b border-zinc-200/80 sticky top-0 z-40 px-4 sm:px-8 flex items-center justify-between shadow-xs">
+        {/* Brand */}
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0F6D4E] text-white shadow-md shadow-[#0F6D4E]/20">
+            <Heart className="h-4 w-4 text-white" fill="white" />
+          </div>
+          <div>
+            <p className="text-base font-bold tracking-tight font-serif text-zinc-950">Niswartha</p>
+            <p className="-mt-1 text-[8px] font-bold uppercase tracking-[0.15em] text-zinc-400">SELFLESS SERVICE</p>
+          </div>
         </div>
-      </aside>
 
-      {/* Collapsible toggle button */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="hidden md:flex fixed left-[228px] top-6 z-50 h-6 w-6 items-center justify-center rounded-full border bg-white text-zinc-500 shadow-md hover:text-zinc-900 transition-all duration-300"
-        style={{ left: collapsed ? '68px' : '244px' }}
-      >
-        {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
-      </button>
+        {/* Center Nav links */}
+        <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-zinc-600">
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate('/admin'); }} className="hover:text-[#0F6D4E] transition-colors">Home</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate('/admin'); }} className="hover:text-[#0F6D4E] transition-colors">About</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate('/admin/events'); }} className="hover:text-[#0F6D4E] transition-colors">Events</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate('/admin/needs'); }} className="hover:text-[#0F6D4E] transition-colors">Needs</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate('/admin/gallery'); }} className="hover:text-[#0F6D4E] transition-colors">Gallery</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate('/admin/schemes'); }} className="hover:text-[#0F6D4E] transition-colors">Gov Schemes</a>
+        </nav>
 
-      {/* Mobile Sidebar (Drawer) */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm md:hidden"
-              onClick={() => setMobileOpen(false)}
-            />
-            <motion.div
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed bottom-0 top-0 left-0 z-50 w-64 md:hidden"
-            >
-              {sidebarContent}
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+        {/* Right CTA & Account */}
+        <div className="flex items-center gap-3">
+          <Button
+            size="sm"
+            onClick={() => navigate('/admin/bookings')}
+            className="rounded-full bg-[#0F6D4E] text-white font-bold text-xs px-4 h-9 gap-1.5 shadow-sm hover:bg-[#0c593f]"
+          >
+            <MapPin className="h-3.5 w-3.5" />
+            Visit Us
+          </Button>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Header Bar */}
-        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-zinc-200/50 bg-[#FDFBF7]/90 px-6 backdrop-blur-md">
-          {/* Greeting / Page Header */}
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setMobileOpen(true)}
-              className="md:hidden rounded-full hover:bg-zinc-200/50"
-            >
-              <Menu className="h-5 w-5 text-zinc-700" />
-            </Button>
-            <div className="hidden sm:block">
-              <h1 className="text-xl font-bold tracking-wider text-zinc-950 font-serif">
-                HELLO, {firstName}!
-              </h1>
-              <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-widest mt-0.5">Welcome back to dashboard</p>
+          {/* User Profile Pill */}
+          <div className="flex items-center gap-2 bg-zinc-100/80 px-3 py-1 rounded-full border border-zinc-200/60">
+            <div className="h-6 w-6 rounded-full bg-zinc-900 text-white flex items-center justify-center text-[10px] font-bold">
+              {currentUser?.name?.charAt(0)?.toUpperCase() || 'K'}
+            </div>
+            <span className="text-xs font-bold text-zinc-800">{currentUser?.name?.split(' ')[0] || 'Keshav'}</span>
+          </div>
+
+          {/* Live Website / Super Admin Button (Matching Screenshot 2) */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/super-admin')}
+            className="rounded-full border-zinc-300 font-bold text-xs h-9 px-4 gap-1.5 text-zinc-700 hover:bg-zinc-100"
+          >
+            <Shield className="h-3.5 w-3.5 text-amber-600" />
+            Super Admin
+          </Button>
+        </div>
+      </header>
+
+      {/* ──── Main Admin Layout with Left Sidebar ──── */}
+      <div className="flex-1 flex min-w-0">
+        {/* Left Sidebar (Exact layout & styling from Screenshot 2) */}
+        <aside className="hidden lg:flex flex-col w-64 border-r border-zinc-200/80 bg-white shrink-0">
+          <div className="p-5 border-b border-zinc-100 flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0F6D4E] text-white font-bold text-xs shadow-sm">
+              <Heart className="h-4 w-4 text-white" fill="white" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-zinc-950 font-serif">Niswartha</p>
+              <p className="text-[9px] font-bold uppercase tracking-wider text-[#0F6D4E]">ADMIN PORTAL</p>
             </div>
           </div>
 
-          {/* Search bar */}
-          <div className="relative max-w-xs w-full mx-4 hidden lg:block">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-            <input
-              type="text"
-              placeholder="Search anything..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-10 rounded-full border border-zinc-200 bg-[#FAF9F5] pl-10 pr-4 text-sm text-zinc-800 placeholder-zinc-400 focus:border-primary/50 focus:bg-white focus:outline-none transition-all duration-200 shadow-inner"
-            />
+          {/* User Badge Card from Screenshot 2 */}
+          <div className="p-4 border-b border-zinc-100">
+            <div className="flex items-center gap-3 bg-zinc-50 border border-zinc-200/70 p-3 rounded-2xl">
+              <div className="h-10 w-10 rounded-full bg-indigo-900 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                {currentUser?.name ? currentUser.name.split(' ').map((n) => n[0]).join('').toUpperCase() : 'KP'}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold truncate text-zinc-900">{currentUser?.name || 'Keshav Patel'}</p>
+                <p className="text-[9px] font-bold uppercase tracking-wider text-emerald-700">SUPER ADMIN</p>
+              </div>
+            </div>
           </div>
 
-          {/* Top Nav Actions */}
-          <div className="flex items-center gap-3">
-            <Link to="/">
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full border-zinc-200 hover:bg-zinc-100 gap-1.5 font-medium text-xs text-zinc-700"
+          {/* Sidebar Nav Links */}
+          <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+            {ADMIN_LINKS.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                end={link.end}
+                className={({ isActive: active }) =>
+                  cn(
+                    'flex items-center gap-3 rounded-xl px-4 py-2.5 text-xs font-bold transition-all duration-150',
+                    active
+                      ? 'bg-[#EAF5F0] text-[#0F6D4E] font-extrabold shadow-2xs'
+                      : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900',
+                  )
+                }
               >
-                <Globe className="h-3.5 w-3.5" />
-                Live Website
-              </Button>
-            </Link>
+                <link.icon className="h-4 w-4 shrink-0" />
+                {link.label}
+              </NavLink>
+            ))}
+          </nav>
 
+          <div className="p-4 border-t border-zinc-100">
             <Button
-              variant="ghost"
-              size="icon"
-              className="relative h-10 w-10 rounded-full hover:bg-zinc-100/80"
-              onClick={() => navigate('/notifications')}
+              variant="outline"
+              size="sm"
+              className="w-full justify-start gap-2 rounded-xl text-xs font-bold text-red-600 border-red-200 hover:bg-red-50"
+              onClick={logout}
             >
-              <Bell className="h-5 w-5 text-zinc-500" />
-              <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-primary" />
+              <LogOut className="h-4 w-4" />
+              Sign Out
             </Button>
           </div>
-        </header>
+        </aside>
 
-        {/* Dynamic Route View */}
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto">
-          <div className="max-w-6xl mx-auto w-full">
-            <Outlet />
-          </div>
+        {/* Main Admin Pages Content */}
+        <main className="flex-1 p-6 md:p-8 overflow-y-auto min-w-0">
+          <Outlet />
         </main>
       </div>
     </div>
