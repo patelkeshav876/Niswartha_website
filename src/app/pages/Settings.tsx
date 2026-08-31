@@ -374,13 +374,14 @@ export function Settings() {
 
                 {/* Contact Phone */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-zinc-500">Contact Phone</Label>
+                  <Label className="text-xs font-bold text-zinc-500">Contact Phone (Digits Only)</Label>
                   <input
-                    type="text"
+                    type="tel"
+                    maxLength={10}
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 9876543210"
-                    className="w-full h-11 px-4 text-xs font-bold rounded-2xl bg-zinc-100/70 border-none text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#F97316]/30"
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, '').slice(0, 10))}
+                    placeholder="10-digit mobile number"
+                    className="w-full h-11 px-4 text-xs font-bold rounded-2xl bg-zinc-100/70 border-none text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#F97316]/30 font-mono"
                   />
                 </div>
               </div>

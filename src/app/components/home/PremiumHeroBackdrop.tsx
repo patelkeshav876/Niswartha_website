@@ -134,14 +134,14 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
         </div>
       )}
 
-      {/* ──── Video Fill (Supports YouTube links + Direct MP4/WebM URLs) ──── */}
+      {/* ──── Video Fill (Supports YouTube links + Direct MP4/WebM URLs on Desktop & Mobile) ──── */}
       {bgType === 'video' && bgVideoUrl && (
         <>
           {getYouTubeEmbedUrl(bgVideoUrl) ? (
-            <div className="hidden md:block absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
+            <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
               <iframe
                 src={getYouTubeEmbedUrl(bgVideoUrl)!}
-                className="absolute top-1/2 left-1/2 w-[160%] h-[160%] -translate-x-1/2 -translate-y-1/2 object-cover border-0 pointer-events-none"
+                className="absolute top-1/2 left-1/2 w-[180%] h-[180%] -translate-x-1/2 -translate-y-1/2 object-cover border-0 pointer-events-none"
                 allow="autoplay; encrypted-media"
                 title="Hero Background Video"
               />
@@ -153,7 +153,8 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
               loop={loopVideo}
               muted
               playsInline
-              className={cn('hidden md:block absolute inset-0 w-full h-[120%] pointer-events-none', fitClass)}
+              preload="auto"
+              className={cn('absolute inset-0 w-full h-[120%] pointer-events-none', fitClass)}
               style={{
                 transform: `translateY(${parallaxShift}px) translateZ(0)`,
                 filter: blurIntensity > 0 ? `blur(${blurIntensity}px)` : undefined,
@@ -162,19 +163,17 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
             />
           )}
 
-          {/* Mobile Fallback Image */}
-          <div
-            className="md:hidden absolute inset-0 w-full h-full pointer-events-none"
-            style={{
-              filter: blurIntensity > 0 ? `blur(${blurIntensity}px)` : undefined,
-            }}
-          >
-            {mobileFallbackUrl ? (
+          {/* Optional Fallback image overlay when video is loading */}
+          {mobileFallbackUrl && (
+            <div
+              className="absolute inset-0 w-full h-full pointer-events-none opacity-20 transition-opacity"
+              style={{
+                filter: blurIntensity > 0 ? `blur(${blurIntensity}px)` : undefined,
+              }}
+            >
               <img src={mobileFallbackUrl} className={cn('w-full h-full', fitClass)} alt="" />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-b from-[#12151f] via-[#0e1118] to-[#080a10]" />
-            )}
-          </div>
+            </div>
+          )}
         </>
       )}
 

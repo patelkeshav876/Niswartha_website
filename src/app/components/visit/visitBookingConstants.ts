@@ -6,6 +6,7 @@ export const VISIT_PURPOSE_OPTIONS = [
   { id: 'meditation', label: 'Meditation' },
   { id: 'event', label: 'Event' },
   { id: 'volunteer', label: 'Volunteer' },
+  { id: 'other', label: 'Other (Specify below)' },
 ] as const;
 
 export type VisitPurposeId = (typeof VISIT_PURPOSE_OPTIONS)[number]['id'];

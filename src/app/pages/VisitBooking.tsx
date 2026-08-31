@@ -462,7 +462,7 @@ export function VisitBooking() {
                       setForm((f) => ({
                         ...f,
                         orgType: v as VisitBookingFormState['orgType'],
-                        orgName: v === 'Individual' ? '' : f.orgName,
+                        orgName: v === 'Individual' || v === 'Other' ? '' : f.orgName,
                       }))
                     }
                   >
@@ -472,7 +472,7 @@ export function VisitBooking() {
                     <SelectContent position="popper" className="z-[100]">
                       {['Individual', 'NGO', 'College', 'School', 'Corporate', 'Other'].map((type) => (
                         <SelectItem key={type} value={type}>
-                          {type === 'Other' ? 'Other / Enter by user' : type}
+                          {type}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -480,10 +480,10 @@ export function VisitBooking() {
                 </div>
 
                 {/* Organization Name (Conditional) */}
-                {form.orgType && form.orgType !== 'Individual' && (
+                {form.orgType && form.orgType !== 'Individual' && form.orgType !== 'Other' && (
                   <div className="space-y-2">
                     <Label htmlFor="vb-orgname" className="text-zinc-700 font-medium">
-                      {form.orgType === 'Other' ? 'Custom Organization / Institution Name' : 'Organization Name'}
+                      Organization Name
                     </Label>
                     <Input
                       id="vb-orgname"
@@ -497,32 +497,43 @@ export function VisitBooking() {
               </div>
             </Card>
 
-            {/* Step 3: Purpose & Count */}
-            <Card className="rounded-3xl border-none shadow-sm bg-white p-6 space-y-6">
+            {/* Step 3: Purpose and Group Size */}
+            <Card className="rounded-3xl border-none shadow-sm bg-white p-4 sm:p-6 space-y-6 w-[94%] sm:w-full max-w-sm sm:max-w-none mx-auto">
               <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider border-b pb-3 flex items-center gap-2">
                 <Info className="h-4 w-4 text-[#0F6D4E]" />
-                Purpose & Group Size
+                Purpose and Group Size
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Visitor count */}
+                {/* Visitor count (Editable & Removable) */}
                 <div className="space-y-2">
-                  <Label htmlFor="vb-vcount" className="text-zinc-700 font-medium">Number of Visitors (Any Group Size)</Label>
+                  <Label htmlFor="vb-vcount" className="text-zinc-700 font-medium">Number of Visitors</Label>
                   <Input
                     id="vb-vcount"
-                    type="number"
-                    min={1}
-                    max={200}
-                    value={form.visitorCount}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={form.visitorCount === 0 ? '' : form.visitorCount}
                     onChange={(e) => {
-                      const n = Math.min(200, Math.max(1, Number(e.target.value) || 1));
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      if (val === '') {
+                        setForm((f) => ({ ...f, visitorCount: 0, visitorNames: [''] }));
+                        return;
+                      }
+                      const n = Math.min(200, Math.max(1, parseInt(val, 10)));
                       setForm((f) => ({
                         ...f,
                         visitorCount: n,
                         visitorNames: Array.from({ length: n }, (_, i) => f.visitorNames[i] ?? ''),
                       }));
                     }}
-                    className="rounded-xl border-zinc-200"
+                    onBlur={() => {
+                      if (!form.visitorCount || form.visitorCount < 1) {
+                        setForm((f) => ({ ...f, visitorCount: 1, visitorNames: [f.visitorNames[0] || ''] }));
+                      }
+                    }}
+                    className="rounded-xl border-zinc-200 font-mono"
+                    placeholder="Enter number of visitors (e.g. 2, 3)"
                   />
                 </div>
 
@@ -549,6 +560,20 @@ export function VisitBooking() {
                 </div>
               </div>
 
+              {/* Custom Purpose Input if 'other' is selected */}
+              {form.purpose === 'other' && (
+                <div className="space-y-2 pt-1">
+                  <Label htmlFor="vb-custom-purpose" className="text-zinc-700 font-medium">Specify Custom Purpose</Label>
+                  <Input
+                    id="vb-custom-purpose"
+                    value={form.notes || ''}
+                    onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                    className="rounded-xl border-zinc-200"
+                    placeholder="Enter custom visit purpose..."
+                  />
+                </div>
+              )}
+
               {/* Visitor names inputs */}
               <div className="space-y-3">
                 <Label className="text-zinc-700 font-medium">Visitor Names (Letters Only)</Label>
@@ -572,31 +597,32 @@ export function VisitBooking() {
             </Card>
 
             {/* Step 4: Emergency Contact */}
-            <Card className="rounded-3xl border-none shadow-sm bg-white p-6 space-y-6">
+            <Card className="rounded-3xl border-none shadow-sm bg-white p-4 sm:p-6 space-y-6 w-[94%] sm:w-full max-w-sm sm:max-w-none mx-auto">
               <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider border-b pb-3 flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-[#0F6D4E]" />
                 Emergency Contact Details
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="vb-ec-name" className="text-zinc-700 font-medium">Contact Person Name</Label>
+                  <Label htmlFor="vb-ec-name" className="text-zinc-700 font-medium">Contact Person Name (Letters Only)</Label>
                   <Input
                     id="vb-ec-name"
                     value={form.emergencyContactName}
-                    onChange={(e) => setForm((f) => ({ ...f, emergencyContactName: e.target.value }))}
+                    onChange={(e) => setForm((f) => ({ ...f, emergencyContactName: e.target.value.replace(/[^a-zA-Z\s]/g, '') }))}
                     className="rounded-xl border-zinc-200"
-                    placeholder="Enter name"
+                    placeholder="Contact person full name (letters only)"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="vb-ec-phone" className="text-zinc-700 font-medium">Contact Person Phone</Label>
+                  <Label htmlFor="vb-ec-phone" className="text-zinc-700 font-medium">Contact Person Phone (10 Digits)</Label>
                   <Input
                     id="vb-ec-phone"
                     type="tel"
+                    maxLength={10}
                     value={form.emergencyContactPhone}
-                    onChange={(e) => setForm((f) => ({ ...f, emergencyContactPhone: e.target.value }))}
-                    className="rounded-xl border-zinc-200"
-                    placeholder="Enter phone number"
+                    onChange={(e) => setForm((f) => ({ ...f, emergencyContactPhone: e.target.value.replace(/[^0-9]/g, '').slice(0, 10) }))}
+                    className="rounded-xl border-zinc-200 font-mono"
+                    placeholder="10-digit mobile number"
                   />
                 </div>
               </div>
