@@ -7,33 +7,31 @@ import {
   Activity,
   Users,
   Settings,
-  Calendar,
-  Gift,
-  ImageIcon,
-  FileText,
-  UserCheck,
-  BookOpen,
+  Database,
   LogOut,
   Menu,
   X,
   Sparkles,
-  LayoutDashboard,
+  Megaphone,
+  ImageIcon,
   Layers,
+  FileText,
+  Shield,
+  Award,
 } from 'lucide-react';
 import { Button } from './ui/button';
 
 const SIDEBAR_ITEMS = [
-  { to: '/', label: 'SuperAdmin Studio', icon: Sparkles, end: true },
-  { to: '/events', label: 'Manage Events', icon: Calendar },
-  { to: '/needs', label: 'Needs Management', icon: Gift },
-  { to: '/gallery', label: 'Gallery Management', icon: ImageIcon },
-  { to: '/schemes', label: 'Government Schemes', icon: FileText },
-  { to: '/team', label: 'Team & Staff', icon: UserCheck },
-  { to: '/children', label: 'Children Directory', icon: BookOpen },
+  { to: '/', label: 'System Health', icon: Activity, end: true },
+  { to: '/theme-studio', label: 'Theme Studio & Palette', icon: Sparkles },
+  { to: '/hero-manager', label: 'Page Hero Manager', icon: Layers },
+  { to: '/media-library', label: 'Media Library', icon: ImageIcon },
   { to: '/users', label: 'User Directory', icon: Users },
-  { to: '/bookings', label: 'Visit Bookings', icon: Activity },
-  { to: '/feed', label: 'Feed & Updates', icon: Layers },
-  { to: '/settings', label: 'System Settings', icon: Settings },
+  { to: '/ads', label: 'Ad Placements', icon: Megaphone },
+  { to: '/audit-logs', label: 'System Audit Logs', icon: FileText },
+  { to: '/badges', label: 'Superhero Badges Control', icon: Award },
+  { to: '/configs', label: 'Master Configurations', icon: Settings },
+  { to: '/backup', label: 'Backup & Restore', icon: Database },
 ];
 
 export function AdminLayout() {
@@ -58,11 +56,11 @@ export function AdminLayout() {
         <div className="flex h-20 items-center gap-3 px-6 border-b border-zinc-100">
           <Link to="/" className="flex items-center gap-3 group">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0F6D4E] text-white shadow-md shadow-[#0F6D4E]/20 transition-transform group-hover:scale-105">
-              <Heart className="h-5 w-5 text-white" fill="white" />
+              <Shield className="h-5 w-5 text-white" />
             </div>
             <div>
               <p className="text-lg font-bold tracking-tight text-zinc-950 font-serif">Niswartha</p>
-              <p className="-mt-1 text-[9px] font-bold uppercase tracking-[0.15em] text-[#0F6D4E]">Control Center</p>
+              <p className="-mt-1 text-[9px] font-bold uppercase tracking-[0.15em] text-[#0F6D4E]">Super Admin Console</p>
             </div>
           </Link>
         </div>
@@ -76,7 +74,7 @@ export function AdminLayout() {
               className={cn(
                 'flex items-center gap-3 rounded-xl px-4 py-3 text-xs font-bold transition-all duration-200',
                 isActive(item.to, item.end)
-                  ? 'bg-[#0F6D4E]/10 text-[#0F6D4E] font-extrabold shadow-sm'
+                  ? 'bg-amber-500/10 text-amber-800 font-extrabold shadow-sm'
                   : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900',
               )}
             >
@@ -88,7 +86,7 @@ export function AdminLayout() {
 
         <div className="p-4 border-t bg-zinc-50/50">
           <div className="flex items-center gap-3 mb-4">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0F6D4E] text-white font-bold text-xs shadow-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500 text-white font-bold text-xs shadow-sm">
               {currentUser?.name?.charAt(0)?.toUpperCase() || 'K'}
             </div>
             <div className="min-w-0">
@@ -113,9 +111,9 @@ export function AdminLayout() {
         <header className="lg:hidden flex items-center justify-between h-16 px-4 bg-white border-b sticky top-0 z-40">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0F6D4E] text-white">
-              <Heart className="h-4 w-4 text-white" fill="white" />
+              <Shield className="h-4 w-4 text-white" />
             </div>
-            <span className="font-serif font-bold text-base text-zinc-900">Niswartha Admin</span>
+            <span className="font-serif font-bold text-base text-zinc-900">Super Admin Console</span>
           </div>
           <Button variant="ghost" size="icon" onClick={() => setMobileOpen(!mobileOpen)}>
             {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
