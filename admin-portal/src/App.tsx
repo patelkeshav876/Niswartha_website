@@ -2,7 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router';
 import { UserProvider } from './context/UserContext';
 import { AdminLayout } from './components/AdminLayout';
-import { ThemePaletteStudio } from './components/ThemePaletteStudio';
+import { ThemePaletteStudio } from '../../src/app/components/ThemePaletteStudio';
 
 // Lazy Admin Pages
 const ManageEvents = lazy(() => import('../../src/app/pages/admin/ManageEvents').then(m => ({ default: m.ManageEvents })));
