@@ -6,8 +6,9 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
+    "admin": "vite --config admin-portal/vite.config.ts admin-portal",
     "server": "node server/index.js",
-    "dev:full": "npx --yes kill-port 4000 && concurrently -k \"npm run server\" \"npm run dev\""
+    "dev:full": "npx --yes kill-port 4000 && concurrently -k \"npm run server\" \"npm run dev\" \"npm run admin\""
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
