@@ -199,15 +199,26 @@ export function Navbar() {
                             <Settings className="h-4 w-4 text-muted-foreground" /> Settings
                           </button>
                           {isAdmin && (
-                            <button onClick={() => navigate('/admin')} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-muted/60">
+                            <button
+                              onClick={() => {
+                                window.location.href = 'https://deafanddumbschool.vercel.app/admin';
+                              }}
+                              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-muted/60"
+                            >
                               <LayoutDashboard className="h-4 w-4 text-muted-foreground" /> Admin Panel
                             </button>
                           )}
                           {currentUser?.role === 'super_admin' && (
-                            <button onClick={() => navigate('/super-admin')} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-muted/60">
+                            <button
+                              onClick={() => {
+                                window.location.href = 'https://deafanddumbschool.vercel.app/super-admin';
+                              }}
+                              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-muted/60"
+                            >
                               <Shield className="h-4 w-4 text-muted-foreground" /> Super Admin Portal
                             </button>
                           )}
+
                           <div className="border-t border-border/50 mt-1 pt-1">
                             <button onClick={logout} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-destructive transition-colors hover:bg-destructive/5">
                               <LogOut className="h-4 w-4" /> Sign Out
