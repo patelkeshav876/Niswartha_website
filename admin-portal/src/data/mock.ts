@@ -247,3 +247,130 @@ export const mockPosts: Post[] = [
     createdAt: '2023-10-17',
   },
 ];
+
+export const mockNotifications = [
+  {
+    id: 'notif-1',
+    title: 'Visit Booking Confirmed',
+    message: 'Your ashram visit for 2 visitors has been scheduled successfully.',
+    type: 'system',
+    read: false,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'notif-2',
+    title: 'New Need Posted',
+    message: 'Urgent need for Hearing Aid Accessories added to Ashram #1.',
+    type: 'event',
+    read: true,
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+  },
+];
+
+export const mockGalleryAlbums = [
+  {
+    id: 'album-1',
+    title: 'Annual Sports Day 2023',
+    description: 'Celebrating courage, athleticism, and joy.',
+    coverImage: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80',
+    photosCount: 12,
+    createdAt: '2023-11-20',
+  },
+  {
+    id: 'album-2',
+    title: 'Diwali Cultural Program',
+    description: 'Festive lights, dances, and sign-language performances.',
+    coverImage: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&q=80',
+    photosCount: 24,
+    createdAt: '2023-11-12',
+  },
+];
+
+export const mockSchemes = [
+  {
+    id: 'scheme-1',
+    title: 'Government Hearing Aid Subsidy',
+    category: 'Healthcare',
+    eligibility: 'Deaf & Speech impaired children aged 4-18',
+    benefit: '100% free digital hearing aids & annual maintenance',
+    provider: 'Department of Social Justice & Empowerment',
+    deadline: '2024-12-31',
+    link: '#',
+  },
+  {
+    id: 'scheme-2',
+    title: 'Pre-Matric Special Scholarship',
+    category: 'Education',
+    eligibility: 'Students enrolled in certified special education institutes',
+    benefit: '₹5,000 annual stipend for educational materials',
+    provider: 'Ministry of Social Justice',
+    deadline: '2024-10-15',
+    link: '#',
+  },
+];
+
+export const mockChildren = [
+  {
+    id: 'child-1',
+    name: 'Aarav Sharma',
+    age: 10,
+    gender: 'Male',
+    grade: '5th Standard',
+    admissionDate: '2021-06-15',
+    guardianContact: '+91 98230 11223',
+    healthStatus: 'Good — Regular checkups completed',
+  },
+  {
+    id: 'child-2',
+    name: 'Ananya Verma',
+    age: 8,
+    gender: 'Female',
+    grade: '3rd Standard',
+    admissionDate: '2022-07-10',
+    guardianContact: '+91 98230 44556',
+    healthStatus: 'Excellent — Active in art & sports',
+  },
+];
+
+export const mockTeamMembers = [
+  {
+    id: 'team-1',
+    name: 'Sita Devi',
+    role: 'Principal & Senior Educator',
+    bio: 'Dedicated to special education for over 18 years.',
+    image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80',
+  },
+  {
+    id: 'team-2',
+    name: 'Rajesh Patil',
+    role: 'Vocational Training Instructor',
+    bio: 'Guiding deaf students in industrial skill development.',
+    image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80',
+  },
+];
+
+export const mockVisitBookings = [
+  {
+    id: 'booking-1',
+    visitorName: 'Amit Shah',
+    email: 'amit@example.com',
+    phone: '+91 98765 43210',
+    visitDate: '2024-09-15',
+    timeSlot: '10:00 AM - 11:30 AM',
+    visitorCount: 3,
+    status: 'Confirmed',
+    purpose: 'Volunteering & Book Donation',
+  },
+];
+
+export const mockMediaItems = [
+  {
+    id: 'media-1',
+    name: 'Campus Building Front',
+    url: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80',
+    type: 'image',
+    folder: 'Campus',
+    size: '1.2 MB',
+    createdAt: new Date().toISOString(),
+  },
+];
