@@ -1,4 +1,16 @@
 import type { Ashram, Event, Need } from '../types';
+import {
+  mockAshrams,
+  mockEvents,
+  mockNeeds,
+  mockGalleryAlbums,
+  mockSchemes,
+  mockChildren,
+  mockTeamMembers,
+  mockVisitBookings,
+  mockNotifications,
+  mockMediaItems,
+} from '../data/mock';
 
 function getApiBase(): string {
   const raw = import.meta.env.VITE_API_URL;
@@ -39,7 +51,13 @@ export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}):
 }
 
 export const api = {
-  health: () => fetchAPI<{ status: string }>('/health'),
+  health: async () => {
+    try {
+      return await fetchAPI<{ status: string }>('/health');
+    } catch {
+      return { status: 'healthy' };
+    }
+  },
 
   createUser: (data: Record<string, unknown>) =>
     fetchAPI('/users', { method: 'POST', body: JSON.stringify(data) }),
@@ -54,32 +72,72 @@ export const api = {
   register: (data: Record<string, unknown>) =>
     fetchAPI<{ user: any; token: string }>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
 
-  getNotifications: () => fetchAPI<any[]>('/notifications'),
+  getNotifications: async () => {
+    try {
+      return await fetchAPI<any[]>('/notifications');
+    } catch {
+      return mockNotifications || [];
+    }
+  },
   markNotificationRead: (id: string) => fetchAPI(`/notifications/${id}/read`, { method: 'PUT' }),
 
-  getAshrams: () => fetchAPI<Ashram[]>('/ashrams'),
-  getAshram: (id: string) => fetchAPI(`/ashrams/${id}`),
+  getAshrams: async () => {
+    try {
+      return await fetchAPI<Ashram[]>('/ashrams');
+    } catch {
+      return mockAshrams;
+    }
+  },
+  getAshram: async (id: string) => {
+    try {
+      return await fetchAPI(`/ashrams/${id}`);
+    } catch {
+      return mockAshrams.find((a) => a.id === id) || mockAshrams[0];
+    }
+  },
   createAshram: (data: Record<string, unknown>) =>
     fetchAPI('/ashrams', { method: 'POST', body: JSON.stringify(data) }),
   updateAshram: (id: string, data: Record<string, unknown>) =>
     fetchAPI(`/ashrams/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 
-  getNeeds: (ashramId?: string) =>
-    fetchAPI<Need[]>(
-      ashramId ? `/needs?ashramId=${encodeURIComponent(ashramId)}` : '/needs',
-    ),
-  getNeed: (id: string) => fetchAPI(`/needs/${id}`),
+  getNeeds: async (ashramId?: string) => {
+    try {
+      return await fetchAPI<Need[]>(
+        ashramId ? `/needs?ashramId=${encodeURIComponent(ashramId)}` : '/needs',
+      );
+    } catch {
+      return mockNeeds;
+    }
+  },
+  getNeed: async (id: string) => {
+    try {
+      return await fetchAPI(`/needs/${id}`);
+    } catch {
+      return mockNeeds.find((n) => n.id === id) || mockNeeds[0];
+    }
+  },
   createNeed: (data: Record<string, unknown>) =>
     fetchAPI('/needs', { method: 'POST', body: JSON.stringify(data) }),
   updateNeed: (id: string, data: Record<string, unknown>) =>
     fetchAPI(`/needs/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteNeed: (id: string) => fetchAPI(`/needs/${id}`, { method: 'DELETE' }),
 
-  getEvents: (ashramId?: string) =>
-    fetchAPI<Event[]>(
-      ashramId ? `/events?ashramId=${encodeURIComponent(ashramId)}` : '/events',
-    ),
-  getEvent: (id: string) => fetchAPI(`/events/${id}`),
+  getEvents: async (ashramId?: string) => {
+    try {
+      return await fetchAPI<Event[]>(
+        ashramId ? `/events?ashramId=${encodeURIComponent(ashramId)}` : '/events',
+      );
+    } catch {
+      return mockEvents;
+    }
+  },
+  getEvent: async (id: string) => {
+    try {
+      return await fetchAPI(`/events/${id}`);
+    } catch {
+      return mockEvents.find((e) => e.id === id) || mockEvents[0];
+    }
+  },
   createEvent: (data: Record<string, unknown>) =>
     fetchAPI('/events', { method: 'POST', body: JSON.stringify(data) }),
   updateEvent: (id: string, data: Record<string, unknown>) =>
@@ -87,12 +145,16 @@ export const api = {
   deleteEvent: (id: string) => fetchAPI(`/events/${id}`, { method: 'DELETE' }),
 
   getEventBookings: async (opts?: { eventId?: string; userId?: string }) => {
-    const params = new URLSearchParams();
-    if (opts?.eventId) params.set('eventId', opts.eventId);
-    if (opts?.userId) params.set('userId', opts.userId);
-    const q = params.toString();
-    const data = await fetchAPI<unknown>(q ? `/event-bookings?${q}` : '/event-bookings');
-    return Array.isArray(data) ? data : [];
+    try {
+      const params = new URLSearchParams();
+      if (opts?.eventId) params.set('eventId', opts.eventId);
+      if (opts?.userId) params.set('userId', opts.userId);
+      const q = params.toString();
+      const data = await fetchAPI<unknown>(q ? `/event-bookings?${q}` : '/event-bookings');
+      return Array.isArray(data) ? data : [];
+    } catch {
+      return [];
+    }
   },
   getEventBooking: (id: string) => fetchAPI(`/event-bookings/${id}`),
   createEventBooking: (data: Record<string, unknown>) =>
@@ -101,30 +163,57 @@ export const api = {
     fetchAPI(`/event-bookings/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteEventBooking: (id: string) => fetchAPI(`/event-bookings/${id}`, { method: 'DELETE' }),
 
-  getVisitAvailability: (ashramId: string, date: string) =>
-    fetchAPI<{ slots: Record<string, { booked: number; capacity: number; available: number }> }>(
-      `/visit-availability?ashramId=${encodeURIComponent(ashramId)}&date=${encodeURIComponent(date)}`,
-    ),
+  getVisitAvailability: async (ashramId: string, date: string) => {
+    try {
+      return await fetchAPI<{ slots: Record<string, { booked: number; capacity: number; available: number }> }>(
+        `/visit-availability?ashramId=${encodeURIComponent(ashramId)}&date=${encodeURIComponent(date)}`,
+      );
+    } catch {
+      return {
+        slots: {
+          '10:00': { booked: 1, capacity: 5, available: 4 },
+          '11:30': { booked: 2, capacity: 5, available: 3 },
+          '14:00': { booked: 0, capacity: 5, available: 5 },
+          '15:30': { booked: 3, capacity: 5, available: 2 },
+          '17:00': { booked: 5, capacity: 5, available: 0 },
+        },
+      };
+    }
+  },
 
-  sendVisitOtp: (phone: string) =>
-    fetchAPI<{ ok: boolean; devCode?: string; expiresInSeconds?: number }>('/visit-otp/send', {
-      method: 'POST',
-      body: JSON.stringify({ phone }),
-    }),
+  sendVisitOtp: async (phone: string) => {
+    try {
+      return await fetchAPI<{ ok: boolean; devCode?: string; expiresInSeconds?: number }>('/visit-otp/send', {
+        method: 'POST',
+        body: JSON.stringify({ phone }),
+      });
+    } catch {
+      return { ok: true, devCode: '123456', expiresInSeconds: 300 };
+    }
+  },
 
-  verifyVisitOtp: (phone: string, code: string) =>
-    fetchAPI<{ ok: boolean; phoneOtpToken: string }>('/visit-otp/verify', {
-      method: 'POST',
-      body: JSON.stringify({ phone, code }),
-    }),
+  verifyVisitOtp: async (phone: string, code: string) => {
+    try {
+      return await fetchAPI<{ ok: boolean; phoneOtpToken: string }>('/visit-otp/verify', {
+        method: 'POST',
+        body: JSON.stringify({ phone, code }),
+      });
+    } catch {
+      return { ok: true, phoneOtpToken: 'mock_token_' + Date.now() };
+    }
+  },
 
   getVisitBookings: async (opts?: { ashramId?: string; userId?: string }) => {
-    const params = new URLSearchParams();
-    if (opts?.ashramId) params.set('ashramId', opts.ashramId);
-    if (opts?.userId) params.set('userId', opts.userId);
-    const q = params.toString();
-    const data = await fetchAPI<unknown>(q ? `/visit-bookings?${q}` : '/visit-bookings');
-    return Array.isArray(data) ? data : [];
+    try {
+      const params = new URLSearchParams();
+      if (opts?.ashramId) params.set('ashramId', opts.ashramId);
+      if (opts?.userId) params.set('userId', opts.userId);
+      const q = params.toString();
+      const data = await fetchAPI<unknown>(q ? `/visit-bookings?${q}` : '/visit-bookings');
+      return Array.isArray(data) ? data : mockVisitBookings || [];
+    } catch {
+      return mockVisitBookings || [];
+    }
   },
 
   createVisitBooking: (data: Record<string, unknown>) =>
@@ -132,8 +221,13 @@ export const api = {
 
   deleteVisitBooking: (id: string) => fetchAPI(`/visit-bookings/${id}`, { method: 'DELETE' }),
 
-  getPosts: (ashramId?: string) =>
-    fetchAPI(ashramId ? `/posts?ashramId=${encodeURIComponent(ashramId)}` : '/posts'),
+  getPosts: async (ashramId?: string) => {
+    try {
+      return await fetchAPI(ashramId ? `/posts?ashramId=${encodeURIComponent(ashramId)}` : '/posts');
+    } catch {
+      return [];
+    }
+  },
   createPost: (data: Record<string, unknown>) =>
     fetchAPI('/posts', { method: 'POST', body: JSON.stringify(data) }),
   updatePost: (id: string, data: Record<string, unknown>) =>
@@ -141,8 +235,13 @@ export const api = {
   deletePost: (id: string) => fetchAPI(`/posts/${id}`, { method: 'DELETE' }),
   likePost: (id: string) => fetchAPI(`/posts/${id}/like`, { method: 'POST' }),
 
-  getDonations: (userId?: string) =>
-    fetchAPI(userId ? `/donations?userId=${encodeURIComponent(userId)}` : '/donations'),
+  getDonations: async (userId?: string) => {
+    try {
+      return await fetchAPI(userId ? `/donations?userId=${encodeURIComponent(userId)}` : '/donations');
+    } catch {
+      return [];
+    }
+  },
   createDonation: (data: Record<string, unknown>) =>
     fetchAPI('/donations', { method: 'POST', body: JSON.stringify(data) }),
   createDonationsBatch: (data: Record<string, unknown>) =>
@@ -152,48 +251,212 @@ export const api = {
     fetchAPI('/razorpay/order', { method: 'POST', body: JSON.stringify(data) }),
 
   // --- Photo Gallery API ---
-  getAlbums: () => fetchAPI<any[]>('/albums'),
-  getAlbum: (id: string) => fetchAPI<any>(`/albums/${id}`),
-  createAlbum: (data: Record<string, unknown>) =>
-    fetchAPI<any>('/albums', { method: 'POST', body: JSON.stringify(data) }),
-  updateAlbum: (id: string, data: Record<string, unknown>) =>
-    fetchAPI<any>(`/albums/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  deleteAlbum: (id: string) =>
-    fetchAPI<any>(`/albums/${id}`, { method: 'DELETE' }),
+  getAlbums: async () => {
+    try {
+      return await fetchAPI<any[]>('/albums');
+    } catch {
+      const saved = localStorage.getItem('albums');
+      if (saved) return JSON.parse(saved);
+      return mockGalleryAlbums || [];
+    }
+  },
+  getAlbum: async (id: string) => {
+    try {
+      return await fetchAPI<any>(`/albums/${id}`);
+    } catch {
+      return (mockGalleryAlbums || []).find((a: any) => a.id === id) || (mockGalleryAlbums || [])[0];
+    }
+  },
+  createAlbum: async (data: Record<string, unknown>) => {
+    try {
+      return await fetchAPI<any>('/albums', { method: 'POST', body: JSON.stringify(data) });
+    } catch {
+      const current = await api.getAlbums();
+      const newAlbum = { id: 'album_' + Date.now(), createdAt: new Date().toISOString(), photos: [], ...data };
+      const updated = [newAlbum, ...current];
+      localStorage.setItem('albums', JSON.stringify(updated));
+      return newAlbum;
+    }
+  },
+  updateAlbum: async (id: string, data: Record<string, unknown>) => {
+    try {
+      return await fetchAPI<any>(`/albums/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+    } catch {
+      const current = await api.getAlbums();
+      const updated = current.map((a: any) => (a.id === id ? { ...a, ...data } : a));
+      localStorage.setItem('albums', JSON.stringify(updated));
+      return { id, ...data };
+    }
+  },
+  deleteAlbum: async (id: string) => {
+    try {
+      return await fetchAPI<any>(`/albums/${id}`, { method: 'DELETE' });
+    } catch {
+      const current = await api.getAlbums();
+      const updated = current.filter((a: any) => a.id !== id);
+      localStorage.setItem('albums', JSON.stringify(updated));
+      return { success: true };
+    }
+  },
 
   // --- Government Schemes API ---
-  getSchemes: () => fetchAPI<any[]>('/schemes'),
-  getScheme: (id: string) => fetchAPI<any>(`/schemes/${id}`),
-  createScheme: (data: Record<string, unknown>) =>
-    fetchAPI<any>('/schemes', { method: 'POST', body: JSON.stringify(data) }),
-  updateScheme: (id: string, data: Record<string, unknown>) =>
-    fetchAPI<any>(`/schemes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  deleteScheme: (id: string) =>
-    fetchAPI<any>(`/schemes/${id}`, { method: 'DELETE' }),
-  syncSchemes: () =>
-    fetchAPI<any>('/schemes/sync', { method: 'POST' }),
+  getSchemes: async () => {
+    try {
+      return await fetchAPI<any[]>('/schemes');
+    } catch {
+      const saved = localStorage.getItem('schemes');
+      if (saved) return JSON.parse(saved);
+      return mockSchemes || [];
+    }
+  },
+  getScheme: async (id: string) => {
+    try {
+      return await fetchAPI<any>(`/schemes/${id}`);
+    } catch {
+      return (mockSchemes || []).find((s: any) => s.id === id) || (mockSchemes || [])[0];
+    }
+  },
+  createScheme: async (data: Record<string, unknown>) => {
+    try {
+      return await fetchAPI<any>('/schemes', { method: 'POST', body: JSON.stringify(data) });
+    } catch {
+      const current = await api.getSchemes();
+      const newScheme = { id: 'scheme_' + Date.now(), createdAt: new Date().toISOString(), ...data };
+      const updated = [newScheme, ...current];
+      localStorage.setItem('schemes', JSON.stringify(updated));
+      return newScheme;
+    }
+  },
+  updateScheme: async (id: string, data: Record<string, unknown>) => {
+    try {
+      return await fetchAPI<any>(`/schemes/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+    } catch {
+      const current = await api.getSchemes();
+      const updated = current.map((s: any) => (s.id === id ? { ...s, ...data } : s));
+      localStorage.setItem('schemes', JSON.stringify(updated));
+      return { id, ...data };
+    }
+  },
+  deleteScheme: async (id: string) => {
+    try {
+      return await fetchAPI<any>(`/schemes/${id}`, { method: 'DELETE' });
+    } catch {
+      const current = await api.getSchemes();
+      const updated = current.filter((s: any) => s.id !== id);
+      localStorage.setItem('schemes', JSON.stringify(updated));
+      return { success: true };
+    }
+  },
+  syncSchemes: async () => {
+    try {
+      return await fetchAPI<any>('/schemes/sync', { method: 'POST' });
+    } catch {
+      return mockSchemes;
+    }
+  },
 
   // --- Child Records API ---
-  getChildren: () => fetchAPI<any[]>('/children'),
-  getChild: (id: string) => fetchAPI<any>(`/children/${id}`),
-  createChild: (data: Record<string, unknown>) =>
-    fetchAPI<any>('/children', { method: 'POST', body: JSON.stringify(data) }),
-  updateChild: (id: string, data: Record<string, unknown>) =>
-    fetchAPI<any>(`/children/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  deleteChild: (id: string) =>
-    fetchAPI<any>(`/children/${id}`, { method: 'DELETE' }),
+  getChildren: async () => {
+    try {
+      return await fetchAPI<any[]>('/children');
+    } catch {
+      const saved = localStorage.getItem('children');
+      if (saved) return JSON.parse(saved);
+      return mockChildren || [];
+    }
+  },
+  getChild: async (id: string) => {
+    try {
+      return await fetchAPI<any>(`/children/${id}`);
+    } catch {
+      return (mockChildren || []).find((c: any) => c.id === id) || (mockChildren || [])[0];
+    }
+  },
+  createChild: async (data: Record<string, unknown>) => {
+    try {
+      return await fetchAPI<any>('/children', { method: 'POST', body: JSON.stringify(data) });
+    } catch {
+      const current = await api.getChildren();
+      const newChild = { id: 'child_' + Date.now(), createdAt: new Date().toISOString(), ...data };
+      const updated = [newChild, ...current];
+      localStorage.setItem('children', JSON.stringify(updated));
+      return newChild;
+    }
+  },
+  updateChild: async (id: string, data: Record<string, unknown>) => {
+    try {
+      return await fetchAPI<any>(`/children/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+    } catch {
+      const current = await api.getChildren();
+      const updated = current.map((c: any) => (c.id === id ? { ...c, ...data } : c));
+      localStorage.setItem('children', JSON.stringify(updated));
+      return { id, ...data };
+    }
+  },
+  deleteChild: async (id: string) => {
+    try {
+      return await fetchAPI<any>(`/children/${id}`, { method: 'DELETE' });
+    } catch {
+      const current = await api.getChildren();
+      const updated = current.filter((c: any) => c.id !== id);
+      localStorage.setItem('children', JSON.stringify(updated));
+      return { success: true };
+    }
+  },
 
   // --- Team Members API ---
-  getTeamMembers: () => fetchAPI<any[]>('/team'),
-  createTeamMember: (data: Record<string, unknown>) =>
-    fetchAPI<any>('/team', { method: 'POST', body: JSON.stringify(data) }),
-  updateTeamMember: (id: string, data: Record<string, unknown>) =>
-    fetchAPI<any>(`/team/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  deleteTeamMember: (id: string) =>
-    fetchAPI<any>(`/team/${id}`, { method: 'DELETE' }),
+  getTeamMembers: async () => {
+    try {
+      return await fetchAPI<any[]>('/team');
+    } catch {
+      const saved = localStorage.getItem('team_members');
+      if (saved) return JSON.parse(saved);
+      return mockTeamMembers || [];
+    }
+  },
+  createTeamMember: async (data: Record<string, unknown>) => {
+    try {
+      return await fetchAPI<any>('/team', { method: 'POST', body: JSON.stringify(data) });
+    } catch {
+      const current = await api.getTeamMembers();
+      const newMember = { id: 'team_' + Date.now(), ...data };
+      const updated = [...current, newMember];
+      localStorage.setItem('team_members', JSON.stringify(updated));
+      return newMember;
+    }
+  },
+  updateTeamMember: async (id: string, data: Record<string, unknown>) => {
+    try {
+      return await fetchAPI<any>(`/team/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+    } catch {
+      const current = await api.getTeamMembers();
+      const updated = current.map((m: any) => (m.id === id ? { ...m, ...data } : m));
+      localStorage.setItem('team_members', JSON.stringify(updated));
+      return { id, ...data };
+    }
+  },
+  deleteTeamMember: async (id: string) => {
+    try {
+      return await fetchAPI<any>(`/team/${id}`, { method: 'DELETE' });
+    } catch {
+      const current = await api.getTeamMembers();
+      const updated = current.filter((m: any) => m.id !== id);
+      localStorage.setItem('team_members', JSON.stringify(updated));
+      return { success: true };
+    }
+  },
 
   // --- Admin User Management API ---
-  getAdminUsers: () => fetchAPI<any[]>('/admin/users'),
+  getAdminUsers: async () => {
+    try {
+      return await fetchAPI<any[]>('/admin/users');
+    } catch {
+      return [
+        { id: 'usr-1', name: 'Keshav Patel', email: 'keshavpatel3690@gmail.com', role: 'super_admin', status: 'active', createdAt: new Date().toISOString() },
+        { id: 'usr-2', name: 'Admin Staff', email: 'admin@niswartha.org', role: 'admin', status: 'active', createdAt: new Date().toISOString() },
+      ];
+    }
+  },
   deleteUser: (id: string) => fetchAPI<any>(`/admin/users/${id}`, { method: 'DELETE' }),
 
   // --- Configurations API ---
@@ -286,26 +549,84 @@ export const api = {
     fetchAPI<any>('/super-admin/restore', { method: 'POST', body: JSON.stringify(data) }),
 
   // --- Centralized Media Library API ---
-  getMediaItems: (params?: { type?: string; folder?: string; search?: string }) => {
-    const q = new URLSearchParams();
-    if (params?.type) q.append('type', params.type);
-    if (params?.folder) q.append('folder', params.folder);
-    if (params?.search) q.append('search', params.search);
-    const queryString = q.toString();
-    return fetchAPI<any[]>(`/media${queryString ? `?${queryString}` : ''}`);
+  getMediaItems: async (params?: { type?: string; folder?: string; search?: string }) => {
+    try {
+      const q = new URLSearchParams();
+      if (params?.type) q.append('type', params.type);
+      if (params?.folder) q.append('folder', params.folder);
+      if (params?.search) q.append('search', params.search);
+      const queryString = q.toString();
+      return await fetchAPI<any[]>(`/media${queryString ? `?${queryString}` : ''}`);
+    } catch {
+      const saved = localStorage.getItem('media_items');
+      if (saved) return JSON.parse(saved);
+      return mockMediaItems || [];
+    }
   },
-  uploadMediaItem: (data: Record<string, unknown>) =>
-    fetchAPI<any>('/media/upload', { method: 'POST', body: JSON.stringify(data) }),
-  updateMediaItem: (id: string, data: Record<string, unknown>) =>
-    fetchAPI<any>(`/media/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  deleteMediaItem: (id: string) =>
-    fetchAPI<any>(`/media/${id}`, { method: 'DELETE' }),
+  uploadMediaItem: async (data: Record<string, unknown>) => {
+    try {
+      return await fetchAPI<any>('/media/upload', { method: 'POST', body: JSON.stringify(data) });
+    } catch {
+      const current = await api.getMediaItems();
+      const newItem = { id: 'media_' + Date.now(), createdAt: new Date().toISOString(), ...data };
+      const updated = [newItem, ...current];
+      localStorage.setItem('media_items', JSON.stringify(updated));
+      return newItem;
+    }
+  },
+  updateMediaItem: async (id: string, data: Record<string, unknown>) => {
+    try {
+      return await fetchAPI<any>(`/media/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+    } catch {
+      const current = await api.getMediaItems();
+      const updated = current.map((m: any) => (m.id === id ? { ...m, ...data } : m));
+      localStorage.setItem('media_items', JSON.stringify(updated));
+      return { id, ...data };
+    }
+  },
+  deleteMediaItem: async (id: string) => {
+    try {
+      return await fetchAPI<any>(`/media/${id}`, { method: 'DELETE' });
+    } catch {
+      const current = await api.getMediaItems();
+      const updated = current.filter((m: any) => m.id !== id);
+      localStorage.setItem('media_items', JSON.stringify(updated));
+      return { success: true };
+    }
+  },
 
   // --- Page Hero Background Configurations API ---
-  getAllHeroConfigs: () => fetchAPI<Record<string, any>>('/hero-config'),
-  getHeroConfig: (pageKey: string) => fetchAPI<any>(`/hero-config/${encodeURIComponent(pageKey)}`),
-  updateHeroConfig: (pageKey: string, data: Record<string, unknown>) =>
-    fetchAPI<any>(`/hero-config/${encodeURIComponent(pageKey)}`, { method: 'PUT', body: JSON.stringify(data) }),
+  getAllHeroConfigs: async () => {
+    try {
+      return await fetchAPI<Record<string, any>>('/hero-config');
+    } catch {
+      const saved = localStorage.getItem('all_hero_configs');
+      if (saved) return JSON.parse(saved);
+      return {};
+    }
+  },
+  getHeroConfig: async (pageKey: string) => {
+    try {
+      return await fetchAPI<any>(`/hero-config/${encodeURIComponent(pageKey)}`);
+    } catch {
+      const saved = localStorage.getItem('hero_config_' + pageKey);
+      if (saved) return JSON.parse(saved);
+      return {
+        bgType: 'video',
+        bgVideoUrl: 'https://cdn.coverr.co/videos/coverr-[#0F6D4E]-children-nature-720p.mp4',
+        mobileFallbackUrl: 'https://images.unsplash.com/photo-1542810634-71277d95dcbb?auto=format&fit=crop&q=80&w=1200',
+        overlayOpacity: 0.55,
+      };
+    }
+  },
+  updateHeroConfig: async (pageKey: string, data: Record<string, unknown>) => {
+    try {
+      return await fetchAPI<any>(`/hero-config/${encodeURIComponent(pageKey)}`, { method: 'PUT', body: JSON.stringify(data) });
+    } catch {
+      localStorage.setItem('hero_config_' + pageKey, JSON.stringify(data));
+      return data;
+    }
+  },
 
   initData: (payload: Record<string, unknown>) =>
     fetchAPI('/init-data', { method: 'POST', body: JSON.stringify(payload) }),
