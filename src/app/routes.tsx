@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect } from 'react';
+import React, { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router';
 import { Layout } from './layout';
 import { UserProvider, useUser } from './context/UserContext';
@@ -30,23 +30,28 @@ const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m
 
 // Layouts
 const UserLayout = lazy(() => import('./components/UserLayout').then((m) => ({ default: m.UserLayout })));
+const AdminLayout = lazy(() => import('./components/AdminLayout').then((m) => ({ default: m.AdminLayout })));
+const SuperAdminLayout = lazy(() => import('./components/SuperAdminLayout').then((m) => ({ default: m.SuperAdminLayout })));
+
+// Admin Pages
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then((m) => ({ default: m.AdminDashboard })));
+const ManageNeeds = lazy(() => import('./pages/admin/ManageNeeds').then((m) => ({ default: m.ManageNeeds })));
+const ManageEvents = lazy(() => import('./pages/admin/ManageEvents').then((m) => ({ default: m.ManageEvents })));
+const CreateEvent = lazy(() => import('./pages/admin/CreateEvent').then((m) => ({ default: m.CreateEvent })));
+const EventBookings = lazy(() => import('./pages/admin/EventBookings').then((m) => ({ default: m.EventBookings })));
+const FeedManagement = lazy(() => import('./pages/admin/FeedManagement').then((m) => ({ default: m.FeedManagement })));
+const AdminSettings = lazy(() => import('./pages/admin/Settings').then((m) => ({ default: m.Settings })));
+const ManageGallery = lazy(() => import('./pages/admin/ManageGallery').then((m) => ({ default: m.ManageGallery })));
+const ManageSchemes = lazy(() => import('./pages/admin/ManageSchemes').then((m) => ({ default: m.ManageSchemes })));
+const ManageChildren = lazy(() => import('./pages/admin/ManageChildren').then((m) => ({ default: m.ManageChildren })));
+const ManageTeam = lazy(() => import('./pages/admin/ManageTeam').then((m) => ({ default: m.ManageTeam })));
+const ManageUsers = lazy(() => import('./pages/admin/ManageUsers').then((m) => ({ default: m.ManageUsers })));
+const ManageBookings = lazy(() => import('./pages/admin/ManageBookings').then((m) => ({ default: m.ManageBookings })));
+
+// Super Admin Pages
+const SuperAdminDashboard = lazy(() => import('./pages/super-admin/SuperAdminDashboard').then((m) => ({ default: m.SuperAdminDashboard })));
 
 import { ErrorBoundary, RouteErrorFallback } from './components/ErrorBoundary';
-
-// External Admin Portal Redirect Component
-function ExternalAdminRedirect({ path = '' }: { path?: string }) {
-  useEffect(() => {
-    const targetUrl = `https://deafanddumbschool.vercel.app${path || '/admin'}`;
-    window.location.href = targetUrl;
-  }, [path]);
-
-  return (
-    <div className="flex h-96 flex-col items-center justify-center gap-3 text-[#0F6D4E]">
-      <div className="h-8 w-8 animate-spin rounded-full border-3 border-[#0F6D4E] border-t-transparent" />
-      <p className="text-sm font-bold font-serif">Opening Niswartha Admin Portal...</p>
-    </div>
-  );
-}
 
 // Helper wrapper for Lazy components in routes with ErrorBoundary
 function SuspenseWrap({ children }: { children: React.ReactNode }) {
@@ -66,6 +71,22 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { currentUser, loading } = useUser();
   if (loading) return null;
   if (!currentUser) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { currentUser, loading, isAdmin } = useUser();
+  if (loading) return null;
+  if (!currentUser) return <Navigate to="/login" replace />;
+  if (!isAdmin) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
+function SuperAdminRoute({ children }: { children: React.ReactNode }) {
+  const { currentUser, loading, isSuperAdmin } = useUser();
+  if (loading) return null;
+  if (!currentUser) return <Navigate to="/login" replace />;
+  if (!isSuperAdmin) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
@@ -109,9 +130,42 @@ export const router = createBrowserRouter([
         ],
       },
 
-      // Admin & SuperAdmin routes seamlessly redirected to dedicated Admin Portal
-      { path: 'admin/*', element: <ExternalAdminRedirect path="/admin" /> },
-      { path: 'super-admin/*', element: <ExternalAdminRedirect path="/super-admin" /> },
+      // Admin routes wrapped in AdminLayout
+      {
+        path: 'admin',
+        element: <AdminRoute><SuspenseWrap><AdminLayout /></SuspenseWrap></AdminRoute>,
+        children: [
+          { index: true, element: <SuspenseWrap><AdminDashboard /></SuspenseWrap> },
+          { path: 'needs', element: <SuspenseWrap><ManageNeeds /></SuspenseWrap> },
+          { path: 'events', element: <SuspenseWrap><ManageEvents /></SuspenseWrap> },
+          { path: 'events/bookings/:id', element: <SuspenseWrap><EventBookings /></SuspenseWrap> },
+          { path: 'events/create', element: <SuspenseWrap><CreateEvent /></SuspenseWrap> },
+          { path: 'feed', element: <SuspenseWrap><FeedManagement /></SuspenseWrap> },
+          { path: 'settings', element: <SuspenseWrap><AdminSettings /></SuspenseWrap> },
+          { path: 'gallery', element: <SuspenseWrap><ManageGallery /></SuspenseWrap> },
+          { path: 'schemes', element: <SuspenseWrap><ManageSchemes /></SuspenseWrap> },
+          { path: 'children', element: <SuspenseWrap><ManageChildren /></SuspenseWrap> },
+          { path: 'team', element: <SuspenseWrap><ManageTeam /></SuspenseWrap> },
+          { path: 'users', element: <SuspenseWrap><ManageUsers /></SuspenseWrap> },
+          { path: 'bookings', element: <SuspenseWrap><ManageBookings /></SuspenseWrap> },
+        ],
+      },
+
+      // Super Admin routes wrapped in SuperAdminLayout
+      {
+        path: 'super-admin',
+        element: <SuperAdminRoute><SuspenseWrap><SuperAdminLayout /></SuspenseWrap></SuperAdminRoute>,
+        children: [
+          { index: true, element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
+          { path: 'media', element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
+          { path: 'hero', element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
+          { path: 'users', element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
+          { path: 'ads', element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
+          { path: 'logs', element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
+          { path: 'configs', element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
+          { path: 'backup', element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
+        ],
+      },
 
       { path: '*', element: <SuspenseWrap><NotFound /></SuspenseWrap> },
     ],
@@ -122,13 +176,13 @@ export const router = createBrowserRouter([
     children: [{ index: true, element: <SuspenseWrap><Login /></SuspenseWrap> }],
   },
   {
-    path: '/signup',
-    element: <RootLayout><Layout /></RootLayout>,
-    children: [{ index: true, element: <SuspenseWrap><Signup /></SuspenseWrap> }],
-  },
-  {
     path: '/onboarding',
     element: <RootLayout><Layout /></RootLayout>,
     children: [{ index: true, element: <SuspenseWrap><Onboarding /></SuspenseWrap> }],
   },
+  {
+    path: '/signup',
+    element: <RootLayout><Layout /></RootLayout>,
+    children: [{ index: true, element: <SuspenseWrap><Signup /></SuspenseWrap> }],
+  }
 ]);

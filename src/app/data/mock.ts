@@ -270,19 +270,49 @@ export const mockNotifications = [
 export const mockGalleryAlbums = [
   {
     id: 'album-1',
+    name: 'Annual Sports Day 2023',
     title: 'Annual Sports Day 2023',
-    description: 'Celebrating courage, athleticism, and joy.',
+    description: 'Celebrating courage, athleticism, vocational learning, and joy.',
+    coverUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80',
     coverImage: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80',
-    photosCount: 12,
+    images: [
+      'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80',
+    ],
+    photosCount: 4,
     createdAt: '2023-11-20',
   },
   {
     id: 'album-2',
+    name: 'Diwali Cultural Program',
     title: 'Diwali Cultural Program',
-    description: 'Festive lights, dances, and sign-language performances.',
+    description: 'Festive lights, dances, and sign-language performances by our institute children.',
+    coverUrl: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&q=80',
     coverImage: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&q=80',
-    photosCount: 24,
+    images: [
+      'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?auto=format&fit=crop&q=80',
+    ],
+    photosCount: 3,
     createdAt: '2023-11-12',
+  },
+  {
+    id: 'album-3',
+    name: 'Vocational Workshop & Speech Therapy',
+    title: 'Vocational Workshop & Speech Therapy',
+    description: 'Deaf and dumb vocational training classes, computer literacy, and speech therapy sessions.',
+    coverUrl: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&q=80',
+    coverImage: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&q=80',
+    ],
+    photosCount: 3,
+    createdAt: '2023-10-05',
   },
 ];
 

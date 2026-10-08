@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactNode } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { motion } from 'motion/react';
 import { cn } from '../../lib/utils';
 import { api } from '../../lib/api';
@@ -11,10 +11,10 @@ type Props = {
 
 function getYouTubeEmbedUrl(url: string): string | null {
   if (!url) return null;
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const regExp = /^.*(?:youtu\.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
   const match = url.match(regExp);
-  if (match && match[2].length === 11) {
-    return `https://www.youtube.com/embed/${match[2]}?autoplay=1&mute=1&loop=1&playlist=${match[2]}&controls=0&showinfo=0&autohide=1&modestbranding=1&enablejsapi=1`;
+  if (match && match[1] && match[1].length === 11) {
+    return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&loop=1&playlist=${match[1]}&controls=0&showinfo=0&autohide=1&modestbranding=1&enablejsapi=1&playsinline=1`;
   }
   return null;
 }
@@ -27,6 +27,7 @@ function getYouTubeEmbedUrl(url: string): string | null {
 export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: Props) {
   const [config, setConfig] = useState<any>(null);
   const [scrollY, setScrollY] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -75,6 +76,19 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
   const enableParallax = config?.parallax || config?.heroParallax;
   const parallaxShift = enableParallax ? scrollY * 0.35 : 0;
 
+  // Ensure HTML5 video plays reliably on mount and URL change
+  useEffect(() => {
+    if (videoRef.current && bgType === 'video' && bgVideoUrl) {
+      videoRef.current.muted = true;
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn('Autoplay prevented or failed:', err);
+        });
+      }
+    }
+  }, [bgVideoUrl, bgType]);
+
   const textAlignClass = {
     left: 'text-left font-normal',
     center: 'text-center',
@@ -97,6 +111,8 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
     contain: 'object-contain',
     fill: 'object-fill',
   }[objectFit] || 'object-cover';
+
+  const ytEmbedUrl = bgVideoUrl ? getYouTubeEmbedUrl(bgVideoUrl) : null;
 
   return (
     <div
@@ -137,17 +153,18 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
       {/* ──── Video Fill (Supports YouTube links + Direct MP4/WebM URLs on Desktop & Mobile) ──── */}
       {bgType === 'video' && bgVideoUrl && (
         <>
-          {getYouTubeEmbedUrl(bgVideoUrl) ? (
+          {ytEmbedUrl ? (
             <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
               <iframe
-                src={getYouTubeEmbedUrl(bgVideoUrl)!}
+                src={ytEmbedUrl}
                 className="absolute top-1/2 left-1/2 w-[180%] h-[180%] -translate-x-1/2 -translate-y-1/2 object-cover border-0 pointer-events-none"
-                allow="autoplay; encrypted-media"
+                allow="autoplay; encrypted-media; picture-in-picture"
                 title="Hero Background Video"
               />
             </div>
           ) : (
             <video
+              ref={videoRef}
               src={bgVideoUrl}
               autoPlay={autoPlayVideo}
               loop={loopVideo}
@@ -163,7 +180,7 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
             />
           )}
 
-          {/* Optional Fallback image overlay when video is loading */}
+          {/* Optional Fallback image overlay when video is loading or fallback image set */}
           {mobileFallbackUrl && (
             <div
               className="absolute inset-0 w-full h-full pointer-events-none opacity-20 transition-opacity"
@@ -203,3 +220,4 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
     </div>
   );
 }
+
