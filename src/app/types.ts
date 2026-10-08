@@ -89,6 +89,25 @@ export interface Donation {
   needId?: string; // Optional if donating to specific need
 }
 
+export interface ItemDonation {
+  id: string;
+  reference: string;
+  userId?: string;
+  ashramId: string;
+  ashramName?: string;
+  needId: string;
+  needTitle?: string;
+  category?: string;
+  fullName: string;
+  phone: string;
+  deliveryDate: string;
+  notes?: string;
+  status: 'pending' | 'in_transit' | 'received' | 'verified' | 'declined';
+  createdAt: string;
+  receivedAt?: string;
+  adminNotes?: string;
+}
+
 /** Persisted event visit / registration booking */
 export interface EventBookingRecord {
   id: string;

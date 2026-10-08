@@ -47,15 +47,20 @@ export function validateVisitBookingForm(
   if (n < 1) return 'Visitor count must be at least 1';
   if (!f.purpose) return 'Select visit purpose';
 
-  if (f.visitorNames.length !== n) return 'Enter each visitor name';
-  for (let i = 0; i < n; i++) {
-    if (!f.visitorNames[i]?.trim()) return `Visitor ${i + 1} name is required`;
-    if (/[0-9]/.test(f.visitorNames[i])) return `Visitor ${i + 1} name should contain letters only`;
+  const countToValidate = Math.min(n, 2);
+  for (let i = 0; i < countToValidate; i++) {
+    if (!f.visitorNames[i]?.trim()) {
+      return i === 0 ? 'Primary visitor name is required' : 'Secondary visitor name is required';
+    }
+    if (/[0-9]/.test(f.visitorNames[i])) {
+      return `Visitor ${i + 1} name should contain letters only`;
+    }
   }
 
-  if (!f.emergencyContactName.trim()) return 'Emergency contact name is required';
   const cleanEmergencyPhone = f.emergencyContactPhone.replace(/\D/g, '');
-  if (cleanEmergencyPhone.length !== 10) return 'Emergency contact phone must be 10 digits';
+  if (cleanEmergencyPhone && cleanEmergencyPhone.length !== 10) {
+    return 'Alternate mobile number must be 10 digits';
+  }
 
   return null;
 }

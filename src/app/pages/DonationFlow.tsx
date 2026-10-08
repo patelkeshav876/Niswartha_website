@@ -18,6 +18,7 @@ import {
   Truck,
   Check,
   Circle,
+  Calendar as CalendarIcon,
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
@@ -25,6 +26,7 @@ import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
+import { Calendar as CalendarUi } from '../components/ui/calendar';
 import {
   Accordion,
   AccordionContent,
@@ -33,6 +35,7 @@ import {
 } from '../components/ui/accordion';
 import { mockAshrams, mockNeeds } from '../data/mock';
 import { api } from '../lib/api';
+import { useUser } from '../context/UserContext';
 import type { Ashram, Need } from '../types';
 import { cn } from '../lib/utils';
 
@@ -126,6 +129,7 @@ function StepProgress({ step }: { step: 1 | 2 | 3 | 4 }) {
 export function DonationFlow() {
   const { ashramId, needId } = useParams<{ ashramId: string; needId: string }>();
   const navigate = useNavigate();
+  const { currentUser } = useUser();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [ashram, setAshram] = useState<Ashram | null>(null);
@@ -133,11 +137,20 @@ export function DonationFlow() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
-  const [deliveryDate, setDeliveryDate] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
+  const today = useMemo(() => new Date(), []);
+  const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<Date | undefined>(today);
+  const [fullName, setFullName] = useState(currentUser?.name || '');
+  const [phone, setPhone] = useState(currentUser?.phone || '');
   const [notes, setNotes] = useState('');
   const [reference, setReference] = useState('');
+  const [submittingShipment, setSubmittingShipment] = useState(false);
+
+  useEffect(() => {
+    if (currentUser) {
+      if (!fullName) setFullName(currentUser.name || '');
+      if (!phone) setPhone(currentUser.phone || '');
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     if (!ashramId || !needId) {
@@ -187,10 +200,34 @@ export function DonationFlow() {
     return Math.max(0, need.quantityRequired - need.quantityFulfilled);
   }, [need]);
 
-  const handleSubmitShipment = () => {
-    if (!deliveryDate.trim() || !fullName.trim() || !phone.trim()) return;
-    setReference(randomRef());
-    setStep(4);
+  const handleSubmitShipment = async () => {
+    if (!selectedDeliveryDate || !fullName.trim() || !phone.trim() || !ashram || !need) return;
+    setSubmittingShipment(true);
+    const ref = randomRef();
+    const dateStr = selectedDeliveryDate.toISOString().split('T')[0];
+    setReference(ref);
+
+    try {
+      await api.createItemDonation({
+        reference: ref,
+        userId: currentUser?.id || phone.trim(),
+        ashramId: ashram.id,
+        ashramName: ashram.name,
+        needId: need.id,
+        needTitle: need.title,
+        category: need.category,
+        fullName: fullName.trim(),
+        phone: phone.trim(),
+        deliveryDate: dateStr,
+        notes: notes.trim(),
+        status: 'pending',
+      });
+      setStep(4);
+    } catch {
+      setStep(4);
+    } finally {
+      setSubmittingShipment(false);
+    }
   };
 
   if (loading) {
@@ -439,17 +476,29 @@ export function DonationFlow() {
         {step === 3 && (
           <div className="space-y-4 animate-in fade-in duration-300">
             <Card className="border-none shadow-md">
-              <CardContent className="space-y-4 p-4">
+              <CardContent className="space-y-5 p-4 sm:p-5">
+                {/* Theme Calendar Picker */}
                 <div className="space-y-2">
-                  <Label htmlFor="delivery">Expected delivery date</Label>
-                  <Input
-                    id="delivery"
-                    type="date"
-                    value={deliveryDate}
-                    onChange={(e) => setDeliveryDate(e.target.value)}
-                    className="rounded-xl"
-                  />
+                  <Label className="text-xs font-bold uppercase tracking-wider text-zinc-800 flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-[#0F6D4E]" />
+                    Expected Delivery Date
+                  </Label>
+                  <div className="flex justify-center bg-white p-3 rounded-2xl border border-zinc-200 shadow-xs">
+                    <CalendarUi
+                      mode="single"
+                      selected={selectedDeliveryDate}
+                      onSelect={(d) => d && setSelectedDeliveryDate(d)}
+                      disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+                      className="mx-auto"
+                      classNames={{
+                        day_selected:
+                          '!bg-[#0F6D4E] !text-white rounded-full hover:!bg-[#0c593f] hover:!text-white focus:!bg-[#0F6D4E]',
+                        day_today: 'font-bold text-zinc-950 underline',
+                      }}
+                    />
+                  </div>
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="fullname">Your full name</Label>
                   <Input
@@ -477,7 +526,7 @@ export function DonationFlow() {
                   <Label htmlFor="notes">Additional notes (optional)</Label>
                   <Textarea
                     id="notes"
-                    placeholder="e.g. Package contains 15 blankets..."
+                    placeholder="e.g. Package contains 15 blankets, shipping via BlueDart..."
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     className="min-h-[100px] rounded-xl resize-none"
@@ -490,17 +539,17 @@ export function DonationFlow() {
               <p className="font-semibold text-primary mb-2">What happens next?</p>
               <ul className="list-disc space-y-1 pl-4 text-muted-foreground text-xs">
                 <li>Orphanage admin receives your courier details instantly</li>
-                <li>Admin confirms receipt once items arrive</li>
-                <li>Need status updates to Fulfilled after admin verification</li>
+                <li>Admin verifies and acknowledges receipt once items arrive</li>
+                <li>You receive an instant notification & proof update in your Profile</li>
               </ul>
             </div>
 
             <Button
-              className="h-12 w-full rounded-xl"
-              disabled={!deliveryDate.trim() || !fullName.trim() || !phone.trim()}
+              className="h-12 w-full rounded-xl bg-[#0F6D4E] hover:bg-[#0c593f]"
+              disabled={!selectedDeliveryDate || !fullName.trim() || !phone.trim() || submittingShipment}
               onClick={handleSubmitShipment}
             >
-              Submit shipment details
+              {submittingShipment ? 'Submitting...' : 'Submit shipment details'}
             </Button>
           </div>
         )}

@@ -250,6 +250,96 @@ export const api = {
   createRazorpayOrder: (data: Record<string, unknown>) =>
     fetchAPI('/razorpay/order', { method: 'POST', body: JSON.stringify(data) }),
 
+  // --- Physical Item Donations API ---
+  getItemDonations: async (opts?: { userId?: string; ashramId?: string }) => {
+    try {
+      const params = new URLSearchParams();
+      if (opts?.userId) params.set('userId', opts.userId);
+      if (opts?.ashramId) params.set('ashramId', opts.ashramId);
+      const q = params.toString();
+      const data = await fetchAPI<any[]>(q ? `/item-donations?${q}` : '/item-donations');
+      if (Array.isArray(data)) return data;
+    } catch {
+      // offline fallback
+    }
+    const saved = localStorage.getItem('item_donations');
+    let list: any[] = saved ? JSON.parse(saved) : [];
+    if (opts?.userId) {
+      list = list.filter((item) => item.userId === opts.userId || item.phone === opts.userId);
+    }
+    if (opts?.ashramId) {
+      list = list.filter((item) => item.ashramId === opts.ashramId);
+    }
+    return list;
+  },
+
+  createItemDonation: async (data: Record<string, unknown>) => {
+    let created: any = null;
+    try {
+      created = await fetchAPI<any>('/item-donations', { method: 'POST', body: JSON.stringify(data) });
+    } catch {
+      // offline fallback
+    }
+    const saved = localStorage.getItem('item_donations');
+    const current: any[] = saved ? JSON.parse(saved) : [];
+    const newItem = created || {
+      id: 'item_don_' + Date.now(),
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      ...data,
+    };
+    const updated = [newItem, ...current.filter((x: any) => x.id !== newItem.id)];
+    localStorage.setItem('item_donations', JSON.stringify(updated));
+    return newItem;
+  },
+
+  updateItemDonationStatus: async (id: string, status: string, adminNotes?: string) => {
+    let res: any = null;
+    try {
+      res = await fetchAPI<any>(`/item-donations/${id}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ status, adminNotes }),
+      });
+    } catch {
+      // offline fallback
+    }
+    const saved = localStorage.getItem('item_donations');
+    const current: any[] = saved ? JSON.parse(saved) : [];
+    let updatedTarget: any = null;
+    const updated = current.map((item: any) => {
+      if (item.id === id) {
+        const isReceived = status === 'received' || status === 'verified';
+        updatedTarget = {
+          ...item,
+          status,
+          ...(adminNotes !== undefined ? { adminNotes } : {}),
+          ...(isReceived ? { receivedAt: new Date().toISOString() } : {}),
+        };
+        return updatedTarget;
+      }
+      return item;
+    });
+    localStorage.setItem('item_donations', JSON.stringify(updated));
+
+    // Send instant user notification when status is marked received or verified
+    if (updatedTarget && (status === 'received' || status === 'verified')) {
+      const notifs = localStorage.getItem('notifications');
+      const notifList: any[] = notifs ? JSON.parse(notifs) : [];
+      const newNotif = {
+        id: 'notif_' + Date.now(),
+        title: 'Item Donation Received & Acknowledged! 📦',
+        message: `The admin of ${updatedTarget.ashramName || 'the ashram'} has verified and acknowledged receipt of your item donation (${updatedTarget.needTitle || 'Donated Item'}). Reference: ${updatedTarget.reference || updatedTarget.id}.${adminNotes ? ` Admin note: "${adminNotes}"` : ''}`,
+        type: 'item_received',
+        read: false,
+        createdAt: new Date().toISOString(),
+        userId: updatedTarget.userId,
+      };
+      localStorage.setItem('notifications', JSON.stringify([newNotif, ...notifList]));
+    }
+
+    return res || updatedTarget || { id, status, adminNotes };
+  },
+
   // --- Photo Gallery API ---
   getAlbums: async () => {
     try {

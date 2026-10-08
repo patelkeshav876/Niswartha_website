@@ -58,8 +58,10 @@ const emptyForm = {
 };
 
 export function ManageNeeds() {
+  const [activeTab, setActiveTab] = useState<'needs' | 'shipments'>('needs');
   const [searchTerm, setSearchTerm] = useState('');
   const [needs, setNeeds] = useState<Need[]>([]);
+  const [itemDonations, setItemDonations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -67,14 +69,24 @@ export function ManageNeeds() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // Acknowledge Shipment Modal state
+  const [ackItem, setAckItem] = useState<any | null>(null);
+  const [adminNotesInput, setAdminNotesInput] = useState('');
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
   const load = async () => {
     setLoading(true);
     try {
-      const data = await api.getNeeds(ASHRAM_ID);
-      if (data.length > 0) setNeeds(data as Need[]);
+      const [nData, iData] = await Promise.all([
+        api.getNeeds(ASHRAM_ID),
+        api.getItemDonations(),
+      ]);
+      if (nData.length > 0) setNeeds(nData as Need[]);
       else setNeeds(mockNeeds.filter((n) => n.ashramId === ASHRAM_ID));
+      setItemDonations(iData || []);
     } catch {
       setNeeds(mockNeeds.filter((n) => n.ashramId === ASHRAM_ID));
+      setItemDonations([]);
     } finally {
       setLoading(false);
     }
@@ -83,6 +95,21 @@ export function ManageNeeds() {
   useEffect(() => {
     load();
   }, []);
+
+  const handleUpdateStatus = async (item: any, newStatus: string) => {
+    setUpdatingStatus(true);
+    try {
+      await api.updateItemDonationStatus(item.id, newStatus, adminNotesInput.trim());
+      toast.success(`Shipment status updated to ${newStatus}. User notified!`);
+      setAckItem(null);
+      setAdminNotesInput('');
+      await load();
+    } catch {
+      toast.error('Failed to update shipment status');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   const filteredNeeds = needs.filter((need) =>
     need.title.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -184,18 +211,43 @@ export function ManageNeeds() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-xl font-serif font-bold text-zinc-950">Manage Needs</h1>
-              <p className="text-xs text-muted-foreground">Set goal amounts, track funding, and manage ashram needs</p>
+              <h1 className="text-xl font-serif font-bold text-zinc-950">Manage Needs & Item Donations</h1>
+              <p className="text-xs text-muted-foreground">Track funding goals, verify physical item shipments, and issue acknowledgment receipts</p>
             </div>
           </div>
-          <Button onClick={openCreate} className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white gap-1.5 text-xs font-bold px-4 py-2 shadow-sm">
-            <Plus className="h-4 w-4" /> Add New Need
-          </Button>
+          {activeTab === 'needs' && (
+            <Button onClick={openCreate} className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white gap-1.5 text-xs font-bold px-4 py-2 shadow-sm">
+              <Plus className="h-4 w-4" /> Add New Need
+            </Button>
+          )}
+        </div>
+
+        {/* Tab switch */}
+        <div className="flex border-b mb-3">
+          <button
+            onClick={() => setActiveTab('needs')}
+            className={`px-5 py-2 text-xs font-bold border-b-2 transition-all ${
+              activeTab === 'needs' ? 'border-[#0F6D4E] text-[#0F6D4E]' : 'border-transparent text-zinc-500'
+            }`}
+          >
+            Active Needs List ({needs.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('shipments')}
+            className={`px-5 py-2 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+              activeTab === 'shipments' ? 'border-[#0F6D4E] text-[#0F6D4E]' : 'border-transparent text-zinc-500'
+            }`}
+          >
+            Item Shipments & Proof Receipts ({itemDonations.length})
+            {itemDonations.some((i) => i.status === 'pending') && (
+              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+            )}
+          </button>
         </div>
 
         <div className="relative mb-1">
           <Input
-            placeholder="Search needs..."
+            placeholder={activeTab === 'needs' ? "Search needs..." : "Search shipments by donor, item or reference..."}
             className="border-none bg-muted/50 pl-10 rounded-xl"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -206,9 +258,11 @@ export function ManageNeeds() {
 
       <main className="flex-1 p-4 sm:p-6 max-w-6xl w-full mx-auto space-y-4">
         {loading && (
-          <p className="text-center text-sm text-muted-foreground py-12">Loading needs...</p>
+          <p className="text-center text-sm text-muted-foreground py-12">Loading data...</p>
         )}
-        {!loading &&
+
+        {/* Tab 1: Needs List */}
+        {!loading && activeTab === 'needs' && (
           filteredNeeds.map((need) => {
             const pct =
               need.quantityRequired > 0
@@ -297,14 +351,154 @@ export function ManageNeeds() {
                 </div>
               </Card>
             );
-          })}
-        {!loading && filteredNeeds.length === 0 && (
+          }))}
+        {!loading && activeTab === 'needs' && filteredNeeds.length === 0 && (
           <Card className="border-dashed p-8 text-center bg-white rounded-3xl">
             <p className="text-sm font-bold text-zinc-800">No needs found</p>
             <p className="text-xs text-muted-foreground mt-1">Try another search or click 'Add New Need' above</p>
           </Card>
         )}
+
+        {/* Tab 2: Item Shipments & Proof Receipts */}
+        {!loading && activeTab === 'shipments' && (
+          itemDonations.length === 0 ? (
+            <Card className="border-dashed p-10 text-center bg-white rounded-3xl">
+              <p className="text-sm font-bold text-zinc-800">No Item Shipments Found</p>
+              <p className="text-xs text-muted-foreground mt-1">When donors select 'Send Item' and ship physical goods, their courier details will appear here for verification.</p>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {itemDonations.map((item) => {
+                const isReceived = item.status === 'received' || item.status === 'verified';
+                return (
+                  <Card key={item.id} className="border-none shadow-sm rounded-3xl overflow-hidden bg-white p-5 space-y-3">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b pb-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-base font-bold text-zinc-900 font-serif">{item.needTitle || 'Donated Item'}</h3>
+                          <Badge className={`font-bold border-none uppercase text-[9px] px-2.5 py-0.5 rounded-full ${
+                            isReceived ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {isReceived ? 'Received & Verified ✓' : 'Pending Verification ⏳'}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Ref: <span className="font-mono font-bold text-zinc-800">{item.reference || item.id}</span> • Expected: <span className="font-semibold">{item.deliveryDate}</span>
+                        </p>
+                      </div>
+
+                      {!isReceived ? (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setAckItem(item);
+                            setAdminNotesInput(`Received package in good condition at institute.`);
+                          }}
+                          className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white text-xs font-bold px-4 shadow-sm"
+                        >
+                          Acknowledge & Mark Received ✓
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setAckItem(item);
+                            setAdminNotesInput(item.adminNotes || '');
+                          }}
+                          className="rounded-full text-xs font-bold border-zinc-200"
+                        >
+                          View / Edit Acknowledgment Proof
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-zinc-50 p-3 rounded-2xl">
+                      <div>
+                        <span className="text-zinc-500 block">Donor Name & Contact</span>
+                        <span className="font-semibold text-zinc-900">{item.fullName} ({item.phone})</span>
+                      </div>
+                      <div>
+                        <span className="text-zinc-500 block">Category</span>
+                        <span className="font-semibold text-zinc-900">{item.category || 'Direct Need'}</span>
+                      </div>
+                      <div>
+                        <span className="text-zinc-500 block">Submitted On</span>
+                        <span className="font-semibold text-zinc-900">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'Recently'}</span>
+                      </div>
+                    </div>
+
+                    {item.notes && (
+                      <p className="text-xs text-zinc-600">
+                        <span className="font-bold text-zinc-800">Donor Note: </span>"{item.notes}"
+                      </p>
+                    )}
+
+                    {isReceived && (
+                      <div className="text-xs bg-emerald-50 text-emerald-900 p-3 rounded-xl border border-emerald-200">
+                        <span className="font-bold">Admin Verified Proof: </span>
+                        {item.adminNotes ? `"${item.adminNotes}"` : 'Acknowledged and confirmed receipt by institute admin.'}
+                        {item.receivedAt && (
+                          <span className="block text-[10px] text-emerald-700 mt-1 font-mono">
+                            Verified on: {new Date(item.receivedAt).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
+          )
+        )}
       </main>
+
+      {/* Acknowledge Shipment Modal */}
+      <Dialog open={!!ackItem} onOpenChange={(open) => !open && setAckItem(null)}>
+        <DialogContent className="sm:max-w-md rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="font-serif font-bold text-lg">
+              Acknowledge & Confirm Shipment Receipt
+            </DialogTitle>
+          </DialogHeader>
+
+          {ackItem && (
+            <div className="space-y-4 py-2">
+              <div className="bg-emerald-50 border border-emerald-200 p-3.5 rounded-2xl text-xs space-y-1">
+                <p className="font-bold text-emerald-950">{ackItem.needTitle || 'Donated Item'}</p>
+                <p className="text-emerald-800">Donor: {ackItem.fullName} ({ackItem.phone})</p>
+                <p className="text-emerald-800 font-mono">Ref: {ackItem.reference || ackItem.id}</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="admin-notes" className="text-xs font-bold text-zinc-800">
+                  Admin Verification & Receipt Note (Shown as proof to donor)
+                </Label>
+                <Textarea
+                  id="admin-notes"
+                  value={adminNotesInput}
+                  onChange={(e) => setAdminNotesInput(e.target.value)}
+                  placeholder="e.g. Package received in good condition at institute campus by Sita Devi."
+                  className="rounded-2xl min-h-[90px] text-xs resize-none"
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setAckItem(null)} className="rounded-full">
+              Cancel
+            </Button>
+            <Button
+              onClick={() => ackItem && handleUpdateStatus(ackItem, 'received')}
+              disabled={updatingStatus}
+              className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white font-bold"
+            >
+              {updatingStatus ? 'Updating...' : 'Confirm Receipt & Notify Donor ✓'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">

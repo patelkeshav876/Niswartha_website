@@ -574,14 +574,26 @@ export function VisitBooking() {
                 </div>
               )}
 
-              {/* Visitor names inputs */}
+              {/* Visitor names inputs (Max 2 people) */}
               <div className="space-y-3">
-                <Label className="text-zinc-700 font-medium">Visitor Names (Letters Only)</Label>
-                <p className="text-xs text-muted-foreground mt-0.5">Please provide names for each person attending.</p>
-                {form.visitorNames.map((name, i) => (
+                <div className="flex items-center justify-between">
+                  <Label className="text-zinc-700 font-medium">Visitor Names (Max 2 Primary Contacts)</Label>
+                  {form.visitorCount > 2 && (
+                    <Badge className="bg-emerald-50 text-[#0F6D4E] border border-emerald-200 text-[10px] font-bold">
+                      Group of {form.visitorCount} visitors
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {form.visitorCount > 2
+                    ? 'For group visits, providing 2 primary visitor details is sufficient.'
+                    : 'Please provide visitor names attending.'}
+                </p>
+
+                {Array.from({ length: Math.min(Math.max(1, form.visitorCount), 2) }).map((_, i) => (
                   <Input
                     key={i}
-                    value={name}
+                    value={form.visitorNames[i] || ''}
                     onChange={(e) =>
                       setForm((f) => {
                         const next = [...f.visitorNames];
@@ -590,39 +602,47 @@ export function VisitBooking() {
                       })
                     }
                     className="rounded-xl border-zinc-200"
-                    placeholder={`Visitor ${i + 1} full name (letters only)`}
+                    placeholder={i === 0 ? 'Primary visitor full name' : 'Secondary visitor full name'}
                   />
                 ))}
               </div>
             </Card>
 
-            {/* Step 4: Emergency Contact */}
+            {/* Step 4: Primary & Alternate Mobile Numbers */}
             <Card className="rounded-3xl border-none shadow-sm bg-white p-4 sm:p-6 space-y-6 w-[94%] sm:w-full max-w-sm sm:max-w-none mx-auto">
               <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider border-b pb-3 flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-[#0F6D4E]" />
-                Emergency Contact Details
+                Contact Phone Numbers
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="vb-ec-name" className="text-zinc-700 font-medium">Contact Person Name (Letters Only)</Label>
+                  <Label htmlFor="vb-phone" className="text-zinc-700 font-medium">Primary Mobile Number (10 Digits)</Label>
                   <Input
-                    id="vb-ec-name"
-                    value={form.emergencyContactName}
-                    onChange={(e) => setForm((f) => ({ ...f, emergencyContactName: e.target.value.replace(/[^a-zA-Z\s]/g, '') }))}
-                    className="rounded-xl border-zinc-200"
-                    placeholder="Contact person full name (letters only)"
+                    id="vb-phone"
+                    type="tel"
+                    maxLength={10}
+                    value={form.phone}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, phone: e.target.value.replace(/[^0-9]/g, '').slice(0, 10) }))
+                    }
+                    className="rounded-xl border-zinc-200 font-mono"
+                    placeholder="10-digit primary mobile"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="vb-ec-phone" className="text-zinc-700 font-medium">Contact Person Phone (10 Digits)</Label>
+                  <Label htmlFor="vb-ec-phone" className="text-zinc-700 font-medium">Alternate Mobile Number (10 Digits)</Label>
                   <Input
                     id="vb-ec-phone"
                     type="tel"
                     maxLength={10}
                     value={form.emergencyContactPhone}
-                    onChange={(e) => setForm((f) => ({ ...f, emergencyContactPhone: e.target.value.replace(/[^0-9]/g, '').slice(0, 10) }))}
+                    onChange={(e) => setForm((f) => ({
+                      ...f,
+                      emergencyContactPhone: e.target.value.replace(/[^0-9]/g, '').slice(0, 10),
+                      emergencyContactName: f.emergencyContactName || f.visitorNames[0] || f.name || 'Primary Visitor',
+                    }))}
                     className="rounded-xl border-zinc-200 font-mono"
-                    placeholder="10-digit mobile number"
+                    placeholder="10-digit alternate mobile"
                   />
                 </div>
               </div>
