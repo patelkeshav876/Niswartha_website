@@ -65,10 +65,12 @@ export function ManageBookings() {
     }
   };
 
-  const filteredBookings = bookings.filter((b) =>
-    b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    b.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredBookings = bookings.filter((b) => {
+    const term = (searchTerm || '').toLowerCase();
+    const name = (b.name || b.primaryName || b.visitorName || b.visitorNames?.[0] || 'Visitor').toLowerCase();
+    const email = (b.email || b.primaryPhone || b.phone || '').toLowerCase();
+    return name.includes(term) || email.includes(term);
+  });
 
   return (
     <div className="space-y-6">
@@ -117,7 +119,7 @@ export function ManageBookings() {
                   <tr key={b.id} className="hover:bg-zinc-50/50 transition-colors">
                     <td className="p-4">
                       <div>
-                        <p className="font-bold text-zinc-950 leading-snug">{b.name}</p>
+                        <p className="font-bold text-zinc-950 leading-snug">{b.name || b.primaryName || b.visitorName || 'Visitor'}</p>
                         <p className="text-[10px] text-zinc-400 mt-0.5">{b.visitorCount} {b.visitorCount === 1 ? 'visitor' : 'visitors'} • Purpose: {b.purpose}</p>
                       </div>
                     </td>

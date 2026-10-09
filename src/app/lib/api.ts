@@ -50,6 +50,17 @@ export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}):
   return response.json();
 }
 
+export function applyThemeColor(themeColor?: string) {
+  const mode = themeColor || (localStorage.getItem('primary_theme_color') || 'green');
+  if (typeof document !== 'undefined') {
+    if (mode === 'blue') {
+      document.documentElement.classList.add('theme-blue');
+    } else {
+      document.documentElement.classList.remove('theme-blue');
+    }
+  }
+}
+
 export const api = {
   health: async () => {
     try {
@@ -552,10 +563,16 @@ export const api = {
   // --- Configurations API ---
   getConfig: async () => {
     try {
-      return await fetchAPI<any>('/config');
+      const cfg = await fetchAPI<any>('/config');
+      if (cfg?.primaryThemeColor) applyThemeColor(cfg.primaryThemeColor);
+      return cfg;
     } catch {
       const saved = localStorage.getItem('superadmin_config');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.primaryThemeColor) applyThemeColor(parsed.primaryThemeColor);
+        return parsed;
+      }
       return {
         siteName: 'Niswartha — Selfless Service',
         siteTagline: 'Empowering Deaf & Dumb Children',
@@ -564,10 +581,15 @@ export const api = {
         maintenanceMode: false,
         allowNewRegistrations: true,
         enableNotifications: true,
+        primaryThemeColor: 'green',
       };
     }
   },
   updateConfig: async (data: Record<string, unknown>) => {
+    if (data.primaryThemeColor && typeof data.primaryThemeColor === 'string') {
+      applyThemeColor(data.primaryThemeColor);
+      localStorage.setItem('primary_theme_color', data.primaryThemeColor);
+    }
     try {
       return await fetchAPI<any>('/config', { method: 'PUT', body: JSON.stringify(data) });
     } catch {

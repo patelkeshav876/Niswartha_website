@@ -6,7 +6,7 @@ import { useUser } from './context/UserContext';
 import { Toaster } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import { WhatsAppButton } from './components/WhatsAppButton';
-import { api } from './lib/api';
+import { api, applyThemeColor } from './lib/api';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { AdPopupModal } from './components/AdPopupModal';
 import { ShieldAlert } from 'lucide-react';
@@ -21,13 +21,16 @@ export function Layout() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [location.pathname]);
 
-  // Load global config details (e.g. for maintenance filter, announcements)
+  // Load global config details (e.g. for maintenance filter, announcements, theme)
   useEffect(() => {
     let active = true;
     (async () => {
       try {
         const c = await api.getConfig();
-        if (active) setConfig(c);
+        if (active) {
+          setConfig(c);
+          if (c?.primaryThemeColor) applyThemeColor(c.primaryThemeColor);
+        }
       } catch {
         // use defaults
       }

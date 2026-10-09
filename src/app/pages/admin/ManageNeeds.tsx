@@ -112,7 +112,7 @@ export function ManageNeeds() {
   };
 
   const filteredNeeds = needs.filter((need) =>
-    need.title.toLowerCase().includes(searchTerm.toLowerCase()),
+    (need.title || '').toLowerCase().includes((searchTerm || '').toLowerCase()),
   );
 
   const openCreate = () => {

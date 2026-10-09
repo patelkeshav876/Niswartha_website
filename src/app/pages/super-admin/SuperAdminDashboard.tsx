@@ -40,10 +40,10 @@ import { HeroManager } from '../../components/HeroManager';
 import { MediaPickerModal } from '../../components/MediaPickerModal';
 import { ImageUploadWithCamera } from '../../components/ImageUploadWithCamera';
 import { BadgeCanvaStudio } from '../../components/BadgeCanvaStudio';
-import { ThemePaletteStudio } from '../../components/ThemePaletteStudio';
 import { SUPERHERO_BADGES, type SuperheroBadge } from '../../lib/superheroBadges';
+import { applyThemeColor } from '../../lib/api';
 
-type ActiveTab = 'health' | 'users' | 'ads' | 'logs' | 'configs' | 'hero' | 'media' | 'backup' | 'badges' | 'templates';
+type ActiveTab = 'health' | 'users' | 'ads' | 'logs' | 'configs' | 'hero' | 'media' | 'backup' | 'badges';
 
 export function SuperAdminDashboard() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('health');
@@ -398,7 +398,6 @@ export function SuperAdminDashboard() {
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide border-b border-zinc-200">
         {[
           { id: 'health' as const, label: 'System Health', icon: Activity },
-          { id: 'templates' as const, label: 'Theme Studio & Palette', icon: Palette },
           { id: 'media' as const, label: 'Media Library', icon: ImageIcon },
           { id: 'hero' as const, label: 'Page Hero Manager', icon: Layers },
           { id: 'users' as const, label: 'User Management', icon: Users },
@@ -425,8 +424,6 @@ export function SuperAdminDashboard() {
 
       {/* Tab Contents */}
       <div className="pt-2">
-        {activeTab === 'templates' && <ThemePaletteStudio />}
-
         {activeTab === 'badges' && (
           <div className="space-y-6 animate-fade-up">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
@@ -1235,105 +1232,56 @@ export function SuperAdminDashboard() {
                   </div>
                 </div>
 
-                {/* Gen-Z User Profile Banner & Car Graphic Settings */}
+                {/* Website Primary Theme Color Selection */}
                 <div className="space-y-4 md:col-span-2 border-t pt-4">
-                  <h3 className="font-serif font-bold text-zinc-850 text-sm flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-red-500" />
-                    User Profile Banner & Car Asset Settings (Crop, Rotate, Opacity & Fitting Controls)
+                  <h3 className="font-serif font-bold text-zinc-900 text-sm flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-[#0F6D4E]" />
+                    Website Primary Theme Accent Color
                   </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Switch the overall site accent theme between our signature Niswartha Emerald Green and our official Niswartha Logo Bluish color.
+                  </p>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-zinc-50 p-4 rounded-2xl border">
-                    {/* Profile Banner Background Image */}
-                    <div className="space-y-3">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">
-                        Profile Banner Background Image (Flag / Racing Backdrop)
-                      </label>
-                      <ImageUploadWithCamera
-                        value={config.profileBgUrl || '/f1-flag.jpg'}
-                        onChange={(img) => setConfig({ ...config, profileBgUrl: img })}
-                        aspectRatio="video"
-                        maxSizeKB={800}
-                      />
-                      
-                      <div className="grid grid-cols-3 gap-2 pt-1 text-xs">
-                        <div>
-                          <label className="text-[10px] font-bold text-zinc-600 uppercase">Banner Opacity</label>
-                          <input
-                            type="range"
-                            min="0.1"
-                            max="1.0"
-                            step="0.05"
-                            value={config.profileOverlayOpacity !== undefined ? config.profileOverlayOpacity : 0.9}
-                            onChange={(e) => setConfig({ ...config, profileOverlayOpacity: Number(e.target.value) })}
-                            className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#0F6D4E]"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[10px] font-bold text-zinc-600 uppercase">Orientation / Rotation</label>
-                          <select
-                            value={config.profileBgRotation !== undefined ? config.profileBgRotation : 0}
-                            onChange={(e) => setConfig({ ...config, profileBgRotation: Number(e.target.value) })}
-                            className="w-full h-8 rounded-lg border border-zinc-200 text-xs px-1.5 bg-white font-bold"
-                          >
-                            <option value={0}>0° Horizontal (Default)</option>
-                            <option value={-90}>-90° Rotated</option>
-                            <option value={90}>90° Vertical</option>
-                            <option value={180}>180° Inverted</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-[10px] font-bold text-zinc-600 uppercase">Fitting Mode</label>
-                          <select
-                            value={config.profileBgObjectFit || 'cover'}
-                            onChange={(e) => setConfig({ ...config, profileBgObjectFit: e.target.value })}
-                            className="w-full h-8 rounded-lg border border-zinc-200 text-xs px-1.5 bg-white font-bold"
-                          >
-                            <option value="cover">Cover (Fill)</option>
-                            <option value="contain">Contain (Fit)</option>
-                            <option value="fill">Stretch Fill</option>
-                          </select>
-                        </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div
+                      onClick={() => {
+                        setConfig((prev: any) => ({ ...prev, primaryThemeColor: 'green' }));
+                        applyThemeColor('green');
+                        toast.success('Applied Niswartha Emerald Green theme!');
+                      }}
+                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-3 ${
+                        (config.primaryThemeColor || 'green') === 'green'
+                          ? 'border-[#0F6D4E] bg-emerald-50/70 shadow-sm'
+                          : 'border-zinc-200 bg-white hover:border-zinc-300'
+                      }`}
+                    >
+                      <div className="h-10 w-10 rounded-xl bg-[#0F6D4E] text-white flex items-center justify-center font-bold text-lg shadow">
+                        🌿
+                      </div>
+                      <div>
+                        <p className="font-bold text-xs text-zinc-900">Niswartha Emerald Green</p>
+                        <p className="text-[10px] text-zinc-500">Default primary green theme (#0F6D4E)</p>
                       </div>
                     </div>
 
-                    {/* Profile Car Graphic Image */}
-                    <div className="space-y-3">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">
-                        Profile Car Image (Placed Below Edit Profile Button)
-                      </label>
-                      <ImageUploadWithCamera
-                        value={config.profileCarUrl || '/f1-car.png'}
-                        onChange={(img) => setConfig({ ...config, profileCarUrl: img })}
-                        aspectRatio="banner"
-                        maxSizeKB={500}
-                      />
-
-                      <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
-                        <div>
-                          <label className="text-[10px] font-bold text-zinc-600 uppercase">Car Rotation</label>
-                          <select
-                            value={config.profileCarRotation || 0}
-                            onChange={(e) => setConfig({ ...config, profileCarRotation: Number(e.target.value) })}
-                            className="w-full h-8 rounded-lg border border-zinc-200 text-xs px-2 bg-white font-bold"
-                          >
-                            <option value={0}>0° Normal</option>
-                            <option value={90}>90° Clockwise</option>
-                            <option value={180}>180° Inverted</option>
-                            <option value={270}>270° Counter</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-[10px] font-bold text-zinc-600 uppercase">Car Fitting Mode</label>
-                          <select
-                            value={config.profileCarObjectFit || 'contain'}
-                            onChange={(e) => setConfig({ ...config, profileCarObjectFit: e.target.value })}
-                            className="w-full h-8 rounded-lg border border-zinc-200 text-xs px-2 bg-white font-bold"
-                          >
-                            <option value="contain">Contain (Fit)</option>
-                            <option value="cover">Cover (Crop)</option>
-                            <option value="fill">Stretch Fill</option>
-                          </select>
-                        </div>
+                    <div
+                      onClick={() => {
+                        setConfig((prev: any) => ({ ...prev, primaryThemeColor: 'blue' }));
+                        applyThemeColor('blue');
+                        toast.success('Applied Niswartha Logo Bluish theme!');
+                      }}
+                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-3 ${
+                        config.primaryThemeColor === 'blue'
+                          ? 'border-[#1E3A8A] bg-blue-50/70 shadow-sm'
+                          : 'border-zinc-200 bg-white hover:border-zinc-300'
+                      }`}
+                    >
+                      <div className="h-10 w-10 rounded-xl bg-[#1E3A8A] text-white flex items-center justify-center font-bold text-lg shadow">
+                        💙
+                      </div>
+                      <div>
+                        <p className="font-bold text-xs text-zinc-900">Niswartha Logo Bluish Color</p>
+                        <p className="text-[10px] text-zinc-500">Official logo royal blue theme (#1E3A8A)</p>
                       </div>
                     </div>
                   </div>

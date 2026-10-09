@@ -68,8 +68,9 @@ export function EventBookings() {
   ];
 
   const filteredBookings = bookings.filter(booking => {
-    const matchesSearch = booking.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         booking.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const term = (searchQuery || '').toLowerCase();
+    const matchesSearch = (booking.userName || '').toLowerCase().includes(term) ||
+                         (booking.email || '').toLowerCase().includes(term);
     const matchesFilter = filter === 'all' || booking.status === filter;
     return matchesSearch && matchesFilter;
   });

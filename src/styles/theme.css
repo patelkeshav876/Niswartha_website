@@ -63,6 +63,22 @@
   --font-weight-normal: 400;
 }
 
+/* Logo Bluish Accent Theme Mode */
+:root.theme-blue {
+  --primary: #1E3A8A;
+  --secondary: #EFF6FF;
+  --secondary-foreground: #1E3A8A;
+  --accent: #DBEAFE;
+  --accent-foreground: #1E3A8A;
+  --ring: #1E3A8A;
+  --chart-1: #1E3A8A;
+  --chart-2: #EFF6FF;
+  --sidebar-primary: #1E3A8A;
+  --sidebar-accent: #EFF6FF;
+  --sidebar-accent-foreground: #1E3A8A;
+  --sidebar-ring: #1E3A8A;
+}
+
 /* Disable text selection site-wide everywhere on website */
 *, *::before, *::after {
   user-select: none;

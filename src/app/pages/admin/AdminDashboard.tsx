@@ -12,7 +12,7 @@ import {
   MessageSquare,
   TrendingUp,
   Heart,
-  IndianRupee,
+  Package,
   Clock3,
   ChevronRight,
   BookOpen,
@@ -29,26 +29,26 @@ export function AdminDashboard() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [children, setChildren] = useState<any[]>([]);
   const [schemes, setSchemes] = useState<any[]>([]);
-  const [donations, setDonations] = useState<any[]>([]);
+  const [itemDonations, setItemDonations] = useState<any[]>([]);
   const [team, setTeam] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        const [visits, notifs, kids, plans, money, people] = await Promise.all([
+        const [visits, notifs, kids, plans, items, people] = await Promise.all([
           api.getVisitBookings({ ashramId: ashram.id }),
           api.getNotifications(),
           api.getChildren().catch(() => []),
           api.getSchemes().catch(() => []),
-          api.getDonations().catch(() => []),
+          api.getItemDonations().catch(() => []),
           api.getTeamMembers().catch(() => []),
         ]);
         setVisitBookings(visits);
         setNotifications(notifs);
         setChildren(kids);
         setSchemes(plans);
-        setDonations(money);
+        setItemDonations(items);
         setTeam(people);
       } catch (err) {
         console.error('Error loading admin dashboard stats:', err);
@@ -60,7 +60,7 @@ export function AdminDashboard() {
   }, [ashram.id]);
 
   // Compute stats
-  const totalDonations = donations.reduce((sum, d) => sum + (Number(d.amount) || 0), 0) || 120000;
+  const itemCount = itemDonations.length || 45;
   const recentBookings = visitBookings.slice(-3).reverse();
   const activeNeedsCount = mockNeeds.length;
   const childCount = children.length || 24;
@@ -77,7 +77,7 @@ export function AdminDashboard() {
           {/* Top Quick Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: 'Total Donations', value: `₹${(totalDonations / 1000).toFixed(0)}k`, desc: 'All time managed', color: 'bg-emerald-50 text-[#0F6D4E]', icon: IndianRupee },
+              { label: 'Total Items Donated', value: `${itemCount}+ Shipments`, desc: 'Physical goods & supplies', color: 'bg-emerald-50 text-[#0F6D4E]', icon: Package },
               { label: 'Registered Kids', value: childCount, desc: 'Secure student profiles', color: 'bg-indigo-50 text-indigo-600', icon: UserCheck },
               { label: 'Active Schemes', value: schemeCount, desc: 'Government programs', color: 'bg-amber-50 text-amber-600', icon: FileText },
               { label: 'Pending Bookings', value: visitBookings.filter(b => b.status !== 'cancelled').length, desc: 'Site visit scheduling', color: 'bg-purple-50 text-purple-600', icon: BookOpen },
