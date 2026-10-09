@@ -63,8 +63,9 @@
   --font-weight-normal: 400;
 }
 
-/* Logo Bluish Accent Theme Mode */
-:root.theme-blue {
+/* Logo Bluish Accent Theme Mode (UNIVERSAL SITE-WIDE & ADMIN OVERRIDES) */
+:root.theme-blue,
+html.theme-blue {
   --primary: #1E3A8A;
   --primary-foreground: #FFFFFF;
   --secondary: #EFF6FF;
@@ -80,29 +81,150 @@
   --sidebar-ring: #1E3A8A;
 }
 
-:root.theme-blue [class*="bg-[#0F6D4E]"],
-:root.theme-blue [class*="bg-emerald-600"],
-:root.theme-blue [class*="bg-emerald-700"],
-:root.theme-blue [class*="bg-emerald-800"] {
+/* 1. Solid Green Background Overrides -> Royal Blue (#1E3A8A) */
+html.theme-blue [class*="bg-[#0F6D4E]"],
+html.theme-blue [class*="bg-[#0f6d4e]"],
+html.theme-blue [class*="bg-[#0c593f]"],
+html.theme-blue [class*="bg-[#0b543c]"],
+html.theme-blue [class*="bg-[#0b523a]"],
+html.theme-blue [class*="bg-[#054e3b]"],
+html.theme-blue [class*="bg-emerald-400"],
+html.theme-blue [class*="bg-emerald-500"],
+html.theme-blue [class*="bg-emerald-600"],
+html.theme-blue [class*="bg-emerald-700"],
+html.theme-blue [class*="bg-emerald-800"],
+html.theme-blue [class*="bg-emerald-900"] {
   background-color: #1E3A8A !important;
 }
 
-:root.theme-blue [class*="text-[#0F6D4E]"],
-:root.theme-blue [class*="text-emerald-600"],
-:root.theme-blue [class*="text-emerald-700"],
-:root.theme-blue [class*="text-emerald-800"] {
+/* 2. Dark Green Card Backgrounds -> Deep Navy (#0F172A) */
+html.theme-blue [class*="bg-emerald-950"] {
+  background-color: #0F172A !important;
+}
+
+/* 3. Light / Tinted Green Backgrounds -> Ice Blue (#EFF6FF) */
+html.theme-blue [class*="bg-[#0F6D4E]/"],
+html.theme-blue [class*="bg-[#0f6d4e]/"],
+html.theme-blue [class*="bg-emerald-50"],
+html.theme-blue [class*="bg-emerald-100"],
+html.theme-blue [class*="bg-emerald-200"],
+html.theme-blue [class*="bg-emerald-300"],
+html.theme-blue [class*="bg-emerald-400/"],
+html.theme-blue [class*="bg-emerald-500/"] {
+  background-color: #EFF6FF !important;
+}
+
+/* 4. Green Text Colors -> Royal Blue (#1E3A8A) */
+html.theme-blue [class*="text-[#0F6D4E]"],
+html.theme-blue [class*="text-[#0f6d4e]"],
+html.theme-blue [class*="text-[#0c593f]"],
+html.theme-blue [class*="text-[#0b543c]"],
+html.theme-blue [class*="text-[#0b523a]"],
+html.theme-blue [class*="text-[#054e3b]"],
+html.theme-blue [class*="text-emerald-500"],
+html.theme-blue [class*="text-emerald-600"],
+html.theme-blue [class*="text-emerald-700"],
+html.theme-blue [class*="text-emerald-800"],
+html.theme-blue [class*="text-emerald-900"],
+html.theme-blue [class*="text-emerald-950"] {
   color: #1E3A8A !important;
 }
 
-:root.theme-blue [class*="border-[#0F6D4E]"],
-:root.theme-blue [class*="border-emerald-600"],
-:root.theme-blue [class*="border-emerald-700"] {
+/* 5. Light Green Text on Dark Cards -> Soft Blue (#DBEAFE) */
+html.theme-blue [class*="text-emerald-100"],
+html.theme-blue [class*="text-emerald-200"],
+html.theme-blue [class*="text-emerald-300"] {
+  color: #DBEAFE !important;
+}
+
+/* 6. Green Borders -> Blue Borders (#1E3A8A / #BFDBFE) */
+html.theme-blue [class*="border-[#0F6D4E]"],
+html.theme-blue [class*="border-[#0f6d4e]"],
+html.theme-blue [class*="border-emerald-400"],
+html.theme-blue [class*="border-emerald-500"],
+html.theme-blue [class*="border-emerald-600"],
+html.theme-blue [class*="border-emerald-700"],
+html.theme-blue [class*="border-emerald-800"] {
   border-color: #1E3A8A !important;
 }
 
-:root.theme-blue [class*="bg-emerald-50"],
-:root.theme-blue [class*="bg-emerald-100"] {
-  background-color: #EFF6FF !important;
+html.theme-blue [class*="border-[#0F6D4E]/"],
+html.theme-blue [class*="border-[#0f6d4e]/"],
+html.theme-blue [class*="border-emerald-100"],
+html.theme-blue [class*="border-emerald-200"],
+html.theme-blue [class*="border-emerald-300"],
+html.theme-blue [class*="border-emerald-400/"],
+html.theme-blue [class*="border-emerald-500/"] {
+  border-color: #BFDBFE !important;
+}
+
+/* 7. Hover State Overrides */
+html.theme-blue [class*="hover:bg-[#0F6D4E]"]:hover,
+html.theme-blue [class*="hover:bg-[#0c593f]"]:hover,
+html.theme-blue [class*="hover:bg-[#0b523a]"]:hover,
+html.theme-blue [class*="hover:bg-emerald-600"]:hover,
+html.theme-blue [class*="hover:bg-emerald-700"]:hover,
+html.theme-blue [class*="hover:bg-emerald-800"]:hover {
+  background-color: #1E40AF !important;
+}
+
+html.theme-blue [class*="hover:text-[#0F6D4E]"]:hover,
+html.theme-blue [class*="hover:text-[#0b523a]"]:hover,
+html.theme-blue [class*="hover:text-emerald-600"]:hover,
+html.theme-blue [class*="group-hover:text-[#0F6D4E]"]:hover,
+html.theme-blue .group:hover [class*="group-hover:text-[#0F6D4E]"],
+html.theme-blue .group:hover [class*="group-hover:text-emerald-600"] {
+  color: #1E3A8A !important;
+}
+
+/* 8. Rings, Focus, Accents, Fills & Shadows */
+html.theme-blue [class*="ring-[#0F6D4E]"],
+html.theme-blue [class*="focus:ring-[#0F6D4E]"],
+html.theme-blue [class*="focus:ring-[#0F6D4E]/30"] {
+  --tw-ring-color: #1E3A8A !important;
+}
+
+html.theme-blue [class*="focus:border-[#0F6D4E]"] {
+  border-color: #1E3A8A !important;
+}
+
+html.theme-blue [class*="accent-[#0F6D4E]"] {
+  accent-color: #1E3A8A !important;
+}
+
+html.theme-blue [class*="shadow-[#0F6D4E]"],
+html.theme-blue [class*="shadow-[#0F6D4E]/20"] {
+  --tw-shadow-color: rgba(30, 58, 138, 0.25) !important;
+}
+
+/* 9. Tailwind Gradient Overrides */
+html.theme-blue [class*="from-[#0F6D4E]"],
+html.theme-blue [class*="from-[#0f6d4e]"],
+html.theme-blue [class*="from-emerald-"] {
+  --tw-gradient-from: #1E3A8A !important;
+  --tw-gradient-to: rgb(30 58 138 / 0) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+html.theme-blue [class*="via-[#0F6D4E]"],
+html.theme-blue [class*="via-[#0f6d4e]"],
+html.theme-blue [class*="via-emerald-"] {
+  --tw-gradient-via: #1E3A8A !important;
+}
+
+html.theme-blue [class*="to-[#0F6D4E]"],
+html.theme-blue [class*="to-[#0f6d4e]"],
+html.theme-blue [class*="to-emerald-600"],
+html.theme-blue [class*="to-emerald-700"],
+html.theme-blue [class*="to-emerald-800"],
+html.theme-blue [class*="to-emerald-900"] {
+  --tw-gradient-to: #1E3A8A !important;
+}
+
+html.theme-blue [class*="via-emerald-50"],
+html.theme-blue [class*="from-emerald-50"],
+html.theme-blue [class*="to-emerald-50"] {
+  --tw-gradient-via: #EFF6FF !important;
 }
 
 /* Disable text selection site-wide everywhere on website */

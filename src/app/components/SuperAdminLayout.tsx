@@ -55,12 +55,12 @@ export function SuperAdminLayout() {
       <aside className="hidden lg:flex flex-col w-64 border-r border-zinc-200 bg-white shrink-0">
         <div className="flex h-20 items-center gap-3 px-6 border-b border-zinc-100">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0F6D4E] text-white shadow-md shadow-[#0F6D4E]/20 transition-transform group-hover:scale-105">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md shadow-primary/20 transition-transform group-hover:scale-105">
               <Heart className="h-5 w-5 text-white" fill="white" />
             </div>
             <div>
               <p className="text-lg font-bold tracking-tight text-zinc-950 font-serif">Niswartha</p>
-              <p className="-mt-1 text-[9px] font-bold uppercase tracking-[0.15em] text-[#0F6D4E]">Super Admin</p>
+              <p className="-mt-1 text-[9px] font-bold uppercase tracking-[0.15em] text-primary">Super Admin</p>
             </div>
           </Link>
         </div>

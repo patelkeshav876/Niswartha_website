@@ -255,7 +255,7 @@ export function About() {
               </div>
 
               <div className="lg:col-span-7 order-1 lg:order-2 space-y-4">
-                <span className="text-xs font-bold uppercase tracking-widest text-[#0F6D4E]">About us</span>
+                <span className="text-xs font-bold uppercase tracking-widest text-primary">About us</span>
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-zinc-900 leading-tight">
                   Empowering hearing-impaired students with quality education and skills for an independent future
                 </h2>
@@ -273,10 +273,10 @@ export function About() {
         {/* ──── National Award Recognition (Light Theme Upgrade) ──── */}
         <section className="section-container">
           <ScrollReveal>
-            <div className="rounded-3xl p-6 sm:p-12 bg-gradient-to-br from-[#0F6D4E]/5 via-emerald-50/60 to-white text-zinc-900 border border-[#0F6D4E]/20 shadow-sm">
+            <div className="rounded-3xl p-6 sm:p-12 bg-gradient-to-br from-primary/5 via-secondary/60 to-white text-zinc-900 border border-primary/20 shadow-sm">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 <div className="lg:col-span-5">
-                  <div className="relative w-[90%] sm:w-full max-w-sm sm:max-w-none mx-auto rounded-2xl overflow-hidden border-2 border-emerald-500/30 bg-white p-2.5 shadow-md">
+                  <div className="relative w-[90%] sm:w-full max-w-sm sm:max-w-none mx-auto rounded-2xl overflow-hidden border-2 border-primary/30 bg-white p-2.5 shadow-md">
                     <div className="aspect-[4/3] rounded-xl overflow-hidden bg-zinc-50 flex items-center justify-center">
                       <img
                         src={awardImage}
@@ -288,7 +288,7 @@ export function About() {
                 </div>
 
                 <div className="lg:col-span-7 space-y-4">
-                  <Badge className="bg-[#0F6D4E] text-white border-none uppercase font-bold text-xs tracking-wider px-3.5 py-1 shadow-sm">
+                  <Badge className="bg-primary text-primary-foreground border-none uppercase font-bold text-xs tracking-wider px-3.5 py-1 shadow-sm">
                     Government Recognition
                   </Badge>
                   <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-zinc-900 leading-tight">
@@ -306,11 +306,11 @@ export function About() {
         {/* ──── Principal's Message (Light Theme Upgrade) ──── */}
         <section className="section-container">
           <ScrollReveal>
-            <Card className="border border-emerald-200/80 shadow-lg shadow-emerald-950/5 bg-gradient-to-br from-white via-emerald-50/30 to-white text-zinc-900 rounded-3xl overflow-hidden">
+            <Card className="border border-primary/20 shadow-lg shadow-primary/5 bg-gradient-to-br from-white via-secondary/30 to-white text-zinc-900 rounded-3xl overflow-hidden">
               <CardContent className="p-6 sm:p-12">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                   <div className="lg:col-span-4 flex justify-center">
-                    <div className="relative h-44 w-44 sm:h-56 sm:w-56 rounded-full overflow-hidden border-4 border-[#0F6D4E] shadow-xl mx-auto">
+                    <div className="relative h-44 w-44 sm:h-56 sm:w-56 rounded-full overflow-hidden border-4 border-primary shadow-xl mx-auto">
                       <img
                         src={principalImage}
                         alt="Dr. Meenal Sudhir Sangole"
@@ -320,13 +320,13 @@ export function About() {
                   </div>
 
                   <div className="lg:col-span-8 space-y-4 text-center lg:text-left">
-                    <span className="text-4xl font-serif text-[#0F6D4E]">“</span>
+                    <span className="text-4xl font-serif text-primary">“</span>
                     <blockquote className="text-base sm:text-lg font-serif italic text-zinc-800 leading-relaxed">
                       At the Deaf and Dumb Industrial Institute, our mission is to provide every hearing-impaired student with quality education, confidence, and the skills needed for an independent future. We are committed to creating a supportive and inclusive environment where each student is encouraged to achieve their fullest potential.
                     </blockquote>
                     <div>
                       <h4 className="font-bold text-lg text-zinc-900">Dr. Meenal Sudhir Sangole (Principal - Since 1993)</h4>
-                      <p className="text-xs text-[#0F6D4E] font-bold uppercase tracking-wider">School Principal and Academic Lead</p>
+                      <p className="text-xs text-primary font-bold uppercase tracking-wider">School Principal and Academic Lead</p>
                     </div>
                   </div>
                 </div>
@@ -336,11 +336,11 @@ export function About() {
         </section>
 
         {/* ──── Infinite Marquee and Classified Roster Section (Light Theme Upgrade) ──── */}
-        <section className="bg-gradient-to-b from-white via-emerald-50/20 to-zinc-50/80 py-16 border-y border-emerald-100/60 overflow-hidden">
+        <section className="bg-gradient-to-b from-white via-secondary/20 to-zinc-50/80 py-16 border-y border-primary/10 overflow-hidden">
           <div className="space-y-10">
             <div className="section-container text-center max-w-3xl mx-auto space-y-3">
               <div className="flex items-center justify-center">
-                <Badge className="bg-[#0F6D4E]/10 text-[#0F6D4E] border border-[#0F6D4E]/20 uppercase font-bold text-xs tracking-wider px-3.5 py-1">
+                <Badge className="bg-primary/10 text-primary border border-primary/20 uppercase font-bold text-xs tracking-wider px-3.5 py-1">
                   Our Dedicated Team
                 </Badge>
               </div>
@@ -353,7 +353,7 @@ export function About() {
             </div>
 
             {/* Continuous Marquee Banner with Super Admin Speed Control */}
-            <div className="relative w-full overflow-hidden py-4 bg-white border-y border-emerald-100 shadow-xs">
+            <div className="relative w-full overflow-hidden py-4 bg-white border-y border-primary/10 shadow-xs">
               <div
                 className="flex gap-6 animate-marquee whitespace-nowrap"
                 style={{ animationDuration: `${config?.marqueeSpeed || 35}s` }}
@@ -361,22 +361,22 @@ export function About() {
                 {[...team, ...team, ...team].map((m, idx) => (
                   <div
                     key={`${m.id}-${idx}`}
-                    className="inline-flex items-center gap-3 bg-zinc-50/80 border border-emerald-200/60 px-4 py-2.5 rounded-2xl min-w-[230px] shadow-xs hover:border-emerald-400 transition-colors shrink-0"
+                    className="inline-flex items-center gap-3 bg-zinc-50/80 border border-primary/20 px-4 py-2.5 rounded-2xl min-w-[230px] shadow-xs hover:border-primary/40 transition-colors shrink-0"
                   >
                     {m.imageUrl ? (
                       <img
                         src={m.imageUrl}
                         alt={m.name}
-                        className="h-10 w-10 rounded-full object-cover border border-[#0F6D4E]/40 shrink-0"
+                        className="h-10 w-10 rounded-full object-cover border border-primary/40 shrink-0"
                       />
                     ) : (
-                      <div className="h-10 w-10 rounded-full bg-[#0F6D4E]/10 border border-[#0F6D4E]/30 text-[#0F6D4E] flex items-center justify-center font-bold text-xs font-serif shrink-0">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 border border-primary/30 text-primary flex items-center justify-center font-bold text-xs font-serif shrink-0">
                         {m.name?.charAt(0)?.toUpperCase() || 'T'}
                       </div>
                     )}
                     <div className="text-left">
                       <p className="text-xs font-bold text-zinc-900 truncate max-w-[140px]">{m.name}</p>
-                      <p className="text-[10px] text-[#0F6D4E] font-semibold">{m.role} {m.since ? `(${m.since})` : ''}</p>
+                      <p className="text-[10px] text-primary font-semibold">{m.role} {m.since ? `(${m.since})` : ''}</p>
                     </div>
                   </div>
                 ))}
@@ -404,16 +404,16 @@ export function About() {
                   <div key={cat.key} className="border border-zinc-200/90 rounded-3xl bg-white overflow-hidden shadow-xs">
                     <button
                       onClick={toggleCat}
-                      className="w-full p-5 sm:p-6 flex items-center justify-between text-left hover:bg-emerald-50/40 transition-colors"
+                      className="w-full p-5 sm:p-6 flex items-center justify-between text-left hover:bg-secondary/40 transition-colors"
                     >
                       <div className="flex items-center gap-3.5">
-                        <div className="h-10 w-10 rounded-2xl bg-[#0F6D4E]/10 border border-[#0F6D4E]/20 text-[#0F6D4E] flex items-center justify-center font-bold">
+                        <div className="h-10 w-10 rounded-2xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold">
                           <Users className="h-5 w-5" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
                             <h3 className="font-serif font-bold text-base sm:text-lg text-zinc-900">{cat.label}</h3>
-                            <Badge className="bg-[#0F6D4E]/10 text-[#0F6D4E] border-none font-bold text-[10px]">
+                            <Badge className="bg-primary/10 text-primary border-none font-bold text-[10px]">
                               {members.length} Members
                             </Badge>
                           </div>
@@ -422,7 +422,7 @@ export function About() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-[#0F6D4E] hidden sm:inline">
+                        <span className="text-xs font-bold text-primary hidden sm:inline">
                           {isOpen ? 'Click to collapse' : 'Click to view team'}
                         </span>
                         <div className="h-8 w-8 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-600">
@@ -437,22 +437,22 @@ export function About() {
                           {members.map((member) => (
                             <div
                               key={member.id}
-                              className="p-3 rounded-2xl bg-white border border-zinc-200/80 shadow-xs flex items-center gap-3 hover:border-emerald-400 transition-colors"
+                              className="p-3 rounded-2xl bg-white border border-zinc-200/80 shadow-xs flex items-center gap-3 hover:border-primary/40 transition-colors"
                             >
                               {member.imageUrl ? (
                                 <img
                                   src={member.imageUrl}
                                   alt={member.name}
-                                  className="h-11 w-11 rounded-xl object-cover border border-emerald-200 shrink-0"
+                                  className="h-11 w-11 rounded-xl object-cover border border-primary/20 shrink-0"
                                 />
                               ) : (
-                                <div className="h-11 w-11 rounded-xl bg-[#0F6D4E]/10 border border-[#0F6D4E]/20 text-[#0F6D4E] flex items-center justify-center font-bold text-sm font-serif shrink-0">
+                                <div className="h-11 w-11 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-sm font-serif shrink-0">
                                   {member.name?.charAt(0)?.toUpperCase() || 'T'}
                                 </div>
                               )}
                               <div className="min-w-0 flex-1">
                                 <h4 className="font-bold text-xs text-zinc-900 truncate">{member.name}</h4>
-                                <p className="text-[10px] text-[#0F6D4E] font-semibold truncate mt-0.5">{member.role}</p>
+                                <p className="text-[10px] text-primary font-semibold truncate mt-0.5">{member.role}</p>
                                 {member.since && (
                                   <p className="text-[9px] text-zinc-400 font-mono mt-0.5">{member.since}</p>
                                 )}
@@ -477,7 +477,7 @@ export function About() {
                 <h2 className="text-2xl sm:text-3xl font-serif font-bold text-zinc-900">
                   We Are Committed to Empowering Hearing-Impaired Students
                 </h2>
-                <p className="text-sm font-bold text-[#0F6D4E]">
+                <p className="text-sm font-bold text-primary">
                   Every student deserves the right support during their most important learning years.
                 </p>
                 <p className="text-xs text-zinc-600 leading-relaxed">
@@ -491,7 +491,7 @@ export function About() {
                 <ScrollReveal key={idx} delay={idx * 0.08}>
                   <Card className="border border-zinc-200/80 shadow-sm hover:shadow-md transition-shadow h-full rounded-2xl bg-white">
                     <CardContent className="p-6 space-y-3">
-                      <div className="h-10 w-10 rounded-xl bg-[#0F6D4E]/10 flex items-center justify-center text-[#0F6D4E]">
+                      <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                         <pillar.icon className="h-5 w-5" />
                       </div>
                       <h4 className="font-bold text-sm text-zinc-900">{pillar.title}</h4>
@@ -508,14 +508,14 @@ export function About() {
         <section className="section-container">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <ScrollReveal>
-              <Card className="border border-emerald-100 shadow-md bg-gradient-to-br from-white to-emerald-50/40 rounded-3xl p-8">
+              <Card className="border border-primary/20 shadow-md bg-gradient-to-br from-white to-secondary/40 rounded-3xl p-8">
                 <CardContent className="p-0 space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-2xl bg-[#0F6D4E] text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-[#0F6D4E]/20">
+                    <div className="h-12 w-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-xl shadow-lg shadow-primary/20">
                       V
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-[#0F6D4E] uppercase tracking-widest">Vision Statement</p>
+                      <p className="text-xs font-bold text-primary uppercase tracking-widest">Vision Statement</p>
                       <h3 className="text-lg font-serif font-bold text-zinc-900">Our Vision</h3>
                     </div>
                   </div>
@@ -527,14 +527,14 @@ export function About() {
             </ScrollReveal>
 
             <ScrollReveal delay={0.1}>
-              <Card className="border border-emerald-100 shadow-md bg-gradient-to-br from-white to-emerald-50/40 rounded-3xl p-8">
+              <Card className="border border-primary/20 shadow-md bg-gradient-to-br from-white to-secondary/40 rounded-3xl p-8">
                 <CardContent className="p-0 space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-2xl bg-[#0F6D4E] text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-[#0F6D4E]/20">
+                    <div className="h-12 w-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-xl shadow-lg shadow-primary/20">
                       M
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-[#0F6D4E] uppercase tracking-widest">Mission Statement</p>
+                      <p className="text-xs font-bold text-primary uppercase tracking-widest">Mission Statement</p>
                       <h3 className="text-lg font-serif font-bold text-zinc-900">Our Mission</h3>
                     </div>
                   </div>
@@ -564,7 +564,7 @@ export function About() {
                 <ScrollReveal key={idx} delay={(idx % 6) * 0.05}>
                   <Card className="border border-zinc-200/80 shadow-xs hover:shadow-md transition-shadow bg-white rounded-2xl h-full">
                     <CardContent className="p-5 space-y-2">
-                      <h4 className="font-bold text-xs text-[#0F6D4E] leading-snug">{fac.title}</h4>
+                      <h4 className="font-bold text-xs text-primary leading-snug">{fac.title}</h4>
                       <p className="text-[11px] text-zinc-500 leading-relaxed">{fac.description}</p>
                     </CardContent>
                   </Card>

@@ -53,12 +53,19 @@ export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}):
 export function applyThemeColor(themeColor?: string) {
   const mode = themeColor || (localStorage.getItem('primary_theme_color') || 'green');
   if (typeof document !== 'undefined') {
+    if (themeColor) {
+      localStorage.setItem('primary_theme_color', themeColor);
+    }
     if (mode === 'blue') {
       document.documentElement.classList.add('theme-blue');
     } else {
       document.documentElement.classList.remove('theme-blue');
     }
   }
+}
+
+if (typeof window !== 'undefined') {
+  applyThemeColor();
 }
 
 export const api = {
