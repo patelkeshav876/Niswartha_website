@@ -58,17 +58,9 @@ export function AdminLayout() {
   const sidebarContent = (
     <div className="flex h-full flex-col bg-[#F5F2EB] text-zinc-800 border-r border-zinc-200/50">
       {/* Brand Header */}
-      <div className="flex h-20 items-center justify-between px-6 border-b border-zinc-200/30">
-        <Link to="/" className="flex items-center gap-3 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0F6D4E] shadow-md shadow-[#0F6D4E]/20 transition-transform group-hover:scale-105">
-            <Heart className="h-5 w-5 text-white" fill="white" />
-          </div>
-          {!collapsed && (
-            <div>
-              <p className="text-lg font-bold tracking-tight font-serif text-zinc-950">Niswartha</p>
-              <p className="-mt-1 text-[9px] font-bold uppercase tracking-[0.15em] text-[#0F6D4E]">Admin Portal</p>
-            </div>
-          )}
+      <div className="flex h-16 items-center justify-between px-6 border-b border-zinc-200/30">
+        <Link to="/" className="flex items-center gap-2">
+          <span className="text-lg font-bold tracking-tight font-serif text-zinc-950">Niswartha</span>
         </Link>
         {mobileOpen && (
           <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)} className="rounded-full">
@@ -85,10 +77,10 @@ export function AdminLayout() {
               <img
                 src={currentUser.avatarUrl}
                 alt={currentUser?.name}
-                className="h-11 w-11 rounded-full object-cover border-2 border-[#0F6D4E]/20 shadow-inner"
+                className="h-11 w-11 rounded-full object-cover border-2 border-primary/20 shadow-inner"
               />
             ) : (
-              <div className="h-11 w-11 rounded-full bg-[#0F6D4E] text-white flex items-center justify-center font-bold text-base font-serif shadow-sm">
+              <div className="h-11 w-11 rounded-full bg-primary text-white flex items-center justify-center font-bold text-base font-serif shadow-sm">
                 {currentUser?.name?.charAt(0)?.toUpperCase() || 'A'}
               </div>
             )}

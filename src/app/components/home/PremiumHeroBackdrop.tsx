@@ -62,9 +62,11 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
     return () => window.removeEventListener('scroll', onScroll);
   }, [config]);
 
-  const bgType = config?.bgType || config?.heroBgType || 'gradient';
+  const DEFAULT_VIDEO = 'https://assets.mixkit.co/videos/preview/mixkit-children-playing-in-a-park-41544-large.mp4';
+  const bgType = config?.bgType || config?.heroBgType || 'video';
   const bgUrl = config?.bgUrl || config?.heroBgUrl || '';
-  const bgVideoUrl = config?.bgVideoUrl || (bgType === 'video' ? bgUrl : '');
+  const rawVideo = config?.bgVideoUrl || (bgType === 'video' ? bgUrl : '');
+  const bgVideoUrl = rawVideo && !rawVideo.includes('[#0F6D4E]') ? rawVideo : (bgType === 'video' ? DEFAULT_VIDEO : '');
   const mobileFallbackUrl = config?.mobileFallbackUrl || bgUrl || '';
   const overlayOpacity = config?.overlayOpacity !== undefined ? Number(config.overlayOpacity) : (config?.heroOverlayOpacity !== undefined ? Number(config.heroOverlayOpacity) : 0.55);
   const blurIntensity = config?.blurIntensity !== undefined ? Number(config.blurIntensity) : 0;

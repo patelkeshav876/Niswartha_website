@@ -129,7 +129,7 @@ export function GalleryPage() {
                       <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 font-serif">{albumName}</h2>
                       <p className="text-sm text-muted-foreground mt-1 max-w-2xl">{album.description}</p>
                     </div>
-                    <div className="flex items-center gap-2 text-xs font-semibold text-[#0F6D4E] bg-emerald-50 px-3.5 py-1.5 rounded-full shrink-0 self-start sm:self-auto">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-primary bg-primary/10 px-3.5 py-1.5 rounded-full shrink-0 self-start sm:self-auto">
                       <ImageIcon className="h-3.5 w-3.5" />
                       {photoList.length} Photos
                     </div>

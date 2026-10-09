@@ -30,7 +30,7 @@ import {
 } from '../../components/ui/alert-dialog';
 import { Badge } from '../../components/ui/badge';
 import { ImageSearchPicker } from '../../components/ImageSearchPicker';
-import { Plus, Search, Edit2, Trash2, ArrowLeft, IndianRupee } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, ArrowLeft, IndianRupee, Package } from 'lucide-react';
 import { mockNeeds } from '../../data/mock';
 import { Link } from 'react-router';
 import { api } from '../../lib/api';
@@ -216,7 +216,7 @@ export function ManageNeeds() {
             </div>
           </div>
           {activeTab === 'needs' && (
-            <Button onClick={openCreate} className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white gap-1.5 text-xs font-bold px-4 py-2 shadow-sm">
+            <Button onClick={openCreate} className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 text-xs font-bold px-4 py-2 shadow-sm">
               <Plus className="h-4 w-4" /> Add New Need
             </Button>
           )}
@@ -227,7 +227,7 @@ export function ManageNeeds() {
           <button
             onClick={() => setActiveTab('needs')}
             className={`px-5 py-2 text-xs font-bold border-b-2 transition-all ${
-              activeTab === 'needs' ? 'border-[#0F6D4E] text-[#0F6D4E]' : 'border-transparent text-zinc-500'
+              activeTab === 'needs' ? 'border-primary text-primary' : 'border-transparent text-zinc-500'
             }`}
           >
             Active Needs List ({needs.length})
@@ -235,7 +235,7 @@ export function ManageNeeds() {
           <button
             onClick={() => setActiveTab('shipments')}
             className={`px-5 py-2 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
-              activeTab === 'shipments' ? 'border-[#0F6D4E] text-[#0F6D4E]' : 'border-transparent text-zinc-500'
+              activeTab === 'shipments' ? 'border-primary text-primary' : 'border-transparent text-zinc-500'
             }`}
           >
             Item Shipments & Proof Receipts ({itemDonations.length})
@@ -310,16 +310,16 @@ export function ManageNeeds() {
                       <div className="max-w-md pt-1 space-y-1.5">
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-zinc-500 font-medium flex items-center gap-1">
-                            <Package className="h-3.5 w-3.5 text-[#0F6D4E]" />
+                            <Package className="h-3.5 w-3.5 text-primary" />
                             Needed: {need.quantityRequired.toLocaleString()} Units · Received: {need.quantityFulfilled.toLocaleString()} Units
                           </span>
-                          <span className="font-bold text-[#0F6D4E]">
+                          <span className="font-bold text-primary">
                             {pct}% Fulfilled ({remaining.toLocaleString()} Units remaining)
                           </span>
                         </div>
                         <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100">
                           <div
-                            className="h-full rounded-full bg-[#0F6D4E] transition-all"
+                            className="h-full rounded-full bg-primary transition-all"
                             style={{ width: `${pct}%` }}
                           />
                         </div>
@@ -394,7 +394,7 @@ export function ManageNeeds() {
                             setAckItem(item);
                             setAdminNotesInput(`Received package in good condition at institute.`);
                           }}
-                          className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white text-xs font-bold px-4 shadow-sm"
+                          className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold px-4 shadow-sm"
                         >
                           Acknowledge & Mark Received ✓
                         </Button>

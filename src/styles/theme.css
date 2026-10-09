@@ -66,6 +66,7 @@
 /* Logo Bluish Accent Theme Mode */
 :root.theme-blue {
   --primary: #1E3A8A;
+  --primary-foreground: #FFFFFF;
   --secondary: #EFF6FF;
   --secondary-foreground: #1E3A8A;
   --accent: #DBEAFE;
@@ -77,6 +78,31 @@
   --sidebar-accent: #EFF6FF;
   --sidebar-accent-foreground: #1E3A8A;
   --sidebar-ring: #1E3A8A;
+}
+
+:root.theme-blue [class*="bg-[#0F6D4E]"],
+:root.theme-blue [class*="bg-emerald-600"],
+:root.theme-blue [class*="bg-emerald-700"],
+:root.theme-blue [class*="bg-emerald-800"] {
+  background-color: #1E3A8A !important;
+}
+
+:root.theme-blue [class*="text-[#0F6D4E]"],
+:root.theme-blue [class*="text-emerald-600"],
+:root.theme-blue [class*="text-emerald-700"],
+:root.theme-blue [class*="text-emerald-800"] {
+  color: #1E3A8A !important;
+}
+
+:root.theme-blue [class*="border-[#0F6D4E]"],
+:root.theme-blue [class*="border-emerald-600"],
+:root.theme-blue [class*="border-emerald-700"] {
+  border-color: #1E3A8A !important;
+}
+
+:root.theme-blue [class*="bg-emerald-50"],
+:root.theme-blue [class*="bg-emerald-100"] {
+  background-color: #EFF6FF !important;
 }
 
 /* Disable text selection site-wide everywhere on website */

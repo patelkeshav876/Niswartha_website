@@ -133,7 +133,7 @@ export function Needs() {
                             />
                           </div>
                           <div className="flex gap-2">
-                            <Button className="flex-1 rounded-xl font-bold bg-[#0F6D4E] hover:bg-[#0c593f]" size="sm" asChild>
+                            <Button className="flex-1 rounded-xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground" size="sm" asChild>
                               <Link to={`/donate-flow/${need.ashramId}/${need.id}`}>Send Items</Link>
                             </Button>
                             <Button variant="outline" size="sm" className="rounded-xl">

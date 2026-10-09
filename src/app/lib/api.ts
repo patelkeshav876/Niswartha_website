@@ -725,7 +725,7 @@ export const api = {
       if (saved) return JSON.parse(saved);
       return {
         bgType: 'video',
-        bgVideoUrl: 'https://cdn.coverr.co/videos/coverr-[#0F6D4E]-children-nature-720p.mp4',
+        bgVideoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-children-playing-in-a-park-41544-large.mp4',
         mobileFallbackUrl: 'https://images.unsplash.com/photo-1542810634-71277d95dcbb?auto=format&fit=crop&q=80&w=1200',
         overlayOpacity: 0.55,
       };
