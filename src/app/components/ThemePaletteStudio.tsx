@@ -376,7 +376,7 @@ export function ThemePaletteStudio() {
           <Button
             type="button"
             onClick={handleSaveLiveConfig}
-            className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white font-bold text-xs gap-1.5 shadow"
+            className="rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white font-bold text-xs gap-1.5 shadow"
           >
             <Save className="h-4 w-4" /> Publish Live Design
           </Button>

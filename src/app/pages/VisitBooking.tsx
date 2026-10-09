@@ -346,7 +346,7 @@ export function VisitBooking() {
                 {/* Date picker */}
                 <div>
                   <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-[#0F6D4E]" />
+                    <Calendar className="h-4 w-4 text-[#1E3A8A]" />
                     Select Date
                   </h3>
                   <CalendarUi
@@ -360,7 +360,7 @@ export function VisitBooking() {
                     className="mx-auto border border-zinc-100 p-2 rounded-2xl max-w-full"
                     classNames={{
                       day_selected:
-                        '!bg-[#0F6D4E] !text-white rounded-full hover:!bg-[#0c593f] hover:!text-white focus:!bg-[#0F6D4E]',
+                        '!bg-[#1E3A8A] !text-white rounded-full hover:!bg-[#0c593f] hover:!text-white focus:!bg-[#1E3A8A]',
                       day_today: 'font-bold text-zinc-950 underline',
                     }}
                   />
@@ -369,7 +369,7 @@ export function VisitBooking() {
                 {/* Time slot picker */}
                 <div className="space-y-4">
                   <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-[#0F6D4E]" />
+                    <Clock className="h-4 w-4 text-[#1E3A8A]" />
                     Select Time Slot
                   </h3>
                   <p className="text-xs text-zinc-500 leading-relaxed">
@@ -393,7 +393,7 @@ export function VisitBooking() {
             {/* Step 2: Visitors Details */}
             <Card className="rounded-3xl border-none shadow-sm bg-white p-4 sm:p-6 space-y-6 w-[94%] sm:w-full max-w-sm sm:max-w-none mx-auto">
               <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider border-b pb-3 flex items-center gap-2">
-                <Building className="h-4 w-4 text-[#0F6D4E]" />
+                <Building className="h-4 w-4 text-[#1E3A8A]" />
                 Visitor Details
               </h3>
 
@@ -500,7 +500,7 @@ export function VisitBooking() {
             {/* Step 3: Purpose and Group Size */}
             <Card className="rounded-3xl border-none shadow-sm bg-white p-4 sm:p-6 space-y-6 w-[94%] sm:w-full max-w-sm sm:max-w-none mx-auto">
               <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider border-b pb-3 flex items-center gap-2">
-                <Info className="h-4 w-4 text-[#0F6D4E]" />
+                <Info className="h-4 w-4 text-[#1E3A8A]" />
                 Purpose and Group Size
               </h3>
 
@@ -579,7 +579,7 @@ export function VisitBooking() {
                 <div className="flex items-center justify-between">
                   <Label className="text-zinc-700 font-medium">Visitor Names (Max 2 Primary Contacts)</Label>
                   {form.visitorCount > 2 && (
-                    <Badge className="bg-emerald-50 text-[#0F6D4E] border border-emerald-200 text-[10px] font-bold">
+                    <Badge className="bg-emerald-50 text-[#1E3A8A] border border-emerald-200 text-[10px] font-bold">
                       Group of {form.visitorCount} visitors
                     </Badge>
                   )}
@@ -611,7 +611,7 @@ export function VisitBooking() {
             {/* Step 4: Primary & Alternate Mobile Numbers */}
             <Card className="rounded-3xl border-none shadow-sm bg-white p-4 sm:p-6 space-y-6 w-[94%] sm:w-full max-w-sm sm:max-w-none mx-auto">
               <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider border-b pb-3 flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-[#0F6D4E]" />
+                <ShieldCheck className="h-4 w-4 text-[#1E3A8A]" />
                 Contact Phone Numbers
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -662,7 +662,7 @@ export function VisitBooking() {
                 type="button"
                 disabled={!canSubmitDate || submitting}
                 onClick={() => void handleSubmit()}
-                className="w-2/3 rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] h-12 font-bold text-white shadow-md border-none"
+                className="w-2/3 rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] h-12 font-bold text-white shadow-md border-none"
               >
                 {submitting ? 'Submitting Booking…' : 'Submit Visit Booking'}
               </Button>
@@ -673,7 +673,7 @@ export function VisitBooking() {
           <div className="space-y-8">
             <Card className="rounded-3xl border-none shadow-sm bg-white p-6 space-y-4">
               <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider flex items-center gap-2 border-b pb-3">
-                <MapPin className="h-4 w-4 text-[#0F6D4E]" />
+                <MapPin className="h-4 w-4 text-[#1E3A8A]" />
                 Ashram Location
               </h3>
               <p className="text-xs text-zinc-600 leading-relaxed font-semibold">
@@ -698,14 +698,14 @@ export function VisitBooking() {
                 rel="noopener noreferrer"
                 className="block"
               >
-                <Button variant="outline" className="w-full rounded-full gap-1.5 font-bold text-xs h-10 border-[#0F6D4E] text-[#0F6D4E] hover:bg-[#0F6D4E]/5">
+                <Button variant="outline" className="w-full rounded-full gap-1.5 font-bold text-xs h-10 border-[#1E3A8A] text-[#1E3A8A] hover:bg-[#1E3A8A]/5">
                   Get Directions
                   <ExternalLink className="h-3.5 w-3.5" />
                 </Button>
               </a>
             </Card>
 
-            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-[#0F6D4E] to-[#0c593f] p-6 text-white space-y-3">
+            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-[#1E3A8A] to-[#0c593f] p-6 text-white space-y-3">
               <h4 className="font-bold text-sm uppercase tracking-wide">Visitor Guidelines</h4>
               <ul className="text-xs text-white/90 space-y-2 list-disc list-inside leading-relaxed">
                 <li>Visits must be booked at least 24 hours in advance.</li>
@@ -739,7 +739,7 @@ export function VisitBooking() {
             <div className="space-y-4">
               <DialogHeader className="items-center space-y-3 text-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
-                  <Check className="h-8 w-8 text-[#0F6D4E] stroke-[3]" />
+                  <Check className="h-8 w-8 text-[#1E3A8A] stroke-[3]" />
                 </div>
                 <DialogTitle className="text-xl font-bold text-zinc-900">Visit Booked Successfully</DialogTitle>
                 <DialogDescription className="text-sm text-zinc-500">
@@ -748,7 +748,7 @@ export function VisitBooking() {
               </DialogHeader>
 
               <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4 space-y-2.5 text-sm">
-                <p className="text-center font-bold text-[#0F6D4E]">
+                <p className="text-center font-bold text-[#1E3A8A]">
                   Booking ID: {confirmed.displayId}
                 </p>
                 <div className="border-t border-zinc-200/50 pt-2 space-y-1 text-xs text-zinc-600">
@@ -766,7 +766,7 @@ export function VisitBooking() {
                     setConfirmOpen(false);
                     navigate('/my-bookings');
                   }}
-                  className="w-full rounded-full bg-[#0F6D4E] text-white hover:bg-[#0c593f]"
+                  className="w-full rounded-full bg-[#1E3A8A] text-white hover:bg-[#0c593f]"
                 >
                   Go to My Bookings
                 </Button>

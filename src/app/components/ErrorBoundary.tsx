@@ -112,7 +112,7 @@ function ErrorFallbackView({
         </div>
 
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100/70 text-[#0F6D4E] text-xs font-bold mb-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100/70 text-[#1E3A8A] text-xs font-bold mb-3">
             <Sparkles className="h-3.5 w-3.5" /> Niswartha Auto-Recovery System
           </div>
           <h2 className="text-xl font-serif font-bold text-zinc-950">Application Reload Required</h2>
@@ -132,7 +132,7 @@ function ErrorFallbackView({
         <div className="flex flex-col gap-2.5 pt-2">
           <Button
             onClick={handleReload}
-            className="w-full h-11 rounded-full bg-[#0F6D4E] text-white hover:bg-[#0b543c] font-bold text-sm shadow-md gap-2"
+            className="w-full h-11 rounded-full bg-[#1E3A8A] text-white hover:bg-[#0b543c] font-bold text-sm shadow-md gap-2"
           >
             <RefreshCw className="h-4 w-4" /> Refresh Page
           </Button>

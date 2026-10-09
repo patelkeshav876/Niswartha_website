@@ -30,7 +30,7 @@ const PRESET_TEMPLATES = [
     id: 'slytherin',
     name: 'Slytherin Emerald & Silver',
     bgStart: '#064e3b',
-    bgEnd: '#0f6d4e',
+    bgEnd: '#1E3A8A',
     border: '#e2e8f0',
     symbol: '🐍',
     title: 'Ambition Crest',
@@ -111,7 +111,7 @@ export function BadgeCanvaStudio({
   const [title, setTitle] = useState(initialTitle);
   const [hero, setHero] = useState(initialHero);
   const [symbol, setSymbol] = useState(initialSymbol);
-  const [bgStart, setBgStart] = useState('#0f6d4e');
+  const [bgStart, setBgStart] = useState('#1E3A8A');
   const [bgEnd, setBgEnd] = useState('#042f2e');
   const [borderColor, setBorderColor] = useState('#f59e0b');
   const [ringStyle, setRingStyle] = useState<'gold' | 'silver' | 'emerald' | 'glow'>('gold');

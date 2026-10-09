@@ -194,11 +194,11 @@ export function ManageTeam() {
           <Button
             variant="outline"
             onClick={() => setBulkDialogOpen(true)}
-            className="rounded-full border-emerald-200 text-[#0F6D4E] bg-emerald-50/50 hover:bg-emerald-100 font-semibold text-xs gap-1.5"
+            className="rounded-full border-emerald-200 text-[#1E3A8A] bg-emerald-50/50 hover:bg-emerald-100 font-semibold text-xs gap-1.5"
           >
             <Users className="h-4 w-4" /> Bulk Import Teachers
           </Button>
-          <Button onClick={openCreate} className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white font-bold text-xs gap-1.5 shadow">
+          <Button onClick={openCreate} className="rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white font-bold text-xs gap-1.5 shadow">
             <Plus className="h-4 w-4" /> Add Single Member
           </Button>
         </div>
@@ -243,14 +243,14 @@ export function ManageTeam() {
                     />
                   ) : (
                     <div className="flex flex-col items-center justify-center p-4 text-center">
-                      <div className="h-16 w-16 rounded-full bg-[#0F6D4E]/10 border border-[#0F6D4E]/20 text-[#0F6D4E] flex items-center justify-center text-xl font-bold font-serif mb-2">
+                      <div className="h-16 w-16 rounded-full bg-[#1E3A8A]/10 border border-[#1E3A8A]/20 text-[#1E3A8A] flex items-center justify-center text-xl font-bold font-serif mb-2">
                         {member.name?.charAt(0)?.toUpperCase() || 'T'}
                       </div>
                       <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-semibold">No Photo</span>
                     </div>
                   )}
                   <div className="absolute top-3 right-3">
-                    <Badge className="bg-emerald-50 text-[#0F6D4E] font-bold border border-emerald-200/60 uppercase text-[8px] tracking-wide px-2.5 py-1">
+                    <Badge className="bg-emerald-50 text-[#1E3A8A] font-bold border border-emerald-200/60 uppercase text-[8px] tracking-wide px-2.5 py-1">
                       {member.category}
                     </Badge>
                   </div>
@@ -258,7 +258,7 @@ export function ManageTeam() {
 
                 <div className="p-4 space-y-1.5">
                   <h4 className="font-bold text-zinc-950 truncate leading-snug">{member.name}</h4>
-                  <p className="text-xs text-[#0F6D4E] font-semibold truncate">{member.role}</p>
+                  <p className="text-xs text-[#1E3A8A] font-semibold truncate">{member.role}</p>
                   {member.description && (
                     <p className="text-xs text-zinc-500 line-clamp-2 leading-relaxed mt-1">{member.description}</p>
                   )}
@@ -359,7 +359,7 @@ export function ManageTeam() {
             <Button variant="outline" onClick={() => setDialogOpen(false)} className="rounded-full text-xs">
               Cancel
             </Button>
-            <Button onClick={saveMember} disabled={saving} className="rounded-full bg-[#0F6D4E] text-white font-bold text-xs">
+            <Button onClick={saveMember} disabled={saving} className="rounded-full bg-[#1E3A8A] text-white font-bold text-xs">
               {saving ? 'Saving...' : 'Save Member'}
             </Button>
           </DialogFooter>
@@ -371,7 +371,7 @@ export function ManageTeam() {
         <DialogContent className="max-w-lg rounded-3xl bg-white p-6 border-none shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold font-serif text-zinc-950 flex items-center gap-2">
-              <Users className="h-5 w-5 text-[#0F6D4E]" />
+              <Users className="h-5 w-5 text-[#1E3A8A]" />
               Bulk Add Multiple Teachers / Staff
             </DialogTitle>
           </DialogHeader>
@@ -429,7 +429,7 @@ export function ManageTeam() {
             <Button
               onClick={handleBulkImport}
               disabled={bulkImporting || !bulkText.trim()}
-              className="rounded-full bg-[#0F6D4E] text-white font-bold text-xs"
+              className="rounded-full bg-[#1E3A8A] text-white font-bold text-xs"
             >
               {bulkImporting ? 'Importing Roster...' : 'Import All Staff Members'}
             </Button>

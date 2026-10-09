@@ -233,7 +233,7 @@ export function Login() {
                 onClick={() => setRole('donor')}
                 className={cn(
                   'flex-1 py-1.5 text-xs font-bold rounded-lg transition-all',
-                  role === 'donor' ? 'bg-[#0F6D4E]/10 text-[#0F6D4E]' : 'text-muted-foreground'
+                  role === 'donor' ? 'bg-[#1E3A8A]/10 text-[#1E3A8A]' : 'text-muted-foreground'
                 )}
                 type="button"
               >
@@ -243,7 +243,7 @@ export function Login() {
                 onClick={() => setRole('admin')}
                 className={cn(
                   'flex-1 py-1.5 text-xs font-bold rounded-lg transition-all',
-                  role === 'admin' ? 'bg-[#0F6D4E]/10 text-[#0F6D4E]' : 'text-muted-foreground'
+                  role === 'admin' ? 'bg-[#1E3A8A]/10 text-[#1E3A8A]' : 'text-muted-foreground'
                 )}
                 type="button"
               >
@@ -347,7 +347,7 @@ export function Login() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-11 rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white font-bold shadow-lg shadow-[#0F6D4E]/20 text-xs"
+              className="w-full h-11 rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white font-bold shadow-lg shadow-[#1E3A8A]/20 text-xs"
             >
               {loading
                 ? 'Processing...'
@@ -364,7 +364,7 @@ export function Login() {
                 <button
                   type="button"
                   onClick={() => setAuthMode('signup')}
-                  className="text-[#0F6D4E] font-bold hover:underline"
+                  className="text-[#1E3A8A] font-bold hover:underline"
                 >
                   Create Account
                 </button>
@@ -375,7 +375,7 @@ export function Login() {
                 <button
                   type="button"
                   onClick={() => setAuthMode('login')}
-                  className="text-[#0F6D4E] font-bold hover:underline"
+                  className="text-[#1E3A8A] font-bold hover:underline"
                 >
                   Sign In
                 </button>

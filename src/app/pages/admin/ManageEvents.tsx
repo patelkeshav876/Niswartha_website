@@ -141,7 +141,7 @@ export function ManageEvents() {
               <p className="text-xs text-muted-foreground">Schedule and manage institute events</p>
             </div>
           </div>
-          <Button onClick={() => navigate('/admin/events/create')} className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white gap-1.5 text-xs font-bold px-4 py-2 shadow-sm">
+          <Button onClick={() => navigate('/admin/events/create')} className="rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white gap-1.5 text-xs font-bold px-4 py-2 shadow-sm">
             <Plus className="h-4 w-4" /> Create New Event
           </Button>
         </div>
@@ -182,7 +182,7 @@ export function ManageEvents() {
         <div className="mb-6 grid grid-cols-3 gap-3">
           <Card className="border-none shadow-sm rounded-2xl bg-white">
             <CardContent className="p-4 text-center">
-              <Calendar className="mx-auto mb-1.5 h-5 w-5 text-[#0F6D4E]" />
+              <Calendar className="mx-auto mb-1.5 h-5 w-5 text-[#1E3A8A]" />
               <p className="text-xl font-bold text-zinc-950">{filteredEvents.length}</p>
               <p className="text-[11px] text-muted-foreground">Total Listed</p>
             </CardContent>
@@ -253,11 +253,11 @@ export function ManageEvents() {
 
                       <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
                         <span className="flex items-center gap-1.5">
-                          <Calendar className="h-3.5 w-3.5 text-[#0F6D4E]" />
+                          <Calendar className="h-3.5 w-3.5 text-[#1E3A8A]" />
                           {new Date(event.date).toLocaleDateString()} • {event.time}
                         </span>
                         <span className="flex items-center gap-1.5">
-                          <MapPin className="h-3.5 w-3.5 text-[#0F6D4E]" />
+                          <MapPin className="h-3.5 w-3.5 text-[#1E3A8A]" />
                           <span className="truncate max-w-[200px]">{event.location}</span>
                         </span>
                       </div>
@@ -272,7 +272,7 @@ export function ManageEvents() {
                           </div>
                           <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-100">
                             <div
-                              className="h-full rounded-full bg-[#0F6D4E] transition-all"
+                              className="h-full rounded-full bg-[#1E3A8A] transition-all"
                               style={{ width: `${fillPercentage}%` }}
                             />
                           </div>
@@ -285,7 +285,7 @@ export function ManageEvents() {
                           <div className="flex gap-2 w-full sm:w-auto">
                             <Button
                               size="sm"
-                              className="h-9 rounded-full bg-[#0F6D4E] text-white text-xs font-bold px-4 gap-1.5"
+                              className="h-9 rounded-full bg-[#1E3A8A] text-white text-xs font-bold px-4 gap-1.5"
                               onClick={() => approveEvent(event)}
                             >
                               <Check className="h-3.5 w-3.5" />
@@ -309,7 +309,7 @@ export function ManageEvents() {
                               className="h-8 rounded-full text-xs font-medium border-zinc-200"
                               onClick={() => navigate(`/admin/events/bookings/${event.id}`)}
                             >
-                              <Users className="mr-1.5 h-3.5 w-3.5 text-[#0F6D4E]" />
+                              <Users className="mr-1.5 h-3.5 w-3.5 text-[#1E3A8A]" />
                               View Bookings
                             </Button>
                             <Button

@@ -166,7 +166,7 @@ export function ManageGallery() {
           <h2 className="text-xl sm:text-2xl font-serif font-bold text-zinc-950">Gallery Management</h2>
           <p className="text-xs text-muted-foreground mt-0.5">Create, update, and manage student photo albums</p>
         </div>
-        <Button onClick={openCreate} className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white self-start sm:self-auto gap-1.5 text-xs font-bold px-4 py-2 shadow-sm border-none">
+        <Button onClick={openCreate} className="rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white self-start sm:self-auto gap-1.5 text-xs font-bold px-4 py-2 shadow-sm border-none">
           <Plus className="h-4 w-4" />
           Create Album
         </Button>
@@ -277,7 +277,7 @@ export function ManageGallery() {
 
             <div className="space-y-3 border-t pt-3">
               <Label className="text-zinc-700 font-semibold flex items-center gap-1.5">
-                <ImageIcon className="h-4 w-4 text-[#0F6D4E]" />
+                <ImageIcon className="h-4 w-4 text-[#1E3A8A]" />
                 Album Photos ({images.length})
               </Label>
 
@@ -285,7 +285,7 @@ export function ManageGallery() {
                 <p className="text-xs font-bold text-zinc-800 mb-1">Direct Multi-Photo Import</p>
                 <p className="text-[11px] text-zinc-500 mb-3">Select multiple images directly from your device to import all at once</p>
                 
-                <label htmlFor="gallery-multi-upload" className="inline-flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white text-xs font-bold shadow-sm transition-all">
+                <label htmlFor="gallery-multi-upload" className="inline-flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white text-xs font-bold shadow-sm transition-all">
                   <ImageIcon className="h-4 w-4" /> Select & Import Multiple Images
                 </label>
                 <input
@@ -324,12 +324,12 @@ export function ManageGallery() {
                       onClick={() => setCoverUrl(url)}
                       title="Click to set as cover photo"
                       className={`relative aspect-square bg-zinc-50 rounded-lg overflow-hidden border cursor-pointer group/item transition-all ${
-                        isCover ? 'ring-2 ring-[#0F6D4E] border-transparent' : 'hover:border-zinc-300'
+                        isCover ? 'ring-2 ring-[#1E3A8A] border-transparent' : 'hover:border-zinc-300'
                       }`}
                     >
                       <img src={url} alt="" className="w-full h-full object-cover" />
                       {isCover && (
-                        <div className="absolute bottom-0 left-0 right-0 bg-[#0F6D4E] text-white text-[8px] font-bold text-center py-0.5 uppercase tracking-wider">
+                        <div className="absolute bottom-0 left-0 right-0 bg-[#1E3A8A] text-white text-[8px] font-bold text-center py-0.5 uppercase tracking-wider">
                           Cover
                         </div>
                       )}
@@ -361,7 +361,7 @@ export function ManageGallery() {
             <Button variant="outline" onClick={() => setDialogOpen(false)} className="rounded-full">
               Cancel
             </Button>
-            <Button onClick={saveAlbum} disabled={saving} className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white">
+            <Button onClick={saveAlbum} disabled={saving} className="rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white">
               {saving ? 'Saving...' : 'Save Album'}
             </Button>
           </DialogFooter>

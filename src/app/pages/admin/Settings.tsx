@@ -147,7 +147,7 @@ export function Settings() {
 
               <div className="space-y-1.5 sm:col-span-2 bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100">
                 <Label className="text-xs font-bold text-zinc-900 uppercase flex items-center gap-2">
-                  <User className="h-4 w-4 text-[#0F6D4E]" />
+                  <User className="h-4 w-4 text-[#1E3A8A]" />
                   4. School Principal Portrait Photo (About Us Page)
                 </Label>
                 <p className="text-[11px] text-zinc-500 mb-2">
@@ -155,9 +155,9 @@ export function Settings() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 items-center">
                   {config.aboutPrincipalImgUrl ? (
-                    <img src={config.aboutPrincipalImgUrl} alt="Principal" className="h-20 w-20 object-cover rounded-full border-2 border-[#0F6D4E] shadow-sm shrink-0" />
+                    <img src={config.aboutPrincipalImgUrl} alt="Principal" className="h-20 w-20 object-cover rounded-full border-2 border-[#1E3A8A] shadow-sm shrink-0" />
                   ) : (
-                    <div className="h-20 w-20 rounded-full bg-[#0F6D4E]/10 border-2 border-[#0F6D4E]/20 text-[#0F6D4E] flex items-center justify-center font-bold text-xl shrink-0">
+                    <div className="h-20 w-20 rounded-full bg-[#1E3A8A]/10 border-2 border-[#1E3A8A]/20 text-[#1E3A8A] flex items-center justify-center font-bold text-xl shrink-0">
                       P
                     </div>
                   )}

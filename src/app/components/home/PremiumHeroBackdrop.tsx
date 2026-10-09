@@ -66,7 +66,7 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
   const bgType = config?.bgType || config?.heroBgType || 'video';
   const bgUrl = config?.bgUrl || config?.heroBgUrl || '';
   const rawVideo = config?.bgVideoUrl || (bgType === 'video' ? bgUrl : '');
-  const bgVideoUrl = rawVideo && !rawVideo.includes('[#0F6D4E]') ? rawVideo : (bgType === 'video' ? DEFAULT_VIDEO : '');
+  const bgVideoUrl = rawVideo && !rawVideo.includes('[#1E3A8A]') ? rawVideo : (bgType === 'video' ? DEFAULT_VIDEO : '');
   const mobileFallbackUrl = config?.mobileFallbackUrl || bgUrl || '';
   const overlayOpacity = config?.overlayOpacity !== undefined ? Number(config.overlayOpacity) : (config?.heroOverlayOpacity !== undefined ? Number(config.heroOverlayOpacity) : 0.55);
   const blurIntensity = config?.blurIntensity !== undefined ? Number(config.blurIntensity) : 0;

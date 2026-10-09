@@ -77,7 +77,7 @@ export function AdminDashboard() {
           {/* Top Quick Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: 'Total Items Donated', value: `${itemCount}+ Shipments`, desc: 'Physical goods & supplies', color: 'bg-emerald-50 text-[#0F6D4E]', icon: Package },
+              { label: 'Total Items Donated', value: `${itemCount}+ Shipments`, desc: 'Physical goods & supplies', color: 'bg-emerald-50 text-[#1E3A8A]', icon: Package },
               { label: 'Registered Kids', value: childCount, desc: 'Secure student profiles', color: 'bg-indigo-50 text-indigo-600', icon: UserCheck },
               { label: 'Active Schemes', value: schemeCount, desc: 'Government programs', color: 'bg-amber-50 text-amber-600', icon: FileText },
               { label: 'Pending Bookings', value: visitBookings.filter(b => b.status !== 'cancelled').length, desc: 'Site visit scheduling', color: 'bg-purple-50 text-purple-600', icon: BookOpen },
@@ -130,10 +130,10 @@ export function AdminDashboard() {
               <div>
                 <div className="flex items-center justify-between border-b pb-3 mb-4">
                   <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider flex items-center gap-2">
-                    <Users className="h-4 w-4 text-[#0F6D4E]" />
+                    <Users className="h-4 w-4 text-[#1E3A8A]" />
                     Linked Roster / Staff
                   </h3>
-                  <Link to="/admin/team" className="text-xs font-bold text-[#0F6D4E] hover:underline">
+                  <Link to="/admin/team" className="text-xs font-bold text-[#1E3A8A] hover:underline">
                     Manage
                   </Link>
                 </div>
@@ -143,13 +143,13 @@ export function AdminDashboard() {
                       {member.imageUrl ? (
                         <img src={member.imageUrl} alt="" className="h-9 w-9 rounded-full object-cover border border-zinc-200 shrink-0" />
                       ) : (
-                        <div className="h-9 w-9 rounded-full bg-[#0F6D4E]/10 border border-[#0F6D4E]/30 text-[#0F6D4E] flex items-center justify-center font-bold text-xs font-serif shrink-0">
+                        <div className="h-9 w-9 rounded-full bg-[#1E3A8A]/10 border border-[#1E3A8A]/30 text-[#1E3A8A] flex items-center justify-center font-bold text-xs font-serif shrink-0">
                           {member.name?.charAt(0)?.toUpperCase() || 'T'}
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-bold text-zinc-900 truncate">{member.name}</p>
-                        <p className="text-[10px] text-[#0F6D4E] font-medium truncate">{member.role}</p>
+                        <p className="text-[10px] text-[#1E3A8A] font-medium truncate">{member.role}</p>
                       </div>
                       <Badge className="bg-zinc-200/50 text-zinc-700 hover:bg-zinc-200/50 text-[8px] font-bold border-none uppercase py-0.5 px-2">
                         {member.category}
@@ -162,7 +162,7 @@ export function AdminDashboard() {
                 </div>
               </div>
               {team.length > 3 && (
-                <Button variant="ghost" onClick={() => navigate('/admin/team')} className="w-full text-xs font-bold text-[#0F6D4E] mt-4 border border-zinc-100 rounded-xl hover:bg-zinc-50">
+                <Button variant="ghost" onClick={() => navigate('/admin/team')} className="w-full text-xs font-bold text-[#1E3A8A] mt-4 border border-zinc-100 rounded-xl hover:bg-zinc-50">
                   See {team.length - 3} more staff members
                 </Button>
               )}
@@ -172,10 +172,10 @@ export function AdminDashboard() {
             <Card className="border-none shadow-sm rounded-3xl bg-white p-5">
               <div className="flex items-center justify-between border-b pb-3 mb-4">
                 <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-[#0F6D4E]" />
+                  <BookOpen className="h-4 w-4 text-[#1E3A8A]" />
                   Recent Visit Bookings
                 </h3>
-                <Link to="/admin/bookings" className="text-xs font-bold text-[#0F6D4E] hover:underline">
+                <Link to="/admin/bookings" className="text-xs font-bold text-[#1E3A8A] hover:underline">
                   View All
                 </Link>
               </div>
@@ -185,7 +185,7 @@ export function AdminDashboard() {
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-zinc-900 truncate">{bk.name}</p>
                       <p className="text-[10px] text-zinc-500 mt-0.5">{bk.orgType || 'Individual'} • {bk.visitorCount || 1} visitors</p>
-                      <p className="text-[9px] text-[#0F6D4E] font-bold mt-1 uppercase tracking-wide">
+                      <p className="text-[9px] text-[#1E3A8A] font-bold mt-1 uppercase tracking-wide">
                         {bk.date} • {bk.time || bk.timeSlot}
                       </p>
                     </div>
@@ -209,7 +209,7 @@ export function AdminDashboard() {
           <Card className="border-none shadow-sm rounded-3xl bg-white p-6 h-full flex flex-col justify-between">
             <div className="space-y-6">
               <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider border-b pb-3 flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-[#0F6D4E]" />
+                <TrendingUp className="h-4 w-4 text-[#1E3A8A]" />
                 Analytics and Goals
               </h3>
 
@@ -217,10 +217,10 @@ export function AdminDashboard() {
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-bold text-zinc-700">
                   <span>Pre-matric Scholarship Targets</span>
-                  <span className="text-[#0F6D4E]">60%</span>
+                  <span className="text-[#1E3A8A]">60%</span>
                 </div>
                 <div className="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#0F6D4E] rounded-full" style={{ width: '60%' }} />
+                  <div className="h-full bg-[#1E3A8A] rounded-full" style={{ width: '60%' }} />
                 </div>
                 <p className="text-[9px] text-zinc-400 font-semibold">12 of 20 eligible children enrolled</p>
               </div>

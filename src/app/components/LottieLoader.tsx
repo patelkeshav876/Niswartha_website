@@ -21,7 +21,7 @@ export function LottieLoader({
           />
         </div>
         {message && (
-          <p className="text-sm font-semibold text-[#0F6D4E] animate-pulse">
+          <p className="text-sm font-semibold text-[#1E3A8A] animate-pulse">
             {message}
           </p>
         )}

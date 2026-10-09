@@ -230,7 +230,7 @@ export function ImageUploadWithCamera({
         <DialogContent className="max-w-lg rounded-3xl p-6 bg-white space-y-4">
           <DialogHeader>
             <DialogTitle className="text-lg font-serif font-bold text-zinc-900 flex items-center gap-2">
-              <Paintbrush className="h-5 w-5 text-[#0F6D4E]" />
+              <Paintbrush className="h-5 w-5 text-[#1E3A8A]" />
               Image Studio & Blur Brush Tool
             </DialogTitle>
           </DialogHeader>
@@ -345,7 +345,7 @@ export function ImageUploadWithCamera({
             <div className="grid grid-cols-2 gap-4 items-center">
               <div className="space-y-1">
                 <label className="font-bold text-zinc-700 uppercase text-[10px] flex items-center gap-1">
-                  <RotateCw className="h-3.5 w-3.5 text-[#0F6D4E]" /> Rotate Picture
+                  <RotateCw className="h-3.5 w-3.5 text-[#1E3A8A]" /> Rotate Picture
                 </label>
                 <Button
                   type="button"
@@ -360,7 +360,7 @@ export function ImageUploadWithCamera({
 
               <div className="space-y-1">
                 <div className="flex justify-between font-bold text-zinc-700 uppercase text-[10px]">
-                  <span className="flex items-center gap-1"><Crop className="h-3.5 w-3.5 text-[#0F6D4E]" /> Zoom / Scale</span>
+                  <span className="flex items-center gap-1"><Crop className="h-3.5 w-3.5 text-[#1E3A8A]" /> Zoom / Scale</span>
                   <span className="font-mono">{zoom.toFixed(1)}x</span>
                 </div>
                 <input
@@ -370,7 +370,7 @@ export function ImageUploadWithCamera({
                   step="0.1"
                   value={zoom}
                   onChange={(e) => setZoom(Number(e.target.value))}
-                  className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#0F6D4E]"
+                  className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#1E3A8A]"
                 />
               </div>
             </div>
@@ -378,7 +378,7 @@ export function ImageUploadWithCamera({
             <div className="grid grid-cols-2 gap-4 items-center">
               <div className="space-y-1">
                 <div className="flex justify-between font-bold text-zinc-700 uppercase text-[10px]">
-                  <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5 text-[#0F6D4E]" /> Opacity Transparency</span>
+                  <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5 text-[#1E3A8A]" /> Opacity Transparency</span>
                   <span className="font-mono">{Math.round(opacity * 100)}%</span>
                 </div>
                 <input
@@ -388,7 +388,7 @@ export function ImageUploadWithCamera({
                   step="0.05"
                   value={opacity}
                   onChange={(e) => setOpacity(Number(e.target.value))}
-                  className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#0F6D4E]"
+                  className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#1E3A8A]"
                 />
               </div>
 
@@ -411,7 +411,7 @@ export function ImageUploadWithCamera({
             <Button variant="outline" onClick={() => setEditorOpen(false)} className="rounded-full text-xs">
               Cancel
             </Button>
-            <Button onClick={processAndApplyImage} className="rounded-full bg-[#0F6D4E] text-white hover:bg-[#0c593f] text-xs font-bold">
+            <Button onClick={processAndApplyImage} className="rounded-full bg-[#1E3A8A] text-white hover:bg-[#0c593f] text-xs font-bold">
               Apply & Save Edits
             </Button>
           </DialogFooter>

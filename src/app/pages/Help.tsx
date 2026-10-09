@@ -92,7 +92,7 @@ export function Help() {
           <ScrollReveal>
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-6">
-                <h2 className="text-sm font-bold uppercase tracking-widest text-[#0F6D4E]">Direct Support Channels</h2>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-[#1E3A8A]">Direct Support Channels</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {contactOptions.map((opt) => (
@@ -101,12 +101,12 @@ export function Help() {
                     onClick={opt.action}
                     className="border border-zinc-200/80 shadow-xs hover:shadow-md hover:border-emerald-500/40 transition-all rounded-2xl bg-white cursor-pointer p-4 text-center flex flex-col items-center justify-between space-y-2 group"
                   >
-                    <div className="h-10 w-10 rounded-xl bg-emerald-50 text-[#0F6D4E] border border-emerald-100 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <div className="h-10 w-10 rounded-xl bg-emerald-50 text-[#1E3A8A] border border-emerald-100 flex items-center justify-center group-hover:scale-105 transition-transform">
                       <opt.icon className="h-5 w-5" />
                     </div>
                     <div>
                       <h4 className="font-bold text-xs text-zinc-900">{opt.title}</h4>
-                      <p className="text-xs font-bold text-[#0F6D4E] mt-0.5">{opt.description}</p>
+                      <p className="text-xs font-bold text-[#1E3A8A] mt-0.5">{opt.description}</p>
                       <p className="text-[10px] text-zinc-400 font-medium mt-0.5">{opt.subtext}</p>
                     </div>
                   </Card>
@@ -129,7 +129,7 @@ export function Help() {
                   <Accordion type="single" collapsible className="w-full space-y-2">
                     {faqs.map((faq, idx) => (
                       <AccordionItem key={idx} value={`faq-${idx}`} className="border border-zinc-100 rounded-2xl px-4 py-1">
-                        <AccordionTrigger className="text-xs sm:text-sm font-bold text-zinc-900 hover:text-[#0F6D4E] text-left py-3">
+                        <AccordionTrigger className="text-xs sm:text-sm font-bold text-zinc-900 hover:text-[#1E3A8A] text-left py-3">
                           {faq.question}
                         </AccordionTrigger>
                         <AccordionContent className="text-xs text-zinc-600 leading-relaxed pb-3 pt-1">
@@ -146,7 +146,7 @@ export function Help() {
         {/* Bottom CTA Card */}
         <section className="section-container">
           <ScrollReveal>
-            <div className="max-w-3xl mx-auto rounded-3xl bg-gradient-to-r from-emerald-900 via-[#0F6D4E] to-emerald-800 text-white p-8 text-center space-y-4 shadow-lg">
+            <div className="max-w-3xl mx-auto rounded-3xl bg-gradient-to-r from-emerald-900 via-[#1E3A8A] to-emerald-800 text-white p-8 text-center space-y-4 shadow-lg">
               <h3 className="text-xl font-serif font-bold text-white">Still have questions?</h3>
               <p className="text-xs text-white/80 max-w-md mx-auto leading-relaxed">
                 Our support team and school administrators are happy to assist you with any inquiries regarding admissions, donations, or visits.
@@ -154,7 +154,7 @@ export function Help() {
               <div className="pt-2 flex justify-center gap-3">
                 <Button
                   onClick={() => navigate('/donate/ashram-1')}
-                  className="rounded-full bg-white text-[#0F6D4E] hover:bg-emerald-50 font-bold text-xs px-6 shadow-md"
+                  className="rounded-full bg-white text-[#1E3A8A] hover:bg-emerald-50 font-bold text-xs px-6 shadow-md"
                 >
                   Support Our Mission <Heart className="ml-1.5 h-3.5 w-3.5 fill-current" />
                 </Button>

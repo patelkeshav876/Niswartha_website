@@ -492,7 +492,7 @@ export function ManageNeeds() {
             <Button
               onClick={() => ackItem && handleUpdateStatus(ackItem, 'received')}
               disabled={updatingStatus}
-              className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white font-bold"
+              className="rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white font-bold"
             >
               {updatingStatus ? 'Updating...' : 'Confirm Receipt & Notify Donor ✓'}
             </Button>

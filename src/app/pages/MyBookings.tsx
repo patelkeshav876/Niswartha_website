@@ -124,7 +124,7 @@ export function MyBookings() {
           <Button
             size="sm"
             onClick={() => navigate('/events')}
-            className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white text-xs font-bold shadow-sm"
+            className="rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white text-xs font-bold shadow-sm"
           >
             + New Event Registration
           </Button>
@@ -154,7 +154,7 @@ export function MyBookings() {
             placeholder="Search bookings by event or ashram..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-9 pl-9 pr-4 text-xs rounded-full border border-zinc-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F6D4E]/30"
+            className="w-full h-9 pl-9 pr-4 text-xs rounded-full border border-zinc-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/30"
           />
           <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" />
         </div>
@@ -174,7 +174,7 @@ export function MyBookings() {
               variant={statusFilter === tab.id ? 'default' : 'outline'}
               onClick={() => setStatusFilter(tab.id)}
               className={`rounded-full h-8 text-xs font-bold px-3.5 ${
-                statusFilter === tab.id ? 'bg-[#0F6D4E] hover:bg-[#0c593f] text-white' : 'border-zinc-200 text-zinc-700'
+                statusFilter === tab.id ? 'bg-[#1E3A8A] hover:bg-[#0c593f] text-white' : 'border-zinc-200 text-zinc-700'
               }`}
             >
               {tab.label}
@@ -200,7 +200,7 @@ export function MyBookings() {
             <Button variant="outline" size="sm" className="rounded-full text-xs font-bold" onClick={() => navigate('/events')}>
               Browse Events
             </Button>
-            <Button size="sm" className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white text-xs font-bold border-none" onClick={() => navigate('/visit-book/ashram-1')}>
+            <Button size="sm" className="rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white text-xs font-bold border-none" onClick={() => navigate('/visit-book/ashram-1')}>
               Book a Visit
             </Button>
           </div>
@@ -218,7 +218,7 @@ export function MyBookings() {
             const img = (isEvent ? event!.imageUrl : ashram?.imageUrl) || 'https://images.unsplash.com/photo-1512341689857-198e7e2f3ca8?auto=format&fit=crop&q=80';
 
             return (
-              <Card key={`${row.kind}-${b.id}`} className="border border-zinc-200/80 shadow-xs rounded-2xl overflow-hidden bg-white hover:border-[#0F6D4E]/40 transition-all">
+              <Card key={`${row.kind}-${b.id}`} className="border border-zinc-200/80 shadow-xs rounded-2xl overflow-hidden bg-white hover:border-[#1E3A8A]/40 transition-all">
                 <CardContent className="p-0 flex flex-col sm:flex-row">
                   <div className="w-full sm:w-36 h-36 shrink-0 bg-zinc-100 overflow-hidden relative">
                     <img src={img} alt="" className="w-full h-full object-cover" />
@@ -232,7 +232,7 @@ export function MyBookings() {
                       <div>
                         <h4 className="font-bold text-zinc-950 font-serif text-sm sm:text-base line-clamp-1">{title}</h4>
                         <p className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1.5 font-medium">
-                          <MapPin className="h-3.5 w-3.5 text-[#0F6D4E]" />
+                          <MapPin className="h-3.5 w-3.5 text-[#1E3A8A]" />
                           {location}
                         </p>
                       </div>
@@ -247,18 +247,18 @@ export function MyBookings() {
                     <div className="grid grid-cols-2 gap-3 pt-2 border-t border-zinc-100 text-xs text-zinc-600 font-medium">
                       <div className="space-y-1">
                         <p className="flex items-center gap-1.5">
-                          <Calendar className="h-3.5 w-3.5 text-[#0F6D4E]" />
+                          <Calendar className="h-3.5 w-3.5 text-[#1E3A8A]" />
                           {b.date ? new Date(b.date + 'T12:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
                         </p>
                         <p className="flex items-center gap-1.5">
-                          <Clock className="h-3.5 w-3.5 text-[#0F6D4E]" />
+                          <Clock className="h-3.5 w-3.5 text-[#1E3A8A]" />
                           {b.time || b.timeSlot || '—'}
                         </p>
                       </div>
 
                       <div className="space-y-1">
                         <p className="flex items-center gap-1.5">
-                          <Users className="h-3.5 w-3.5 text-[#0F6D4E]" />
+                          <Users className="h-3.5 w-3.5 text-[#1E3A8A]" />
                           {isEvent
                             ? `${(b as EventBookingRecord).guests ?? 1} guest(s)`
                             : `${(b as VisitBookingRecord).visitorCount ?? 1} visitor(s)`}

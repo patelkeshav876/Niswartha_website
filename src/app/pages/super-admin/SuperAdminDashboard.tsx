@@ -466,7 +466,7 @@ export function SuperAdminDashboard() {
                     </div>
                     <div className="pt-2 border-t flex items-center justify-between text-[11px] font-medium text-zinc-500">
                       <span>Unlock Threshold:</span>
-                      <span className="font-bold text-[#0F6D4E]">₹{(badge.amount || 500).toLocaleString()}</span>
+                      <span className="font-bold text-[#1E3A8A]">₹{(badge.amount || 500).toLocaleString()}</span>
                     </div>
                   </div>
 
@@ -545,7 +545,7 @@ export function SuperAdminDashboard() {
                         variant="ghost"
                         size="sm"
                         onClick={() => setBadgePickerOpen(true)}
-                        className="text-[10px] text-[#0F6D4E] h-7 font-bold"
+                        className="text-[10px] text-[#1E3A8A] h-7 font-bold"
                       >
                         Media Library
                       </Button>
@@ -631,7 +631,7 @@ export function SuperAdminDashboard() {
                         const newB = {
                           id: `badge-${Date.now()}`,
                           ...badgeForm,
-                          bgGradient: 'from-amber-600 via-[#0F6D4E] to-black',
+                          bgGradient: 'from-amber-600 via-[#1E3A8A] to-black',
                           accentBorder: 'border-amber-400',
                         };
                         setBadgeList((prev) => [newB, ...prev]);
@@ -967,10 +967,10 @@ export function SuperAdminDashboard() {
                   <div className="space-y-2 border p-3 rounded-xl bg-emerald-50/40 border-emerald-100">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-bold text-zinc-900 uppercase flex items-center gap-1.5">
-                        <Sparkles className="h-3.5 w-3.5 text-[#0F6D4E]" />
+                        <Sparkles className="h-3.5 w-3.5 text-[#1E3A8A]" />
                         Staff Roster Marquee Speed (Seconds)
                       </label>
-                      <span className="text-xs font-mono font-bold text-[#0F6D4E]">
+                      <span className="text-xs font-mono font-bold text-[#1E3A8A]">
                         {config.marqueeSpeed || 35}s {Number(config.marqueeSpeed || 35) <= 20 ? '(Fast)' : Number(config.marqueeSpeed || 35) >= 50 ? '(Slow)' : '(Normal)'}
                       </span>
                     </div>
@@ -982,7 +982,7 @@ export function SuperAdminDashboard() {
                         step={5}
                         value={config.marqueeSpeed || 35}
                         onChange={(e) => setConfig({ ...config, marqueeSpeed: Number(e.target.value) })}
-                        className="w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-[#0F6D4E]"
+                        className="w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-[#1E3A8A]"
                       />
                       <Input
                         type="number"
@@ -1235,7 +1235,7 @@ export function SuperAdminDashboard() {
                 {/* Website Primary Theme Color Selection */}
                 <div className="space-y-4 md:col-span-2 border-t pt-4">
                   <h3 className="font-serif font-bold text-zinc-900 text-sm flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-[#0F6D4E]" />
+                    <Sparkles className="h-4 w-4 text-[#1E3A8A]" />
                     Website Primary Theme Accent Color
                   </h3>
                   <p className="text-xs text-muted-foreground">
@@ -1251,16 +1251,16 @@ export function SuperAdminDashboard() {
                       }}
                       className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-3 ${
                         (config.primaryThemeColor || 'green') === 'green'
-                          ? 'border-[#0F6D4E] bg-emerald-50/70 shadow-sm'
+                          ? 'border-[#1E3A8A] bg-emerald-50/70 shadow-sm'
                           : 'border-zinc-200 bg-white hover:border-zinc-300'
                       }`}
                     >
-                      <div className="h-10 w-10 rounded-xl bg-[#0F6D4E] text-white flex items-center justify-center font-bold text-lg shadow">
+                      <div className="h-10 w-10 rounded-xl bg-[#1E3A8A] text-white flex items-center justify-center font-bold text-lg shadow">
                         🌿
                       </div>
                       <div>
                         <p className="font-bold text-xs text-zinc-900">Niswartha Emerald Green</p>
-                        <p className="text-[10px] text-zinc-500">Default primary green theme (#0F6D4E)</p>
+                        <p className="text-[10px] text-zinc-500">Default primary green theme (#1E3A8A)</p>
                       </div>
                     </div>
 

@@ -179,7 +179,7 @@ export function SchemesPage() {
                 placeholder="Search schemes, scholarships, or aids..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 text-xs sm:text-sm text-zinc-900 bg-zinc-50/50 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#0F6D4E]/30 focus:border-[#0F6D4E] transition-all"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 text-xs sm:text-sm text-zinc-900 bg-zinc-50/50 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-[#1E3A8A]/30 focus:border-[#1E3A8A] transition-all"
               />
             </div>
 
@@ -191,7 +191,7 @@ export function SchemesPage() {
                   onClick={() => setActiveCategory(cat)}
                   className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                     activeCategory === cat
-                      ? 'bg-[#0F6D4E] text-white shadow-md shadow-[#0F6D4E]/20 scale-105'
+                      ? 'bg-[#1E3A8A] text-white shadow-md shadow-[#1E3A8A]/20 scale-105'
                       : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
                   }`}
                 >
@@ -214,14 +214,14 @@ export function SchemesPage() {
               <Card className="h-full border border-zinc-200/80 shadow-xs hover:shadow-xl transition-all duration-300 rounded-3xl bg-white flex flex-col justify-between overflow-hidden group">
                 <CardHeader className="p-6 pb-4 space-y-3">
                   <div className="flex items-start justify-between gap-3">
-                    <Badge className="bg-emerald-50 text-[#0F6D4E] border border-emerald-200 font-bold text-[10px] uppercase px-3 py-1">
+                    <Badge className="bg-emerald-50 text-[#1E3A8A] border border-emerald-200 font-bold text-[10px] uppercase px-3 py-1">
                       {scheme.category}
                     </Badge>
                     <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
                       <CheckCircle className="h-3 w-3 text-emerald-500" /> Active Scheme
                     </span>
                   </div>
-                  <CardTitle className="text-lg font-serif font-bold text-zinc-950 group-hover:text-[#0F6D4E] transition-colors leading-snug">
+                  <CardTitle className="text-lg font-serif font-bold text-zinc-950 group-hover:text-[#1E3A8A] transition-colors leading-snug">
                     {scheme.title}
                   </CardTitle>
                 </CardHeader>
@@ -233,7 +233,7 @@ export function SchemesPage() {
 
                   {scheme.eligibility && (
                     <div className="bg-zinc-50 p-3.5 rounded-2xl border border-zinc-100 space-y-1">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#0F6D4E]">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#1E3A8A]">
                         Eligibility Criteria
                       </p>
                       <p className="text-xs text-zinc-700 leading-relaxed">
@@ -251,7 +251,7 @@ export function SchemesPage() {
                         href={scheme.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0F6D4E] hover:text-[#0b523a] hover:underline"
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1E3A8A] hover:text-[#0b523a] hover:underline"
                       >
                         Apply and Read More <ExternalLink className="h-3.5 w-3.5" />
                       </a>

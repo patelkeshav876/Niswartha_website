@@ -225,7 +225,7 @@ export function ManageBookings() {
                   </div>
                   <div>
                     <p className="text-zinc-400 font-bold uppercase text-[9px] tracking-wider">Purpose of Visit</p>
-                    <p className="font-semibold text-[#0F6D4E] mt-0.5 capitalize">{selectedBooking.purpose}</p>
+                    <p className="font-semibold text-[#1E3A8A] mt-0.5 capitalize">{selectedBooking.purpose}</p>
                   </div>
                 </div>
 

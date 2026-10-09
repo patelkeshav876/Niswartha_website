@@ -270,7 +270,7 @@ export function Settings() {
                 <Button
                   onClick={handleSaveProfile}
                   disabled={isUpdating}
-                  className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white font-bold text-xs px-5 h-9 shadow-md"
+                  className="rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white font-bold text-xs px-5 h-9 shadow-md"
                 >
                   {isUpdating ? 'Saving...' : 'Save Profile'}
                 </Button>

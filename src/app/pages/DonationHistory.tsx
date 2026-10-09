@@ -125,7 +125,7 @@ export function DonationHistory() {
           onClick={() => setActiveTab('money')}
           className={`flex-1 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 ${
             activeTab === 'money'
-              ? 'border-[#0F6D4E] text-[#0F6D4E]'
+              ? 'border-[#1E3A8A] text-[#1E3A8A]'
               : 'border-transparent text-muted-foreground hover:text-zinc-800'
           }`}
         >
@@ -135,7 +135,7 @@ export function DonationHistory() {
           onClick={() => setActiveTab('items')}
           className={`flex-1 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 ${
             activeTab === 'items'
-              ? 'border-[#0F6D4E] text-[#0F6D4E]'
+              ? 'border-[#1E3A8A] text-[#1E3A8A]'
               : 'border-transparent text-muted-foreground hover:text-zinc-800'
           }`}
         >
@@ -151,7 +151,7 @@ export function DonationHistory() {
             placeholder={activeTab === 'money' ? "Search by ashram or amount..." : "Search by item, ashram or reference code..."}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-9 pl-9 pr-4 text-xs rounded-full border border-zinc-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F6D4E]/30"
+            className="w-full h-9 pl-9 pr-4 text-xs rounded-full border border-zinc-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]/30"
           />
           <IndianRupee className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" />
         </div>
@@ -171,7 +171,7 @@ export function DonationHistory() {
               variant={statusFilter === tab.id ? 'default' : 'outline'}
               onClick={() => setStatusFilter(tab.id)}
               className={`rounded-full h-8 text-xs font-bold px-3.5 ${
-                statusFilter === tab.id ? 'bg-[#0F6D4E] hover:bg-[#0c593f] text-white' : 'border-zinc-200 text-zinc-700'
+                statusFilter === tab.id ? 'bg-[#1E3A8A] hover:bg-[#0c593f] text-white' : 'border-zinc-200 text-zinc-700'
               }`}
             >
               {tab.label}
@@ -199,10 +199,10 @@ export function DonationHistory() {
             {filteredDonations.map((donation) => {
               const ashram = mockAshrams.find((a) => a.id === donation.ashramId);
               return (
-                <Card key={donation.id} className="border border-zinc-200/80 shadow-xs rounded-2xl overflow-hidden bg-white hover:border-[#0F6D4E]/40 transition-all p-4">
+                <Card key={donation.id} className="border border-zinc-200/80 shadow-xs rounded-2xl overflow-hidden bg-white hover:border-[#1E3A8A]/40 transition-all p-4">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-10 w-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#0F6D4E] font-bold text-sm shrink-0">
+                      <div className="h-10 w-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#1E3A8A] font-bold text-sm shrink-0">
                         ₹
                       </div>
                       <div className="min-w-0">
@@ -215,7 +215,7 @@ export function DonationHistory() {
 
                     <div className="flex items-center gap-3 self-end sm:self-auto">
                       <div className="text-right">
-                        <p className="text-base font-bold text-[#0F6D4E] font-mono">₹{donation.amount.toLocaleString()}</p>
+                        <p className="text-base font-bold text-[#1E3A8A] font-mono">₹{donation.amount.toLocaleString()}</p>
                         <Badge className={`font-bold border-none uppercase text-[8px] px-2 py-0.5 ${
                           donation.status === 'completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                         }`}>

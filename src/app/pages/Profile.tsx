@@ -62,7 +62,7 @@ export function Profile() {
       <div className="section-container max-w-xl mx-auto pt-32 pb-16 text-center space-y-4">
         <h2 className="text-xl font-bold font-serif text-zinc-900">Please Sign In</h2>
         <p className="text-sm text-zinc-600">You must be logged in to view your profile and donation receipts.</p>
-        <Button onClick={() => navigate('/login')} className="bg-[#0F6D4E] hover:bg-[#0c593f] text-white font-bold rounded-full px-6">
+        <Button onClick={() => navigate('/login')} className="bg-[#1E3A8A] hover:bg-[#0c593f] text-white font-bold rounded-full px-6">
           Sign In
         </Button>
       </div>
@@ -99,7 +99,7 @@ export function Profile() {
   return (
     <div className="section-container max-w-5xl mx-auto pt-24 lg:pt-28 pb-12 space-y-8 animate-fade-up">
       {/* User Header Profile Card */}
-      <Card className="border border-emerald-800/20 bg-gradient-to-br from-[#0F6D4E] to-emerald-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
+      <Card className="border border-emerald-800/20 bg-gradient-to-br from-[#1E3A8A] to-emerald-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
           <Heart className="h-48 w-48 text-white" />
         </div>
@@ -159,7 +159,7 @@ export function Profile() {
       {/* Overview Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="border border-zinc-200/80 shadow-xs rounded-2xl bg-white p-5 flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-emerald-50 text-[#0F6D4E] flex items-center justify-center shrink-0">
+          <div className="h-12 w-12 rounded-xl bg-emerald-50 text-[#1E3A8A] flex items-center justify-center shrink-0">
             <Package className="h-6 w-6" />
           </div>
           <div>
@@ -195,7 +195,7 @@ export function Profile() {
           onClick={() => setActiveTab('itemDonations')}
           className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${
             activeTab === 'itemDonations'
-              ? 'border-[#0F6D4E] text-[#0F6D4E]'
+              ? 'border-[#1E3A8A] text-[#1E3A8A]'
               : 'border-transparent text-zinc-500 hover:text-zinc-800'
           }`}
         >
@@ -206,7 +206,7 @@ export function Profile() {
           onClick={() => setActiveTab('visitBookings')}
           className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${
             activeTab === 'visitBookings'
-              ? 'border-[#0F6D4E] text-[#0F6D4E]'
+              ? 'border-[#1E3A8A] text-[#1E3A8A]'
               : 'border-transparent text-zinc-500 hover:text-zinc-800'
           }`}
         >
@@ -217,7 +217,7 @@ export function Profile() {
           onClick={() => setActiveTab('details')}
           className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${
             activeTab === 'details'
-              ? 'border-[#0F6D4E] text-[#0F6D4E]'
+              ? 'border-[#1E3A8A] text-[#1E3A8A]'
               : 'border-transparent text-zinc-500 hover:text-zinc-800'
           }`}
         >
@@ -236,7 +236,7 @@ export function Profile() {
             <Button
               onClick={() => navigate('/needs')}
               size="sm"
-              className="bg-[#0F6D4E] hover:bg-[#0c593f] text-white font-bold text-xs rounded-full px-5"
+              className="bg-[#1E3A8A] hover:bg-[#0c593f] text-white font-bold text-xs rounded-full px-5"
             >
               + Send More Items
             </Button>
@@ -257,7 +257,7 @@ export function Profile() {
               </p>
               <Button
                 onClick={() => navigate('/needs')}
-                className="bg-[#0F6D4E] hover:bg-[#0c593f] text-white text-xs font-bold rounded-full px-6"
+                className="bg-[#1E3A8A] hover:bg-[#0c593f] text-white text-xs font-bold rounded-full px-6"
               >
                 Browse Ashram Needs
               </Button>
@@ -275,7 +275,7 @@ export function Profile() {
                           {getItemStatusBadge(item.status)}
                         </div>
                         <p className="text-xs text-zinc-500 flex items-center gap-1.5 mt-1">
-                          <Building2 className="h-3.5 w-3.5 text-[#0F6D4E]" />
+                          <Building2 className="h-3.5 w-3.5 text-[#1E3A8A]" />
                           {ashram?.name || 'Niswartha Ashram Partner'} • Ref: <span className="font-mono text-zinc-700 font-bold">{item.referenceNumber || item.id}</span>
                         </p>
                       </div>
@@ -343,7 +343,7 @@ export function Profile() {
             <Button
               onClick={() => navigate('/visit-booking')}
               size="sm"
-              className="bg-[#0F6D4E] hover:bg-[#0c593f] text-white font-bold text-xs rounded-full px-5"
+              className="bg-[#1E3A8A] hover:bg-[#0c593f] text-white font-bold text-xs rounded-full px-5"
             >
               + Schedule New Visit
             </Button>
@@ -358,7 +358,7 @@ export function Profile() {
               </p>
               <Button
                 onClick={() => navigate('/visit-booking')}
-                className="bg-[#0F6D4E] hover:bg-[#0c593f] text-white text-xs font-bold rounded-full px-6"
+                className="bg-[#1E3A8A] hover:bg-[#0c593f] text-white text-xs font-bold rounded-full px-6"
               >
                 Book an Ashram Visit
               </Button>

@@ -287,7 +287,7 @@ export function ManageChildren() {
         <div>
           <h2 className="text-xl sm:text-2xl font-serif font-bold text-zinc-950 flex items-center gap-2">
             Child Records Directory
-            <Badge className="bg-[#0F6D4E]/10 text-[#0F6D4E] border-none font-bold text-[9px] px-2 py-0.5 uppercase tracking-wide">
+            <Badge className="bg-[#1E3A8A]/10 text-[#1E3A8A] border-none font-bold text-[9px] px-2 py-0.5 uppercase tracking-wide">
               Secure
             </Badge>
           </h2>
@@ -298,11 +298,11 @@ export function ManageChildren() {
           <Button
             variant="outline"
             onClick={() => setBulkDialogOpen(true)}
-            className="rounded-full border-emerald-200 text-[#0F6D4E] bg-emerald-50/50 hover:bg-emerald-100 font-semibold text-xs gap-1.5"
+            className="rounded-full border-emerald-200 text-[#1E3A8A] bg-emerald-50/50 hover:bg-emerald-100 font-semibold text-xs gap-1.5"
           >
             <Users className="h-4 w-4" /> Bulk Import Children
           </Button>
-          <Button onClick={openCreate} className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white font-bold text-xs gap-1.5 shadow">
+          <Button onClick={openCreate} className="rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white font-bold text-xs gap-1.5 shadow">
             <Plus className="h-4 w-4" /> Roster Student
           </Button>
         </div>
@@ -331,7 +331,7 @@ export function ManageChildren() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-[#0F6D4E]" />
+            <Filter className="h-4 w-4 text-[#1E3A8A]" />
             <span className="text-xs font-bold text-zinc-700 uppercase">Category Filter:</span>
             <Select value={selectedClass} onValueChange={setSelectedClass}>
               <SelectTrigger className="w-[180px] rounded-xl text-xs bg-white border-zinc-200">
@@ -356,7 +356,7 @@ export function ManageChildren() {
               onClick={() => setSelectedClass(cls)}
               className={`px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap transition-all ${
                 selectedClass === cls
-                  ? 'bg-[#0F6D4E] text-white shadow-xs'
+                  ? 'bg-[#1E3A8A] text-white shadow-xs'
                   : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
               }`}
             >
@@ -385,7 +385,7 @@ export function ManageChildren() {
             <Card key={child.id} className="border border-zinc-200/80 shadow-xs rounded-2xl overflow-hidden bg-white hover:border-emerald-500/50 hover:shadow-md transition-all flex flex-col justify-between">
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#0F6D4E] font-serif font-bold text-base shrink-0 overflow-hidden">
+                  <div className="h-12 w-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#1E3A8A] font-serif font-bold text-base shrink-0 overflow-hidden">
                     {child.imageUrl ? (
                       <img src={child.imageUrl} alt={child.name} className="w-full h-full object-cover" />
                     ) : (
@@ -396,7 +396,7 @@ export function ManageChildren() {
                   <div className="min-w-0 flex-1">
                     <h4 className="font-bold text-sm text-zinc-900 truncate">{child.name}</h4>
                     <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                      <Badge className="bg-[#0F6D4E]/10 text-[#0F6D4E] border-none font-bold text-[9px] px-2 py-0.5 truncate max-w-[140px]">
+                      <Badge className="bg-[#1E3A8A]/10 text-[#1E3A8A] border-none font-bold text-[9px] px-2 py-0.5 truncate max-w-[140px]">
                         {child.education || 'Class 1'}
                       </Badge>
                       <span className="text-[10px] text-zinc-400 font-medium">{child.age} yrs • {child.gender}</span>
@@ -409,14 +409,14 @@ export function ManageChildren() {
                     <p className="text-zinc-400 font-bold uppercase text-[9px]">Guardian</p>
                     <p className="font-semibold text-zinc-800">{child.guardianInformation.name} ({child.guardianInformation.relationship || 'Guardian'})</p>
                     {child.guardianInformation.phone && (
-                      <p className="text-[#0F6D4E] font-mono">{child.guardianInformation.phone}</p>
+                      <p className="text-[#1E3A8A] font-mono">{child.guardianInformation.phone}</p>
                     )}
                   </div>
                 )}
               </CardContent>
 
               <div className="px-4 py-2.5 bg-zinc-50/50 border-t flex items-center justify-between">
-                <Button variant="ghost" size="sm" onClick={() => openView(child)} className="text-[11px] font-bold text-[#0F6D4E] h-7 px-2">
+                <Button variant="ghost" size="sm" onClick={() => openView(child)} className="text-[11px] font-bold text-[#1E3A8A] h-7 px-2">
                   View Profile
                 </Button>
                 <div className="flex items-center gap-1">
@@ -443,12 +443,12 @@ export function ManageChildren() {
           {selectedChild && (
             <div className="space-y-4 py-2 text-xs">
               <div className="flex items-center gap-3 bg-emerald-50/50 p-3 rounded-2xl border border-emerald-100">
-                <div className="h-12 w-12 rounded-xl bg-[#0F6D4E] text-white flex items-center justify-center font-bold text-lg font-serif">
+                <div className="h-12 w-12 rounded-xl bg-[#1E3A8A] text-white flex items-center justify-center font-bold text-lg font-serif">
                   {selectedChild.name.charAt(0)}
                 </div>
                 <div>
                   <h3 className="font-bold text-sm text-zinc-900">{selectedChild.name}</h3>
-                  <p className="text-[#0F6D4E] font-semibold">{selectedChild.education} • {selectedChild.gender}, {selectedChild.age} yrs</p>
+                  <p className="text-[#1E3A8A] font-semibold">{selectedChild.education} • {selectedChild.gender}, {selectedChild.age} yrs</p>
                 </div>
               </div>
 
@@ -598,7 +598,7 @@ export function ManageChildren() {
             <Button variant="outline" onClick={() => setDialogOpen(false)} className="rounded-full text-xs">
               Cancel
             </Button>
-            <Button onClick={saveChild} disabled={saving} className="rounded-full bg-[#0F6D4E] text-white font-bold text-xs">
+            <Button onClick={saveChild} disabled={saving} className="rounded-full bg-[#1E3A8A] text-white font-bold text-xs">
               {saving ? 'Saving...' : 'Save Student'}
             </Button>
           </DialogFooter>
@@ -610,7 +610,7 @@ export function ManageChildren() {
         <DialogContent className="max-w-lg rounded-3xl bg-white p-6 border-none shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold font-serif text-zinc-950 flex items-center gap-2">
-              <Users className="h-5 w-5 text-[#0F6D4E]" />
+              <Users className="h-5 w-5 text-[#1E3A8A]" />
               Bulk Add Multiple Children
             </DialogTitle>
           </DialogHeader>
@@ -674,7 +674,7 @@ export function ManageChildren() {
             <Button
               onClick={handleBulkImportChildren}
               disabled={bulkImporting || !bulkText.trim()}
-              className="rounded-full bg-[#0F6D4E] text-white font-bold text-xs"
+              className="rounded-full bg-[#1E3A8A] text-white font-bold text-xs"
             >
               {bulkImporting ? 'Importing Children...' : 'Import All Children'}
             </Button>

@@ -109,7 +109,7 @@ export function ManageUsers() {
                             className="h-9 w-9 rounded-full object-cover border border-zinc-200 shrink-0"
                           />
                         ) : (
-                          <div className="h-9 w-9 rounded-full bg-[#0F6D4E]/10 text-[#0F6D4E] flex items-center justify-center font-bold text-xs font-serif shrink-0 border border-[#0F6D4E]/20">
+                          <div className="h-9 w-9 rounded-full bg-[#1E3A8A]/10 text-[#1E3A8A] flex items-center justify-center font-bold text-xs font-serif shrink-0 border border-[#1E3A8A]/20">
                             {u.name?.charAt(0)?.toUpperCase() || 'U'}
                           </div>
                         )}

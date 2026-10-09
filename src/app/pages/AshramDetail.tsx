@@ -68,7 +68,7 @@ export function AshramDetail() {
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-xl font-serif font-bold text-zinc-950 mb-2">Ashram Profile Not Found</h2>
         <p className="text-sm text-muted-foreground mb-6">We could not find the specified ashram profile.</p>
-        <Button onClick={() => navigate('/')} className="rounded-full bg-[#0F6D4E] text-white px-6">
+        <Button onClick={() => navigate('/')} className="rounded-full bg-[#1E3A8A] text-white px-6">
           Return Home
         </Button>
       </div>

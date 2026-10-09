@@ -187,10 +187,10 @@ export function ManageSchemes() {
             variant="outline"
             className="rounded-full border-zinc-200 hover:bg-zinc-100 gap-1.5 text-xs font-bold px-4 py-2"
           >
-            <RefreshCw className={`h-4 w-4 text-[#0F6D4E] ${syncing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 text-[#1E3A8A] ${syncing ? 'animate-spin' : ''}`} />
             {syncing ? 'Syncing...' : 'Sync RSS Feed'}
           </Button>
-          <Button onClick={openCreate} className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white gap-1.5 text-xs font-bold px-4 py-2 shadow-sm border-none">
+          <Button onClick={openCreate} className="rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white gap-1.5 text-xs font-bold px-4 py-2 shadow-sm border-none">
             <Plus className="h-4 w-4" />
             Add Scheme
           </Button>
@@ -214,7 +214,7 @@ export function ManageSchemes() {
           onClick={() => setActiveTab('published')}
           className={`pb-2.5 text-xs sm:text-sm font-bold border-b-2 uppercase tracking-wider transition-all ${
             activeTab === 'published'
-              ? 'border-[#0F6D4E] text-[#0F6D4E]'
+              ? 'border-[#1E3A8A] text-[#1E3A8A]'
               : 'border-transparent text-zinc-400 hover:text-zinc-600'
           }`}
         >
@@ -224,7 +224,7 @@ export function ManageSchemes() {
           onClick={() => setActiveTab('drafts')}
           className={`pb-2.5 text-xs sm:text-sm font-bold border-b-2 uppercase tracking-wider transition-all ${
             activeTab === 'drafts'
-              ? 'border-[#0F6D4E] text-[#0F6D4E]'
+              ? 'border-[#1E3A8A] text-[#1E3A8A]'
               : 'border-transparent text-zinc-400 hover:text-zinc-600'
           }`}
         >
@@ -261,7 +261,7 @@ export function ManageSchemes() {
                     <td className="p-4 min-w-[280px]">
                       <div className="flex items-start gap-3">
                         <div className="h-9 w-9 rounded-xl bg-zinc-100 flex items-center justify-center shrink-0">
-                          <FileText className="h-4.5 w-4.5 text-[#0F6D4E]" />
+                          <FileText className="h-4.5 w-4.5 text-[#1E3A8A]" />
                         </div>
                         <div>
                           <p className="font-bold text-zinc-900 leading-snug">{scheme.title}</p>
@@ -270,7 +270,7 @@ export function ManageSchemes() {
                       </div>
                     </td>
                     <td className="p-4">
-                      <Badge className="bg-emerald-50 text-[#0F6D4E] font-bold border-none uppercase text-[9px] px-2.5 py-0.5">
+                      <Badge className="bg-emerald-50 text-[#1E3A8A] font-bold border-none uppercase text-[9px] px-2.5 py-0.5">
                         {scheme.category}
                       </Badge>
                     </td>
@@ -396,7 +396,7 @@ export function ManageSchemes() {
             <Button variant="outline" onClick={() => setDialogOpen(false)} className="rounded-full">
               Cancel
             </Button>
-            <Button onClick={saveScheme} disabled={saving} className="rounded-full bg-[#0F6D4E] hover:bg-[#0c593f] text-white">
+            <Button onClick={saveScheme} disabled={saving} className="rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white">
               {saving ? 'Saving...' : 'Save Scheme'}
             </Button>
           </DialogFooter>

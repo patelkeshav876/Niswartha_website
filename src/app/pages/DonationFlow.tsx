@@ -239,7 +239,7 @@ export function DonationFlow() {
       <div className="mx-auto flex min-h-screen max-w-[480px] flex-col bg-background px-4 pb-24 pt-20 items-center justify-center text-center">
         <h2 className="text-xl font-serif font-bold text-zinc-950 mb-2">Item Not Found</h2>
         <p className="text-sm text-muted-foreground mb-6">{loadError || 'The requested need could not be found.'}</p>
-        <Button onClick={() => navigate('/needs')} className="rounded-full bg-[#0F6D4E] text-white px-6">
+        <Button onClick={() => navigate('/needs')} className="rounded-full bg-[#1E3A8A] text-white px-6">
           Browse Active Needs
         </Button>
       </div>
@@ -488,7 +488,7 @@ export function DonationFlow() {
                 {/* Theme Calendar Picker */}
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-zinc-800 flex items-center gap-2">
-                    <CalendarIcon className="h-4 w-4 text-[#0F6D4E]" />
+                    <CalendarIcon className="h-4 w-4 text-[#1E3A8A]" />
                     Expected Delivery Date
                   </Label>
                   <div className="flex justify-center bg-white p-3 rounded-2xl border border-zinc-200 shadow-xs">
@@ -500,7 +500,7 @@ export function DonationFlow() {
                       className="mx-auto"
                       classNames={{
                         day_selected:
-                          '!bg-[#0F6D4E] !text-white rounded-full hover:!bg-[#0c593f] hover:!text-white focus:!bg-[#0F6D4E]',
+                          '!bg-[#1E3A8A] !text-white rounded-full hover:!bg-[#0c593f] hover:!text-white focus:!bg-[#1E3A8A]',
                         day_today: 'font-bold text-zinc-950 underline',
                       }}
                     />
@@ -553,7 +553,7 @@ export function DonationFlow() {
             </div>
 
             <Button
-              className="h-12 w-full rounded-xl bg-[#0F6D4E] hover:bg-[#0c593f]"
+              className="h-12 w-full rounded-xl bg-[#1E3A8A] hover:bg-[#0c593f]"
               disabled={!selectedDeliveryDate || !fullName.trim() || !phone.trim() || submittingShipment}
               onClick={handleSubmitShipment}
             >

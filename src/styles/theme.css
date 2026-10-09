@@ -2,7 +2,7 @@
   --font-size: 16px;
   
   /* Primary: Deep Green */
-  --primary: #0F6D4E;
+  --primary: #1E3A8A;
   --primary-foreground: #FFFFFF;
   
   /* Background: Warm Off White */
@@ -19,7 +19,7 @@
   
   /* Secondary: Soft Green */
   --secondary: #E8F5E9;
-  --secondary-foreground: #0F6D4E;
+  --secondary-foreground: #1E3A8A;
   
   /* Muted: Gray */
   --muted: #F3F4F6;
@@ -36,10 +36,10 @@
   /* Border & Input */
   --border: #E5E7EB;
   --input: #E5E7EB;
-  --ring: #0F6D4E;
+  --ring: #1E3A8A;
   
   /* Charts (Placeholder) */
-  --chart-1: #0F6D4E;
+  --chart-1: #1E3A8A;
   --chart-2: #E8F5E9;
   --chart-3: #C8E6C9;
   --chart-4: #EF5350;
@@ -51,12 +51,12 @@
   /* Sidebar (Admin) */
   --sidebar: #FFFFFF;
   --sidebar-foreground: #1F2937;
-  --sidebar-primary: #0F6D4E;
+  --sidebar-primary: #1E3A8A;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #E8F5E9;
-  --sidebar-accent-foreground: #0F6D4E;
+  --sidebar-accent-foreground: #1E3A8A;
   --sidebar-border: #E5E7EB;
-  --sidebar-ring: #0F6D4E;
+  --sidebar-ring: #1E3A8A;
 
   /* Font Weights */
   --font-weight-medium: 500;
@@ -82,8 +82,8 @@ html.theme-blue {
 }
 
 /* 1. Solid Green Background Overrides -> Royal Blue (#1E3A8A) */
-html.theme-blue [class*="bg-[#0F6D4E]"],
-html.theme-blue [class*="bg-[#0f6d4e]"],
+html.theme-blue [class*="bg-[#1E3A8A]"],
+html.theme-blue [class*="bg-[#1E3A8A]"],
 html.theme-blue [class*="bg-[#0c593f]"],
 html.theme-blue [class*="bg-[#0b543c]"],
 html.theme-blue [class*="bg-[#0b523a]"],
@@ -103,8 +103,8 @@ html.theme-blue [class*="bg-emerald-950"] {
 }
 
 /* 3. Light / Tinted Green Backgrounds -> Ice Blue (#EFF6FF) */
-html.theme-blue [class*="bg-[#0F6D4E]/"],
-html.theme-blue [class*="bg-[#0f6d4e]/"],
+html.theme-blue [class*="bg-[#1E3A8A]/"],
+html.theme-blue [class*="bg-[#1E3A8A]/"],
 html.theme-blue [class*="bg-emerald-50"],
 html.theme-blue [class*="bg-emerald-100"],
 html.theme-blue [class*="bg-emerald-200"],
@@ -115,8 +115,8 @@ html.theme-blue [class*="bg-emerald-500/"] {
 }
 
 /* 4. Green Text Colors -> Royal Blue (#1E3A8A) */
-html.theme-blue [class*="text-[#0F6D4E]"],
-html.theme-blue [class*="text-[#0f6d4e]"],
+html.theme-blue [class*="text-[#1E3A8A]"],
+html.theme-blue [class*="text-[#1E3A8A]"],
 html.theme-blue [class*="text-[#0c593f]"],
 html.theme-blue [class*="text-[#0b543c]"],
 html.theme-blue [class*="text-[#0b523a]"],
@@ -138,8 +138,8 @@ html.theme-blue [class*="text-emerald-300"] {
 }
 
 /* 6. Green Borders -> Blue Borders (#1E3A8A / #BFDBFE) */
-html.theme-blue [class*="border-[#0F6D4E]"],
-html.theme-blue [class*="border-[#0f6d4e]"],
+html.theme-blue [class*="border-[#1E3A8A]"],
+html.theme-blue [class*="border-[#1E3A8A]"],
 html.theme-blue [class*="border-emerald-400"],
 html.theme-blue [class*="border-emerald-500"],
 html.theme-blue [class*="border-emerald-600"],
@@ -148,8 +148,8 @@ html.theme-blue [class*="border-emerald-800"] {
   border-color: #1E3A8A !important;
 }
 
-html.theme-blue [class*="border-[#0F6D4E]/"],
-html.theme-blue [class*="border-[#0f6d4e]/"],
+html.theme-blue [class*="border-[#1E3A8A]/"],
+html.theme-blue [class*="border-[#1E3A8A]/"],
 html.theme-blue [class*="border-emerald-100"],
 html.theme-blue [class*="border-emerald-200"],
 html.theme-blue [class*="border-emerald-300"],
@@ -159,7 +159,7 @@ html.theme-blue [class*="border-emerald-500/"] {
 }
 
 /* 7. Hover State Overrides */
-html.theme-blue [class*="hover:bg-[#0F6D4E]"]:hover,
+html.theme-blue [class*="hover:bg-[#1E3A8A]"]:hover,
 html.theme-blue [class*="hover:bg-[#0c593f]"]:hover,
 html.theme-blue [class*="hover:bg-[#0b523a]"]:hover,
 html.theme-blue [class*="hover:bg-emerald-600"]:hover,
@@ -168,52 +168,52 @@ html.theme-blue [class*="hover:bg-emerald-800"]:hover {
   background-color: #1E40AF !important;
 }
 
-html.theme-blue [class*="hover:text-[#0F6D4E]"]:hover,
+html.theme-blue [class*="hover:text-[#1E3A8A]"]:hover,
 html.theme-blue [class*="hover:text-[#0b523a]"]:hover,
 html.theme-blue [class*="hover:text-emerald-600"]:hover,
-html.theme-blue [class*="group-hover:text-[#0F6D4E]"]:hover,
-html.theme-blue .group:hover [class*="group-hover:text-[#0F6D4E]"],
+html.theme-blue [class*="group-hover:text-[#1E3A8A]"]:hover,
+html.theme-blue .group:hover [class*="group-hover:text-[#1E3A8A]"],
 html.theme-blue .group:hover [class*="group-hover:text-emerald-600"] {
   color: #1E3A8A !important;
 }
 
 /* 8. Rings, Focus, Accents, Fills & Shadows */
-html.theme-blue [class*="ring-[#0F6D4E]"],
-html.theme-blue [class*="focus:ring-[#0F6D4E]"],
-html.theme-blue [class*="focus:ring-[#0F6D4E]/30"] {
+html.theme-blue [class*="ring-[#1E3A8A]"],
+html.theme-blue [class*="focus:ring-[#1E3A8A]"],
+html.theme-blue [class*="focus:ring-[#1E3A8A]/30"] {
   --tw-ring-color: #1E3A8A !important;
 }
 
-html.theme-blue [class*="focus:border-[#0F6D4E]"] {
+html.theme-blue [class*="focus:border-[#1E3A8A]"] {
   border-color: #1E3A8A !important;
 }
 
-html.theme-blue [class*="accent-[#0F6D4E]"] {
+html.theme-blue [class*="accent-[#1E3A8A]"] {
   accent-color: #1E3A8A !important;
 }
 
-html.theme-blue [class*="shadow-[#0F6D4E]"],
-html.theme-blue [class*="shadow-[#0F6D4E]/20"] {
+html.theme-blue [class*="shadow-[#1E3A8A]"],
+html.theme-blue [class*="shadow-[#1E3A8A]/20"] {
   --tw-shadow-color: rgba(30, 58, 138, 0.25) !important;
 }
 
 /* 9. Tailwind Gradient Overrides */
-html.theme-blue [class*="from-[#0F6D4E]"],
-html.theme-blue [class*="from-[#0f6d4e]"],
+html.theme-blue [class*="from-[#1E3A8A]"],
+html.theme-blue [class*="from-[#1E3A8A]"],
 html.theme-blue [class*="from-emerald-"] {
   --tw-gradient-from: #1E3A8A !important;
   --tw-gradient-to: rgb(30 58 138 / 0) !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
 }
 
-html.theme-blue [class*="via-[#0F6D4E]"],
-html.theme-blue [class*="via-[#0f6d4e]"],
+html.theme-blue [class*="via-[#1E3A8A]"],
+html.theme-blue [class*="via-[#1E3A8A]"],
 html.theme-blue [class*="via-emerald-"] {
   --tw-gradient-via: #1E3A8A !important;
 }
 
-html.theme-blue [class*="to-[#0F6D4E]"],
-html.theme-blue [class*="to-[#0f6d4e]"],
+html.theme-blue [class*="to-[#1E3A8A]"],
+html.theme-blue [class*="to-[#1E3A8A]"],
 html.theme-blue [class*="to-emerald-600"],
 html.theme-blue [class*="to-emerald-700"],
 html.theme-blue [class*="to-emerald-800"],

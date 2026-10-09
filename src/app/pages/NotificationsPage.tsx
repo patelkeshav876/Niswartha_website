@@ -80,7 +80,7 @@ export function NotificationsPage() {
             size="sm"
             className="rounded-full border-zinc-200 hover:bg-zinc-100 text-xs font-semibold self-start sm:self-auto gap-1.5"
           >
-            <CheckCheck className="h-4 w-4 text-[#0F6D4E]" />
+            <CheckCheck className="h-4 w-4 text-[#1E3A8A]" />
             Mark all as read
           </Button>
         )}
@@ -109,14 +109,14 @@ export function NotificationsPage() {
             <Card
               key={notif.id}
               className={`border-none shadow-sm rounded-2xl overflow-hidden transition-all bg-white relative ${
-                !notif.read ? 'ring-1 ring-[#0F6D4E]/25' : ''
+                !notif.read ? 'ring-1 ring-[#1E3A8A]/25' : ''
               }`}
             >
               <CardContent className="p-5 flex items-start gap-4">
                 <div
                   className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border ${
                     !notif.read
-                      ? 'bg-emerald-50 text-[#0F6D4E] border-emerald-100'
+                      ? 'bg-emerald-50 text-[#1E3A8A] border-emerald-100'
                       : 'bg-zinc-50 text-zinc-400 border-zinc-100'
                   }`}
                 >
