@@ -143,15 +143,15 @@ export function ManageNeeds() {
       return;
     }
     if (!Number.isFinite(req) || req < 0) {
-      toast.error('Goal amount (₹) must be a valid number');
+      toast.error('Units needed (quantity) must be a valid number');
       return;
     }
     if (!Number.isFinite(ful) || ful < 0) {
-      toast.error('Raised amount (₹) must be a valid number');
+      toast.error('Units received must be a valid number');
       return;
     }
     if (ful > req && req > 0) {
-      toast.error('Raised cannot exceed goal');
+      toast.error('Received units cannot exceed units needed');
       return;
     }
 
@@ -310,11 +310,11 @@ export function ManageNeeds() {
                       <div className="max-w-md pt-1 space-y-1.5">
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-zinc-500 font-medium flex items-center gap-1">
-                            <IndianRupee className="h-3.5 w-3.5 text-[#0F6D4E]" />
-                            Goal ₹{need.quantityRequired.toLocaleString()} · Raised ₹{need.quantityFulfilled.toLocaleString()}
+                            <Package className="h-3.5 w-3.5 text-[#0F6D4E]" />
+                            Needed: {need.quantityRequired.toLocaleString()} Units · Received: {need.quantityFulfilled.toLocaleString()} Units
                           </span>
                           <span className="font-bold text-[#0F6D4E]">
-                            {pct}% Funded ({remaining.toLocaleString()} left)
+                            {pct}% Fulfilled ({remaining.toLocaleString()} Units remaining)
                           </span>
                         </div>
                         <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100">
@@ -571,7 +571,7 @@ export function ManageNeeds() {
               />
             </div>
             <div>
-              <Label htmlFor="goal">Goal amount (₹) — total to complete this need</Label>
+              <Label htmlFor="goal">Units Needed (Total Quantity Required)</Label>
               <Input
                 id="goal"
                 type="number"
@@ -581,7 +581,7 @@ export function ManageNeeds() {
               />
             </div>
             <div>
-              <Label htmlFor="raised">Already raised (₹)</Label>
+              <Label htmlFor="raised">Units Received (Fulfilled Quantity)</Label>
               <Input
                 id="raised"
                 type="number"
@@ -590,7 +590,7 @@ export function ManageNeeds() {
                 onChange={(e) => setForm((f) => ({ ...f, quantityFulfilled: e.target.value }))}
               />
               <p className="text-[11px] text-muted-foreground mt-1">
-                Donations add to this automatically; adjust here for corrections.
+                Item donations update this count automatically; adjust here if needed.
               </p>
             </div>
           </div>

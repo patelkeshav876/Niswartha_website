@@ -195,7 +195,7 @@ export function Home() {
             className="mt-16 grid grid-cols-2 gap-8 sm:grid-cols-4 sm:gap-12 lg:gap-16"
           >
             <StatCounter value={50} suffix="+" label="Children Helped" icon={<Users className="h-6 w-6 text-emerald-300" />} />
-            <StatCounter value={120} prefix="₹" suffix="K" label="Donations Raised" icon={<Heart className="h-6 w-6 text-rose-300" />} />
+            <StatCounter value={1500} suffix="+" label="Items Donated" icon={<Heart className="h-6 w-6 text-rose-300" />} />
             <StatCounter value={needs.length} label="Active Needs" icon={<Gift className="h-6 w-6 text-amber-300" />} />
             <StatCounter value={upcomingEvents.length} label="Upcoming Events" icon={<Calendar className="h-6 w-6 text-sky-300" />} />
           </motion.div>
@@ -324,9 +324,8 @@ export function Home() {
                             <div className="space-y-1.5">
                               <div className="flex justify-between text-xs">
                                 <span className="text-muted-foreground">Progress</span>
-                                <span className="font-medium">
-                                  ₹{need.quantityFulfilled.toLocaleString()} / ₹
-                                  {need.quantityRequired.toLocaleString()}
+                                <span className="font-medium text-emerald-800">
+                                  {need.quantityFulfilled.toLocaleString()} / {need.quantityRequired.toLocaleString()} Units
                                 </span>
                               </div>
                               <div className="h-2 w-full overflow-hidden rounded-full bg-secondary shadow-inner">

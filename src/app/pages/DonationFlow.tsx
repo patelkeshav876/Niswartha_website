@@ -301,8 +301,7 @@ export function DonationFlow() {
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">{need.category}</p>
                     <p className="mt-2 text-sm font-medium text-foreground">
-                      Goal ₹{need.quantityRequired.toLocaleString()} · ₹
-                      {remainingQty.toLocaleString()} remaining
+                      Quantity Needed: {need.quantityRequired.toLocaleString()} Units · {remainingQty.toLocaleString()} Units remaining
                     </p>
                   </div>
                 </div>
@@ -366,77 +365,10 @@ export function DonationFlow() {
         {step === 2 && (
           <div className="space-y-4 animate-in fade-in duration-300">
             <p className="text-sm text-muted-foreground">
-              Donating for: <span className="font-semibold text-foreground">{need.title}</span>
+              Supporting need: <span className="font-semibold text-foreground">{need.title}</span>
             </p>
 
-            <Accordion type="single" collapsible className="space-y-2 w-full">
-              <AccordionItem value="visit" className="rounded-xl border bg-card px-1 shadow-sm">
-                <AccordionTrigger className="px-3 py-3 hover:no-underline">
-                  <div className="flex items-center gap-3 text-left">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15">
-                      <Footprints className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold">Physical visit</span>
-                        <Badge className="bg-primary text-primary-foreground text-[10px]">
-                          Most impactful
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground font-normal">
-                        Visit the orphanage in person
-                      </p>
-                    </div>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-3 pb-3">
-                  <p className="text-xs text-muted-foreground mb-3">
-                    Book a slot and meet the children — your presence often means as much as any gift.
-                  </p>
-                  <Button
-                    className="w-full rounded-xl"
-                    onClick={() => navigate(`/visit-book/${ashram.id}`)}
-                  >
-                    Book a visit
-                  </Button>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="money" className="rounded-xl border bg-card px-1 shadow-sm">
-                <AccordionTrigger className="px-3 py-3 hover:no-underline">
-                  <div className="flex items-center gap-3 text-left">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/15">
-                      <Banknote className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold">Send money</span>
-                        <Badge className="bg-blue-600 hover:bg-blue-600 text-[10px] text-white">
-                          Fastest
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground font-normal">
-                        Remote monetary donation
-                      </p>
-                    </div>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-3 pb-3">
-                  <p className="text-xs text-muted-foreground mb-3">
-                    Complete a secure payment toward this ashram; you can include this need in your
-                    donation basket on the next screen.
-                  </p>
-                  <Button
-                    className="w-full rounded-xl bg-blue-600 hover:bg-blue-600/90"
-                    onClick={() =>
-                      navigate(`/donate/${ashram.id}?need=${encodeURIComponent(need.id)}`)
-                    }
-                  >
-                    Continue to payment
-                  </Button>
-                </AccordionContent>
-              </AccordionItem>
-
+            <Accordion type="single" collapsible defaultValue="items" className="space-y-2 w-full">
               <AccordionItem value="items" className="rounded-xl border bg-card px-1 shadow-sm">
                 <AccordionTrigger className="px-3 py-3 hover:no-underline">
                   <div className="flex items-center gap-3 text-left">
@@ -445,28 +377,104 @@ export function DonationFlow() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold">Send items</span>
+                        <span className="font-semibold">Send items via courier</span>
                         <Badge className="bg-violet-600 hover:bg-violet-600 text-[10px] text-white">
-                          Direct need
+                          Recommended
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground font-normal">
-                        Ship items via courier
+                        Ship items directly to institute address
                       </p>
                     </div>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-3 pb-3">
                   <p className="text-xs text-muted-foreground mb-3">
-                    Tell us when to expect your package and how to reach you — the admin will confirm
-                    when it arrives.
+                    Tell us when to expect your package and how to reach you — the admin will verify and acknowledge receipt.
                   </p>
                   <Button
-                    className="w-full rounded-xl bg-violet-600 hover:bg-violet-600/90"
+                    className="w-full rounded-xl bg-violet-600 hover:bg-violet-600/90 font-bold"
                     onClick={() => setStep(3)}
                   >
-                    Continue with shipment
+                    Continue with shipment details
                   </Button>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="visit" className="rounded-xl border bg-card px-1 shadow-sm">
+                <AccordionTrigger className="px-3 py-3 hover:no-underline">
+                  <div className="flex items-center gap-3 text-left">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15">
+                      <Footprints className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-semibold">Physical visit & hand delivery</span>
+                        <Badge className="bg-primary text-primary-foreground text-[10px]">
+                          In Person
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground font-normal">
+                        Visit the orphanage and deliver items in person
+                      </p>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-3 pb-3">
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Book a slot and meet the children — bring your items directly during your campus visit.
+                  </p>
+                  <Button
+                    className="w-full rounded-xl font-bold"
+                    onClick={() => navigate(`/visit-book/${ashram.id}`)}
+                  >
+                    Book a visit
+                  </Button>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="contact" className="rounded-xl border bg-card px-1 shadow-sm">
+                <AccordionTrigger className="px-3 py-3 hover:no-underline">
+                  <div className="flex items-center gap-3 text-left">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15">
+                      <ShieldCheck className="h-5 w-5 text-emerald-600" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-semibold">Contact Ashram Directly / WhatsApp</span>
+                        <Badge className="bg-emerald-600 hover:bg-emerald-600 text-[10px] text-white">
+                          Direct Contact
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground font-normal">
+                        Chat on WhatsApp or call orphanage administration
+                      </p>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-3 pb-3">
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Speak directly with the ashram team regarding item delivery, custom requirements, or inquiries.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <a
+                      href={`https://wa.me/919823011223?text=${encodeURIComponent(
+                        `Hello Niswartha Team, I want to inquire/support your ashram for need: ${need.title}`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1"
+                    >
+                      <Button className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+                        Chat on WhatsApp
+                      </Button>
+                    </a>
+                    <a href={`tel:${ashram.contact.phone}`} className="flex-1">
+                      <Button variant="outline" className="w-full rounded-xl font-bold border-zinc-200">
+                        Call Ashram ({ashram.contact.phone})
+                      </Button>
+                    </a>
+                  </div>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

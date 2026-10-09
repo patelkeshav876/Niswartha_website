@@ -109,17 +109,17 @@ export function Needs() {
                             <span className="text-xs font-medium text-muted-foreground">
                               {need.category}
                             </span>
-                            <span className="text-xs font-medium text-muted-foreground">{pct}% funded</span>
+                            <span className="text-xs font-medium text-muted-foreground">{pct}% collected</span>
                           </div>
                           <h3 className="font-bold text-lg text-foreground mb-1">{need.title}</h3>
                           <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
                             {need.description}
                           </p>
                           <p className="text-xs font-semibold text-primary mb-1">
-                            ₹{remaining.toLocaleString()} left to complete this need
+                            {remaining > 0 ? `${remaining.toLocaleString()} Units Remaining` : 'Goal Fulfilled'}
                           </p>
                           <p className="text-[11px] text-muted-foreground">
-                            Goal ₹{goal.toLocaleString()} · Raised ₹{raised.toLocaleString()}
+                            Needed: {goal.toLocaleString()} Units · Received: {raised.toLocaleString()} Units
                           </p>
                         </div>
 
@@ -133,10 +133,10 @@ export function Needs() {
                             />
                           </div>
                           <div className="flex gap-2">
-                            <Button className="flex-1" size="sm" asChild>
-                              <Link to={`/donate-flow/${need.ashramId}/${need.id}`}>Support Now</Link>
+                            <Button className="flex-1 rounded-xl font-bold bg-[#0F6D4E] hover:bg-[#0c593f]" size="sm" asChild>
+                              <Link to={`/donate-flow/${need.ashramId}/${need.id}`}>Send Items</Link>
                             </Button>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" className="rounded-xl">
                               Share
                             </Button>
                           </div>
