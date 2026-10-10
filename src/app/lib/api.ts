@@ -91,13 +91,91 @@ export const api = {
     fetchAPI<{ user: any; token: string }>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
 
   getNotifications: async () => {
+    let list: any[] = [];
     try {
-      return await fetchAPI<any[]>('/notifications');
+      const serverList = await fetchAPI<any[]>('/notifications');
+      if (Array.isArray(serverList)) {
+        list = [...serverList];
+      }
     } catch {
-      return mockNotifications || [];
+      list = [...(mockNotifications || [])];
     }
+
+    // Merge any locally saved notifications (e.g. complaints or offline alerts)
+    try {
+      const stored = localStorage.getItem('notifications');
+      if (stored) {
+        const localList = JSON.parse(stored);
+        if (Array.isArray(localList)) {
+          for (const item of localList) {
+            if (!list.some((n) => n.id === item.id)) {
+              list.unshift(item);
+            }
+          }
+        }
+      }
+    } catch {}
+
+    return list;
   },
-  markNotificationRead: (id: string) => fetchAPI(`/notifications/${id}/read`, { method: 'PUT' }),
+  markNotificationRead: (id: string) => {
+    try {
+      const stored = localStorage.getItem('notifications');
+      if (stored) {
+        const list = JSON.parse(stored);
+        if (Array.isArray(list)) {
+          const updated = list.map((n) => (n.id === id ? { ...n, read: true } : n));
+          localStorage.setItem('notifications', JSON.stringify(updated));
+        }
+      }
+    } catch {}
+    return fetchAPI(`/notifications/${id}/read`, { method: 'PUT' });
+  },
+
+  submitComplaint: async (data: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    category?: string;
+    subject?: string;
+    message: string;
+    userId?: string;
+  }) => {
+    let result: any = null;
+    try {
+      result = await fetchAPI('/complaints', { method: 'POST', body: JSON.stringify(data) });
+    } catch (err) {
+      console.warn('Backend complaint API failed, storing locally:', err);
+    }
+
+    const now = new Date().toISOString();
+    const complaintNotif = {
+      id: `notif-complaint-${Date.now()}`,
+      userId: 'user-1',
+      title: `🚨 User Complaint: ${data.subject || 'Website Feedback'}`,
+      message: `From ${data.name || 'Anonymous User'} (${data.email || data.phone || 'No contact'}): "${data.message}" [Category: ${data.category || 'General'}]`,
+      type: 'complaint',
+      read: false,
+      createdAt: now,
+    };
+
+    try {
+      const stored = localStorage.getItem('notifications');
+      const list = stored ? JSON.parse(stored) : [];
+      localStorage.setItem('notifications', JSON.stringify([complaintNotif, ...list]));
+    } catch {}
+
+    try {
+      const storedComplaints = localStorage.getItem('admin_complaints');
+      const compList = storedComplaints ? JSON.parse(storedComplaints) : [];
+      localStorage.setItem(
+        'admin_complaints',
+        JSON.stringify([{ ...data, id: `complaint-${Date.now()}`, createdAt: now }, ...compList])
+      );
+    } catch {}
+
+    return result || { success: true };
+  },
 
   getAshrams: async () => {
     try {

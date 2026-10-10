@@ -115,7 +115,7 @@ export function Profile() {
           <button
             onClick={() => {
               if (navigator.share) {
-                navigator.share({ title: `${currentUser.name}'s Profile`, url: window.location.href }).catch(() => {});
+                navigator.share({ title: `${currentUser.name}'s Profile`, url: window.location.href }).catch(() => { });
               } else {
                 navigator.clipboard.writeText(window.location.href);
                 toast.success('Profile link copied to clipboard!');
@@ -143,7 +143,7 @@ export function Profile() {
 
               <div className="space-y-1 sm:mb-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight">{currentUser.name}</h1>
+                  <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">{currentUser.name}</h1>
                   <Badge className="bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">
                     {currentUser.role === 'super_admin' ? 'Super Admin' : currentUser.role === 'admin' ? 'Ashram Admin' : 'Supporter'}
                   </Badge>
@@ -214,8 +214,8 @@ export function Profile() {
         <button
           onClick={() => setActiveTab('itemDonations')}
           className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${activeTab === 'itemDonations'
-              ? 'border-[#1E3A8A] text-[#1E3A8A]'
-              : 'border-transparent text-zinc-500 hover:text-zinc-800'
+            ? 'border-[#1E3A8A] text-[#1E3A8A]'
+            : 'border-transparent text-zinc-500 hover:text-zinc-800'
             }`}
         >
           <Package className="h-4 w-4" /> My Item Donations and Proof Receipts ({itemDonations.length})
@@ -224,8 +224,8 @@ export function Profile() {
         <button
           onClick={() => setActiveTab('visitBookings')}
           className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${activeTab === 'visitBookings'
-              ? 'border-[#1E3A8A] text-[#1E3A8A]'
-              : 'border-transparent text-zinc-500 hover:text-zinc-800'
+            ? 'border-[#1E3A8A] text-[#1E3A8A]'
+            : 'border-transparent text-zinc-500 hover:text-zinc-800'
             }`}
         >
           <Calendar className="h-4 w-4" /> My Visit Bookings ({visitBookings.length})
@@ -234,8 +234,8 @@ export function Profile() {
         <button
           onClick={() => setActiveTab('details')}
           className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${activeTab === 'details'
-              ? 'border-[#1E3A8A] text-[#1E3A8A]'
-              : 'border-transparent text-zinc-500 hover:text-zinc-800'
+            ? 'border-[#1E3A8A] text-[#1E3A8A]'
+            : 'border-transparent text-zinc-500 hover:text-zinc-800'
             }`}
         >
           <User className="h-4 w-4" /> Account Information
@@ -358,7 +358,7 @@ export function Profile() {
               <p className="text-xs text-zinc-500">Your scheduled visits to spend time with ashram children and staff.</p>
             </div>
             <Button
-              onClick={() => navigate('/visit-booking')}
+              onClick={() => navigate('/visit-book/ashram-1')}
               size="sm"
               className="bg-[#1E3A8A] hover:bg-[#0c593f] text-white font-bold text-xs rounded-full px-5"
             >
@@ -374,7 +374,7 @@ export function Profile() {
                 You don't have any upcoming or past ashram visit bookings recorded.
               </p>
               <Button
-                onClick={() => navigate('/visit-booking')}
+                onClick={() => navigate('/visit-book/ashram-1')}
                 className="bg-[#1E3A8A] hover:bg-[#0c593f] text-white text-xs font-bold rounded-full px-6"
               >
                 Book an Ashram Visit

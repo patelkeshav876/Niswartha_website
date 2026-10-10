@@ -147,6 +147,7 @@ const SecurityLog = generic('SecurityLogDoc', 'security_logs');
 const AuditLog = generic('AuditLogDoc', 'audit_logs');
 const MediaItem = generic('MediaItemDoc', 'media_items');
 const HeroConfig = generic('HeroConfigDoc', 'hero_configs');
+const Complaint = generic('ComplaintDoc', 'complaints');
 
 /** Must match client `VISIT_TIME_SLOTS` ids */
 const VISIT_SLOT_IDS = [
@@ -1119,7 +1120,17 @@ app.delete('/api/visit-bookings/:id', async (req, res) => {
 // --- Notifications ---
 app.get('/api/notifications', authenticateToken, async (req, res) => {
   try {
-    const rows = await Notification.find({ userId: req.user.id }).sort({ createdAt: -1 }).lean();
+    const isSuperAdmin =
+      req.user.role === 'super_admin' ||
+      ['keshavpatel3690@gmail.com', 'keshavpaterl3690@gmail.com', 'admin@niswartha.org'].includes(
+        (req.user.email || '').toLowerCase()
+      );
+
+    const query = isSuperAdmin
+      ? { $or: [{ userId: req.user.id }, { userId: 'user-1' }, { userId: 'super_admin' }, { type: 'complaint' }] }
+      : { userId: req.user.id };
+
+    const rows = await Notification.find(query).sort({ createdAt: -1 }).lean();
     res.json(rows.map(({ _id, ...r }) => r));
   } catch (e) {
     res.status(500).json({ error: String(e.message) });
@@ -1128,8 +1139,76 @@ app.get('/api/notifications', authenticateToken, async (req, res) => {
 
 app.put('/api/notifications/:id/read', authenticateToken, async (req, res) => {
   try {
-    await Notification.findOneAndUpdate({ id: req.params.id, userId: req.user.id }, { read: true });
+    await Notification.findOneAndUpdate({ id: req.params.id }, { read: true });
     res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+// --- Complaints & Feedback ---
+app.post('/api/complaints', async (req, res) => {
+  try {
+    const { name, email, phone, category, subject, message, userId } = req.body;
+    if (!message || !message.trim()) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+    const complaintId = `complaint-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const now = new Date().toISOString();
+    const doc = {
+      id: complaintId,
+      name: (name || 'Anonymous User').trim(),
+      email: (email || '').trim(),
+      phone: (phone || '').trim(),
+      category: category || 'General',
+      subject: (subject || 'Website Complaint / Feedback').trim(),
+      message: message.trim(),
+      userId: userId || null,
+      status: 'pending',
+      createdAt: now,
+    };
+    await Complaint.create(doc);
+
+    // Create notifications for super admins
+    const superAdmins = await User.find({
+      $or: [
+        { role: 'super_admin' },
+        { email: { $in: ['keshavpatel3690@gmail.com', 'keshavpaterl3690@gmail.com', 'admin@niswartha.org'] } },
+      ],
+    }).lean();
+
+    const notifTargets = new Set(['user-1', 'super_admin']);
+    superAdmins.forEach((u) => {
+      if (u.id) notifTargets.add(u.id);
+      if (u._id) notifTargets.add(String(u._id));
+    });
+
+    const notifs = Array.from(notifTargets).map((tId) => ({
+      id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      userId: tId,
+      title: `🚨 User Complaint: ${doc.subject}`,
+      message: `From ${doc.name} (${doc.email || doc.phone || 'No contact'}): "${doc.message}" [Category: ${doc.category}]`,
+      type: 'complaint',
+      complaintId: doc.id,
+      read: false,
+      createdAt: now,
+    }));
+
+    if (notifs.length > 0) {
+      await Notification.insertMany(notifs);
+    }
+
+    res.json({ success: true, complaint: doc });
+  } catch (e) {
+    console.error('Complaint submission error:', e);
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+app.get('/api/complaints', authenticateToken, async (req, res) => {
+  try {
+    const rows = await Complaint.find({}).sort({ createdAt: -1 }).lean();
+    res.json(rows.map(({ _id, ...r }) => r));
   } catch (e) {
     res.status(500).json({ error: String(e.message) });
   }

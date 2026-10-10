@@ -141,11 +141,26 @@ export function SchemesPage() {
   }, []);
 
   const filteredSchemes = schemes.filter((scheme) => {
+    if (!scheme) return false;
     const matchesCategory = activeCategory === 'All' || scheme.category === activeCategory;
+    const q = (searchQuery || '').trim().toLowerCase();
+    if (!q) return matchesCategory;
+
+    const title = (scheme.title || '').toLowerCase();
+    const description = (scheme.description || '').toLowerCase();
+    const eligibility = (scheme.eligibility || '').toLowerCase();
+    const category = (scheme.category || '').toLowerCase();
+    const benefits = Array.isArray(scheme.benefits) ? scheme.benefits.join(' ').toLowerCase() : '';
+    const docs = Array.isArray(scheme.documentsRequired) ? scheme.documentsRequired.join(' ').toLowerCase() : '';
+
     const matchesSearch =
-      scheme.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      scheme.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (scheme.eligibility && scheme.eligibility.toLowerCase().includes(searchQuery.toLowerCase()));
+      title.includes(q) ||
+      description.includes(q) ||
+      eligibility.includes(q) ||
+      category.includes(q) ||
+      benefits.includes(q) ||
+      docs.includes(q);
+
     return matchesCategory && matchesSearch;
   });
 

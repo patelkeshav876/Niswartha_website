@@ -99,10 +99,10 @@ function StepProgress({ step }: { step: 1 | 2 | 3 | 4 }) {
                     'flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-colors',
                     done && 'bg-primary text-primary-foreground',
                     current &&
-                      'bg-primary text-primary-foreground ring-2 ring-primary/25 ring-offset-2 ring-offset-background',
+                    'bg-primary text-primary-foreground ring-2 ring-primary/25 ring-offset-2 ring-offset-background',
                     !done &&
-                      !current &&
-                      'border-2 border-muted-foreground/35 bg-background text-muted-foreground',
+                    !current &&
+                    'border-2 border-muted-foreground/35 bg-background text-muted-foreground',
                   )}
                 >
                   {done ? <Check className="h-4 w-4" /> : n}
@@ -409,7 +409,7 @@ export function DonationFlow() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold">Physical visit & hand delivery</span>
+                        <span className="font-semibold">Physical visit and hand delivery</span>
                         <Badge className="bg-primary text-primary-foreground text-[10px]">
                           In Person
                         </Badge>

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Bell, Check, CheckCheck, Clock } from 'lucide-react';
+import { Bell, Check, CheckCheck, Clock, AlertTriangle } from 'lucide-react';
+import { Badge } from '../components/ui/badge';
 import { api } from '../lib/api';
 import { toast } from 'sonner';
 
@@ -105,53 +106,73 @@ export function NotificationsPage() {
         </Card>
       ) : (
         <div className="space-y-3">
-          {notifications.map((notif) => (
-            <Card
-              key={notif.id}
-              className={`border-none shadow-sm rounded-2xl overflow-hidden transition-all bg-white relative ${
-                !notif.read ? 'ring-1 ring-[#1E3A8A]/25' : ''
-              }`}
-            >
-              <CardContent className="p-5 flex items-start gap-4">
-                <div
-                  className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border ${
-                    !notif.read
-                      ? 'bg-emerald-50 text-[#1E3A8A] border-emerald-100'
-                      : 'bg-zinc-50 text-zinc-400 border-zinc-100'
-                  }`}
-                >
-                  <Bell className="h-5 w-5" />
-                </div>
-
-                <div className="min-w-0 flex-1 space-y-1">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                    <h4 className={`text-sm font-bold text-zinc-900 ${!notif.read ? 'font-extrabold' : ''}`}>
-                      {notif.title}
-                    </h4>
-                    <span className="text-[10px] text-zinc-400 flex items-center gap-1 shrink-0 font-medium">
-                      <Clock className="h-3 w-3" />
-                      {formatTime(notif.createdAt)}
-                    </span>
-                  </div>
-                  <p className="text-xs text-zinc-600 leading-relaxed">
-                    {notif.message}
-                  </p>
-                </div>
-
-                {!notif.read && (
-                  <Button
-                    onClick={() => handleMarkAsRead(notif.id)}
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 rounded-full hover:bg-zinc-100 shrink-0 text-zinc-400 hover:text-zinc-900"
-                    title="Mark as read"
+          {notifications.map((notif) => {
+            const isComplaint = notif.type === 'complaint' || notif.title?.includes('Complaint');
+            return (
+              <Card
+                key={notif.id}
+                className={`border-none shadow-sm rounded-2xl overflow-hidden transition-all bg-white relative ${
+                  isComplaint
+                    ? 'ring-2 ring-rose-500/40 bg-gradient-to-r from-rose-50/20 to-white'
+                    : !notif.read
+                    ? 'ring-1 ring-[#1E3A8A]/25'
+                    : ''
+                }`}
+              >
+                <CardContent className="p-5 flex items-start gap-4">
+                  <div
+                    className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border ${
+                      isComplaint
+                        ? 'bg-rose-50 text-rose-600 border-rose-200'
+                        : !notif.read
+                        ? 'bg-blue-50 text-[#1E3A8A] border-blue-100'
+                        : 'bg-zinc-50 text-zinc-400 border-zinc-100'
+                    }`}
                   >
-                    <Check className="h-4 w-4" />
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                    {isComplaint ? (
+                      <AlertTriangle className="h-5 w-5 text-rose-600" />
+                    ) : (
+                      <Bell className="h-5 w-5" />
+                    )}
+                  </div>
+
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className={`text-sm font-bold text-zinc-900 ${!notif.read ? 'font-extrabold' : ''}`}>
+                          {notif.title}
+                        </h4>
+                        {isComplaint && (
+                          <Badge className="bg-rose-100 text-rose-800 border-rose-200 text-[10px] font-bold">
+                            🚨 User Complaint
+                          </Badge>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-zinc-400 flex items-center gap-1 shrink-0 font-medium">
+                        <Clock className="h-3 w-3" />
+                        {formatTime(notif.createdAt)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-zinc-600 leading-relaxed font-sans">
+                      {notif.message}
+                    </p>
+                  </div>
+
+                  {!notif.read && (
+                    <Button
+                      onClick={() => handleMarkAsRead(notif.id)}
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-full hover:bg-zinc-100 shrink-0 text-zinc-400 hover:text-zinc-900"
+                      title="Mark as read"
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

@@ -19,11 +19,14 @@ import {
   Megaphone,
   Image as ImageIcon,
   Layers,
+  Bell,
 } from 'lucide-react';
 import { Button } from './ui/button';
+import { api } from '../lib/api';
 
 const SIDEBAR_ITEMS = [
   { to: '/super-admin', label: 'System Health', icon: Activity, end: true },
+  { to: '/notifications', label: 'Notifications & Complaints', icon: Bell },
   { to: '/super-admin/media', label: 'Media Library', icon: ImageIcon },
   { to: '/super-admin/hero', label: 'Page Hero Manager', icon: Layers },
   { to: '/super-admin/users', label: 'User Directory', icon: Users },
@@ -38,6 +41,28 @@ export function SuperAdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchUnread = async () => {
+      try {
+        const list = await api.getNotifications();
+        if (mounted && Array.isArray(list)) {
+          const unread = list.filter((n: any) => !n.read).length;
+          setUnreadCount(unread);
+        }
+      } catch (err) {
+        console.warn('Failed to load superadmin notifs count:', err);
+      }
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 15000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   // Close sidebar on route change
   useEffect(() => {
@@ -73,14 +98,21 @@ export function SuperAdminLayout() {
               to={item.to}
               end={item.end}
               className={cn(
-                'flex items-center gap-3 rounded-xl px-4 py-3 text-xs font-bold transition-all duration-200',
+                'flex items-center justify-between rounded-xl px-4 py-3 text-xs font-bold transition-all duration-200',
                 isActive(item.to, item.end)
                   ? 'bg-amber-500/10 text-amber-700'
                   : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900',
               )}
             >
-              <item.icon className="h-4 w-4 shrink-0" />
-              {item.label}
+              <div className="flex items-center gap-3">
+                <item.icon className="h-4 w-4 shrink-0" />
+                <span>{item.label}</span>
+              </div>
+              {item.to === '/notifications' && unreadCount > 0 && (
+                <span className="h-4 min-w-4 px-1.5 bg-rose-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -139,6 +171,20 @@ export function SuperAdminLayout() {
           <div className="flex items-center gap-3">
             <span className="text-xs text-zinc-400 font-semibold hidden sm:inline-block">Role: Super Administrator</span>
             <div className="h-8 w-px bg-zinc-200 hidden sm:block" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative h-9 w-9 rounded-full hover:bg-zinc-100"
+              onClick={() => navigate('/notifications')}
+              title="Notifications & Complaints"
+            >
+              <Bell className="h-4.5 w-4.5 text-zinc-600" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-rose-600 text-white text-[8px] font-bold rounded-full flex items-center justify-center animate-pulse">
+                  {unreadCount}
+                </span>
+              )}
+            </Button>
             <Link to="/admin">
               <Button size="sm" className="rounded-full bg-zinc-950 text-white hover:bg-zinc-800 text-xs px-4 h-9">
                 Admin Panel
@@ -180,14 +226,21 @@ export function SuperAdminLayout() {
                   end={item.end}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
-                    'flex items-center gap-3 rounded-xl px-4 py-3 text-xs font-bold transition-colors',
+                    'flex items-center justify-between rounded-xl px-4 py-3 text-xs font-bold transition-colors',
                     isActive(item.to, item.end)
                       ? 'bg-amber-500/10 text-amber-700'
                       : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900',
                   )}
                 >
-                  <item.icon className="h-4 w-4 shrink-0" />
-                  {item.label}
+                  <div className="flex items-center gap-3">
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    <span>{item.label}</span>
+                  </div>
+                  {item.to === '/notifications' && unreadCount > 0 && (
+                    <span className="h-4 min-w-4 px-1.5 bg-rose-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                      {unreadCount}
+                    </span>
+                  )}
                 </NavLink>
               ))}
             </nav>

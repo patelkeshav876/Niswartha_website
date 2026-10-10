@@ -164,10 +164,17 @@ export function ManageSchemes() {
     }
   };
 
-  const filteredSchemes = schemes.filter((s) =>
-    s.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const q = (searchTerm || '').trim().toLowerCase();
+  const filteredSchemes = schemes.filter((s) => {
+    if (!s) return false;
+    if (!q) return true;
+    return (
+      (s.title || '').toLowerCase().includes(q) ||
+      (s.description || '').toLowerCase().includes(q) ||
+      (s.category || '').toLowerCase().includes(q) ||
+      (s.eligibility || '').toLowerCase().includes(q)
+    );
+  });
 
   const drafts = filteredSchemes.filter((s) => s.published === false);
   const publishedSchemes = filteredSchemes.filter((s) => s.published !== false);

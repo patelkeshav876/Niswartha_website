@@ -115,6 +115,12 @@ export const router = createBrowserRouter([
       { path: 'events/suggest', element: <ProtectedRoute><SuspenseWrap><SuggestEvent /></SuspenseWrap></ProtectedRoute> },
       { path: 'events/book/:id', element: <ProtectedRoute><SuspenseWrap><EventBooking /></SuspenseWrap></ProtectedRoute> },
       { path: 'visit-book/:ashramId', element: <ProtectedRoute><SuspenseWrap><VisitBooking /></SuspenseWrap></ProtectedRoute> },
+      { path: 'visit-booking/:ashramId', element: <ProtectedRoute><SuspenseWrap><VisitBooking /></SuspenseWrap></ProtectedRoute> },
+      { path: 'visit-booking', element: <Navigate to="/visit-book/ashram-1" replace /> },
+      { path: 'visit-book', element: <Navigate to="/visit-book/ashram-1" replace /> },
+      { path: 'bookings', element: <Navigate to="/my-bookings" replace /> },
+      { path: 'mybookings', element: <Navigate to="/my-bookings" replace /> },
+      { path: 'visit-bookings', element: <Navigate to="/my-bookings" replace /> },
       { path: 'donate/:id', element: <ProtectedRoute><SuspenseWrap><Donation /></SuspenseWrap></ProtectedRoute> },
       { path: 'donate-flow/:ashramId/:needId', element: <ProtectedRoute><SuspenseWrap><DonationFlow /></SuspenseWrap></ProtectedRoute> },
 

@@ -681,7 +681,7 @@ export function VisitBooking() {
               <p className="text-xs text-zinc-600 leading-relaxed font-semibold">
                 {ashram.location}
               </p>
-              
+
               <div className="relative overflow-hidden rounded-2xl bg-zinc-50 border aspect-video h-48">
                 <iframe
                   title="Niswartha Location Map"

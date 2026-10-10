@@ -19,6 +19,16 @@ import {
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { api } from '../lib/api';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from './ui/alert-dialog';
 
 const USER_LINKS = [
   { to: '/profile', label: 'My Profile', icon: User, end: true },
@@ -35,6 +45,7 @@ export function UserLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // Fetch unread notification count
   useEffect(() => {
@@ -151,7 +162,7 @@ export function UserLayout() {
       {/* Log Out */}
       <div className="p-4 border-t border-zinc-200/30">
         <button
-          onClick={() => logout()}
+          onClick={() => setShowLogoutConfirm(true)}
           className={cn(
             'flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/5',
             collapsed && 'justify-center px-2'
@@ -262,6 +273,37 @@ export function UserLayout() {
           <Outlet />
         </main>
       </div>
+
+      {/* Logout Confirmation Dialog */}
+      <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+        <AlertDialogContent className="rounded-3xl border-zinc-200 bg-white p-6 shadow-2xl max-w-sm sm:max-w-md">
+          <AlertDialogHeader className="space-y-3">
+            <div className="h-12 w-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto sm:mx-0 border border-red-100">
+              <LogOut className="h-6 w-6" />
+            </div>
+            <AlertDialogTitle className="text-lg font-bold font-serif text-zinc-950 text-center sm:text-left">
+              Are you really sure you want to log out?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-zinc-500 leading-relaxed text-center sm:text-left">
+              You will be signed out from your active session on this device. You will need to log back in to manage your bookings and donations.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-row gap-2 justify-end pt-3">
+            <AlertDialogCancel className="rounded-full text-xs font-bold border-zinc-200">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowLogoutConfirm(false);
+                logout();
+              }}
+              className="rounded-full text-xs font-bold bg-red-600 hover:bg-red-700 text-white"
+            >
+              Yes, Log Out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
