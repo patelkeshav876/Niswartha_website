@@ -96,16 +96,9 @@ export function FeedManagement() {
     <div className="space-y-6">
       {/* Top Header bar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b pb-4">
-        <div className="flex items-center gap-3">
-          <Link to="/admin">
-            <Button variant="ghost" size="icon" className="h-9 w-9 border rounded-full bg-white shadow-sm">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-xl font-bold font-serif text-zinc-900">Manage Feed and News</h1>
-            <p className="text-xs text-muted-foreground">Publish announcements, visual blogs, and news updates</p>
-          </div>
+        <div>
+          <h1 className="text-xl font-bold font-serif text-zinc-900">Manage Feed and News</h1>
+          <p className="text-xs text-muted-foreground">Publish announcements, visual blogs, and news updates</p>
         </div>
 
         <Button onClick={() => setIsCreateOpen(true)} className="rounded-full shadow-md shadow-primary/10 self-start sm:self-auto">

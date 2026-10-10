@@ -3,7 +3,7 @@ import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { mockNeeds } from '../data/mock';
-import { Search } from 'lucide-react';
+import { Search, Share2 } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Link } from 'react-router';
 import { api } from '../lib/api';
@@ -11,6 +11,7 @@ import type { Need } from '../types';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { AdBanner } from '../components/AdBanner';
 import { PremiumHeroBackdrop } from '../components/home/PremiumHeroBackdrop';
+import { toast } from 'sonner';
 
 export function Needs() {
   const [filter, setFilter] = useState('All');
@@ -136,7 +137,25 @@ export function Needs() {
                             <Button className="flex-1 rounded-xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground" size="sm" asChild>
                               <Link to={`/donate-flow/${need.ashramId}/${need.id}`}>Send Items</Link>
                             </Button>
-                            <Button variant="outline" size="sm" className="rounded-xl">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-xl gap-1.5"
+                              onClick={() => {
+                                const shareUrl = `${window.location.origin}/donate-flow/${need.ashramId}/${need.id}`;
+                                if (navigator.share) {
+                                  navigator.share({
+                                    title: `Support Need: ${need.title}`,
+                                    text: `Help fulfill the urgent need for ${need.title} at Niswartha!`,
+                                    url: shareUrl,
+                                  }).catch(() => {});
+                                } else {
+                                  navigator.clipboard.writeText(shareUrl);
+                                  toast.success('Need donation link copied to clipboard!');
+                                }
+                              }}
+                            >
+                              <Share2 className="h-3.5 w-3.5" />
                               Share
                             </Button>
                           </div>

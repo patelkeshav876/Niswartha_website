@@ -8,6 +8,7 @@ import { Card, CardContent } from '../components/ui/card';
 import { Calendar as CalendarUi } from '../components/ui/calendar';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { Badge } from '../components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -517,19 +518,19 @@ export function VisitBooking() {
                     onChange={(e) => {
                       const val = e.target.value.replace(/[^0-9]/g, '');
                       if (val === '') {
-                        setForm((f) => ({ ...f, visitorCount: 0, visitorNames: [''] }));
+                        setForm((f) => ({ ...f, visitorCount: 0, visitorNames: [(f.visitorNames && f.visitorNames[0]) || ''] }));
                         return;
                       }
                       const n = Math.min(200, Math.max(1, parseInt(val, 10)));
                       setForm((f) => ({
                         ...f,
                         visitorCount: n,
-                        visitorNames: Array.from({ length: n }, (_, i) => f.visitorNames[i] ?? ''),
+                        visitorNames: Array.from({ length: n }, (_, i) => (f.visitorNames && f.visitorNames[i]) ?? ''),
                       }));
                     }}
                     onBlur={() => {
                       if (!form.visitorCount || form.visitorCount < 1) {
-                        setForm((f) => ({ ...f, visitorCount: 1, visitorNames: [f.visitorNames[0] || ''] }));
+                        setForm((f) => ({ ...f, visitorCount: 1, visitorNames: [(f.visitorNames && f.visitorNames[0]) || ''] }));
                       }
                     }}
                     className="rounded-xl border-zinc-200 font-mono"
@@ -590,13 +591,14 @@ export function VisitBooking() {
                     : 'Please provide visitor names attending.'}
                 </p>
 
-                {Array.from({ length: Math.min(Math.max(1, form.visitorCount), 2) }).map((_, i) => (
+                {Array.from({ length: Math.min(Math.max(1, form.visitorCount || 1), 2) }).map((_, i) => (
                   <Input
                     key={i}
-                    value={form.visitorNames[i] || ''}
+                    value={(form.visitorNames && form.visitorNames[i]) || ''}
                     onChange={(e) =>
                       setForm((f) => {
-                        const next = [...f.visitorNames];
+                        const currentNames = f.visitorNames || [];
+                        const next = [...currentNames];
                         next[i] = e.target.value.replace(/[^a-zA-Z\s]/g, '');
                         return { ...f, visitorNames: next };
                       })
@@ -616,9 +618,9 @@ export function VisitBooking() {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="vb-phone" className="text-zinc-700 font-medium">Primary Mobile Number (10 Digits)</Label>
+                  <Label htmlFor="vb-primary-phone" className="text-zinc-700 font-medium">Primary Mobile Number (10 Digits)</Label>
                   <Input
-                    id="vb-phone"
+                    id="vb-primary-phone"
                     type="tel"
                     maxLength={10}
                     value={form.phone}
@@ -639,7 +641,7 @@ export function VisitBooking() {
                     onChange={(e) => setForm((f) => ({
                       ...f,
                       emergencyContactPhone: e.target.value.replace(/[^0-9]/g, '').slice(0, 10),
-                      emergencyContactName: f.emergencyContactName || f.visitorNames[0] || f.name || 'Primary Visitor',
+                      emergencyContactName: f.emergencyContactName || (f.visitorNames && f.visitorNames[0]) || f.name || 'Primary Visitor',
                     }))}
                     className="rounded-xl border-zinc-200 font-mono"
                     placeholder="10-digit alternate mobile"
@@ -705,12 +707,15 @@ export function VisitBooking() {
               </a>
             </Card>
 
-            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-[#1E3A8A] to-[#0c593f] p-6 text-white space-y-3">
-              <h4 className="font-bold text-sm uppercase tracking-wide">Visitor Guidelines</h4>
-              <ul className="text-xs text-white/90 space-y-2 list-disc list-inside leading-relaxed">
+            <Card className="rounded-3xl border-none shadow-md bg-gradient-to-br from-[#1E3A8A] via-[#152e72] to-[#0c593f] p-6 text-white space-y-3 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                <ShieldCheck className="h-32 w-32 text-white" />
+              </div>
+              <h4 className="font-serif font-bold text-sm uppercase tracking-wider text-emerald-200">Visitor Guidelines</h4>
+              <ul className="text-xs text-white/90 space-y-2.5 list-disc list-inside leading-relaxed relative z-10">
                 <li>Visits must be booked at least 24 hours in advance.</li>
-                <li>Please arrive 10 minutes prior to your selected slot.</li>
-                <li>Ensure you bring a government-issued photo ID.</li>
+                <li>Please arrive 10 minutes prior to your selected time slot.</li>
+                <li>Ensure you bring a valid government-issued photo ID.</li>
                 <li>Interactions with students are guided by school supervisors.</li>
               </ul>
             </Card>

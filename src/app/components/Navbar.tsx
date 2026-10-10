@@ -83,26 +83,58 @@ export function Navbar() {
 
   return (
     <>
-      <nav
+      {/* Navbar wrapper — full width fixed strip */}
+      <div
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-          isHeroPage
-            ? scrolled
-              ? 'bg-background/85 backdrop-blur-xl shadow-md border-b border-border/50 text-foreground'
-              : 'bg-transparent text-white border-b border-transparent'
-            : 'bg-background/90 backdrop-blur-xl shadow-sm border-b border-border/50 text-foreground'
+          'fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out will-change-transform',
+          scrolled ? 'pt-3 px-4 sm:px-6 lg:px-10' : 'pt-0 px-0'
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between lg:h-20">
-            {/* Official Logo */}
+        {/* The actual nav pill */}
+        <nav
+          className={cn(
+            'transition-all duration-300 ease-out mx-auto',
+            scrolled
+              ? [
+                  'max-w-5xl rounded-full',
+                  'bg-white/85 backdrop-blur-2xl',
+                  'shadow-[0_8px_32px_0_rgba(0,0,0,0.12),0_2px_8px_0_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)]',
+                  'border border-white/80',
+                  'text-foreground',
+                ].join(' ')
+              : isHeroPage
+                ? 'max-w-none rounded-none bg-transparent text-white'
+                : 'max-w-none rounded-none bg-white/60 backdrop-blur-xl text-foreground'
+          )}
+        >
+
+        <div className={cn('mx-auto transition-all duration-300 ease-out', scrolled ? 'px-5 sm:px-7' : 'px-4 sm:px-6 lg:px-8 max-w-7xl')}>
+          <div className={cn('flex items-center justify-between transition-all duration-300 ease-out', scrolled ? 'h-[52px]' : 'h-16 lg:h-20')}>
+
+            {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-105 bg-white border border-zinc-200">
+              {/* Logo icon — always solid white */}
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-105 bg-white border border-zinc-200">
                 <img src="/logo.png" alt="Niswartha Logo" className="h-full w-full object-cover" />
               </div>
-              <div className="hidden sm:block">
-                <p className="text-lg font-bold tracking-tight font-serif">Niswartha</p>
-                <p className="-mt-1 text-[10px] font-medium uppercase tracking-[0.15em] opacity-80">Selfless Service</p>
+              <div className={cn('hidden sm:block transition-all duration-300', scrolled ? '' : '')}>
+                <p
+                  className={cn(
+                    'font-bold tracking-tight font-serif transition-all duration-300',
+                    scrolled ? 'text-base text-foreground' : 'text-lg',
+                    !scrolled && isHeroPage ? 'text-white drop-shadow-sm' : 'text-foreground'
+                  )}
+                >
+                  Niswartha
+                </p>
+                {!scrolled && (
+                  <p className={cn(
+                    '-mt-1 text-[10px] font-medium uppercase tracking-[0.15em] transition-colors duration-300',
+                    isHeroPage ? 'text-white/70' : 'text-muted-foreground'
+                  )}>
+                    Selfless Service
+                  </p>
+                )}
               </div>
             </Link>
 
@@ -113,17 +145,24 @@ export function Navbar() {
                   key={link.to}
                   to={link.to}
                   className={cn(
-                    'relative px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200',
+                    'relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 group',
                     isActive(link.to)
-                      ? 'text-primary'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+                      ? !scrolled && isHeroPage
+                        ? 'text-white'
+                        : 'text-primary'
+                      : !scrolled && isHeroPage
+                        ? 'text-white/80 hover:text-white hover:bg-white/10'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
                   )}
                 >
                   {link.label}
                   {isActive(link.to) && (
                     <motion.div
                       layoutId="nav-indicator"
-                      className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-primary"
+                      className={cn(
+                        'absolute bottom-0 left-2 right-2 h-0.5 rounded-full',
+                        !scrolled && isHeroPage ? 'bg-white' : 'bg-primary'
+                      )}
                       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                     />
                   )}
@@ -138,7 +177,12 @@ export function Navbar() {
                   {/* Visit Us CTA */}
                   <Button
                     size="sm"
-                    className="hidden md:inline-flex gap-2 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all duration-300 hover:scale-[1.02]"
+                    className={cn(
+                      'hidden md:inline-flex gap-2 rounded-full shadow-lg transition-all duration-300 hover:scale-[1.02]',
+                      !scrolled && isHeroPage
+                        ? 'bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-white/30 shadow-white/10'
+                        : 'bg-primary text-primary-foreground shadow-primary/20 hover:shadow-primary/30'
+                    )}
                     onClick={() => navigate('/visit-book/ashram-1')}
                   >
                     <MapPin className="h-4 w-4" />
@@ -149,26 +193,47 @@ export function Navbar() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="relative h-10 w-10 rounded-full hover:bg-muted/60"
+                    className={cn(
+                      'relative h-10 w-10 rounded-full transition-colors duration-200',
+                      !scrolled && isHeroPage
+                        ? 'text-white hover:bg-white/15'
+                        : 'hover:bg-muted/60'
+                    )}
                     onClick={() => navigate('/notifications')}
                   >
-                    <Bell className="h-5 w-5 text-muted-foreground" />
+                    <Bell className="h-5 w-5" />
                   </Button>
 
                   {/* Profile Dropdown */}
                   <div className="relative" data-profile-dropdown>
                     <button
                       onClick={() => setProfileOpen(!profileOpen)}
-                      className="flex items-center gap-2 rounded-full p-1 pr-3 transition-colors duration-200 hover:bg-muted/60"
+                      className={cn(
+                        'flex items-center gap-2 rounded-full p-1 pr-3 transition-colors duration-200',
+                        !scrolled && isHeroPage ? 'hover:bg-white/15' : 'hover:bg-muted/60'
+                      )}
                     >
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-sm">
+                      <div
+                        className={cn(
+                          'flex h-8 w-8 items-center justify-center rounded-full font-bold text-sm',
+                          !scrolled && isHeroPage
+                            ? 'bg-white/20 text-white border border-white/30'
+                            : 'bg-primary/10 text-primary'
+                        )}
+                      >
                         {currentUser.name?.charAt(0)?.toUpperCase() || 'U'}
                       </div>
-                      <span className="hidden md:block text-sm font-medium text-foreground">
+                      <span
+                        className={cn(
+                          'hidden md:block text-sm font-medium',
+                          !scrolled && isHeroPage ? 'text-white' : 'text-foreground'
+                        )}
+                      >
                         {currentUser.name?.split(' ')[0]}
                       </span>
                       <ChevronDown className={cn(
-                        'hidden md:block h-4 w-4 text-muted-foreground transition-transform duration-200',
+                        'hidden md:block h-4 w-4 transition-transform duration-200',
+                        !scrolled && isHeroPage ? 'text-white/70' : 'text-muted-foreground',
                         profileOpen && 'rotate-180'
                       )} />
                     </button>
@@ -180,7 +245,7 @@ export function Navbar() {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 8, scale: 0.96 }}
                           transition={{ duration: 0.15 }}
-                          className="absolute right-0 top-full mt-2 w-56 rounded-xl border bg-card p-1.5 shadow-xl shadow-black/10"
+                          className="absolute right-0 top-full mt-2 w-56 rounded-xl border bg-card/95 backdrop-blur-xl p-1.5 shadow-xl shadow-black/10"
                         >
                           <div className="px-3 py-2 border-b border-border/50 mb-1">
                             <p className="text-sm font-semibold">{currentUser.name}</p>
@@ -200,9 +265,7 @@ export function Navbar() {
                           </button>
                           {isAdmin && (
                             <button
-                              onClick={() => {
-                                window.location.href = 'https://deafanddumbschool.vercel.app/admin';
-                              }}
+                              onClick={() => { window.location.href = 'https://deafanddumbschool.vercel.app/admin'; }}
                               className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-muted/60"
                             >
                               <LayoutDashboard className="h-4 w-4 text-muted-foreground" /> Admin Panel
@@ -210,15 +273,12 @@ export function Navbar() {
                           )}
                           {currentUser?.role === 'super_admin' && (
                             <button
-                              onClick={() => {
-                                window.location.href = 'https://deafanddumbschool.vercel.app/super-admin';
-                              }}
+                              onClick={() => { window.location.href = 'https://deafanddumbschool.vercel.app/super-admin'; }}
                               className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-muted/60"
                             >
                               <Shield className="h-4 w-4 text-muted-foreground" /> Super Admin Portal
                             </button>
                           )}
-
                           <div className="border-t border-border/50 mt-1 pt-1">
                             <button onClick={logout} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-destructive transition-colors hover:bg-destructive/5">
                               <LogOut className="h-4 w-4" /> Sign Out
@@ -231,10 +291,29 @@ export function Navbar() {
                 </>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => navigate('/login')} className="rounded-full">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate('/login')}
+                    className={cn(
+                      'rounded-full transition-colors duration-200',
+                      !scrolled && isHeroPage
+                        ? 'text-white hover:bg-white/15 hover:text-white'
+                        : ''
+                    )}
+                  >
                     Sign In
                   </Button>
-                  <Button size="sm" onClick={() => navigate('/signup')} className="rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+                  <Button
+                    size="sm"
+                    onClick={() => navigate('/signup')}
+                    className={cn(
+                      'rounded-full shadow-lg transition-all duration-300 hover:scale-[1.02]',
+                      !scrolled && isHeroPage
+                        ? 'bg-white text-primary hover:bg-white/90 shadow-white/20'
+                        : 'bg-primary text-primary-foreground shadow-primary/20'
+                    )}
+                  >
                     Get Started
                   </Button>
                 </div>
@@ -244,7 +323,10 @@ export function Navbar() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden h-10 w-10 rounded-full"
+                className={cn(
+                  'lg:hidden h-10 w-10 rounded-full transition-colors duration-200',
+                  !scrolled && isHeroPage ? 'text-white hover:bg-white/15' : ''
+                )}
                 onClick={() => setMobileOpen(!mobileOpen)}
               >
                 {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -252,7 +334,8 @@ export function Navbar() {
             </div>
           </div>
         </div>
-      </nav>
+        </nav>
+      </div>
 
       {/* Mobile Menu */}
       <AnimatePresence>
@@ -326,7 +409,7 @@ export function Navbar() {
       </AnimatePresence>
 
       {/* Spacer to prevent content from being hidden behind fixed navbar on non-hero pages */}
-      {!isHeroPage && <div className="h-16 lg:h-20" />}
+      {!isHeroPage && <div className={cn('transition-all duration-500', scrolled ? 'h-[72px]' : 'h-16 lg:h-20')} />}
     </>
   );
 }

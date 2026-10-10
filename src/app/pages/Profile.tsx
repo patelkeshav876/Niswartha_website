@@ -21,10 +21,12 @@ import {
   Heart,
   Users,
   Award,
+  Share2,
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { mockAshrams } from '../data/mock';
 import type { ItemDonation } from '../types';
+import { toast } from 'sonner';
 
 export function Profile() {
   const { currentUser } = useUser();
@@ -97,129 +99,144 @@ export function Profile() {
   };
 
   return (
-    <div className="section-container max-w-5xl mx-auto pt-24 lg:pt-28 pb-12 space-y-8 animate-fade-up">
-      {/* User Header Profile Card */}
-      <Card className="border border-emerald-800/20 bg-gradient-to-br from-[#1E3A8A] to-emerald-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
-          <Heart className="h-48 w-48 text-white" />
-        </div>
+    <div className="section-container max-w-5xl mx-auto pt-4 sm:pt-6 pb-12 space-y-8 animate-fade-up">
+      {/* User Profile Card (Matching User's Reference Design) */}
+      <div className="bg-white border border-zinc-200/80 rounded-[32px] shadow-lg overflow-hidden transition-all">
+        {/* Cover Photo Header with Soft Natural Landscape Overlay */}
+        <div className="relative h-44 sm:h-56 w-full overflow-hidden bg-gradient-to-r from-zinc-800 via-zinc-700 to-zinc-900">
+          <img
+            src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
+            alt="Profile Banner Cover"
+            className="w-full h-full object-cover opacity-85"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
 
-        <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
-          {/* User Avatar */}
-          <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl bg-white/10 backdrop-blur-md border-2 border-emerald-300/40 flex items-center justify-center text-3xl font-serif font-bold text-white shadow-lg overflow-hidden shrink-0">
-            {currentUser.avatarUrl ? (
-              <img src={currentUser.avatarUrl} alt={currentUser.name} className="h-full w-full object-cover" />
-            ) : (
-              currentUser.name?.charAt(0)?.toUpperCase() || 'U'
-            )}
-          </div>
-
-          <div className="flex-1 space-y-2 min-w-0">
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
-              <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight">{currentUser.name}</h1>
-              <Badge className="bg-emerald-400/20 text-emerald-200 border border-emerald-400/30 text-[10px] font-mono tracking-wider px-2.5 py-0.5 font-bold uppercase">
-                {currentUser.role === 'super_admin' ? 'Super Admin' : currentUser.role === 'admin' ? 'Ashram Admin' : 'Supporter'}
-              </Badge>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-emerald-100/90 font-medium">
-              <span className="flex items-center gap-1.5">
-                <Mail className="h-3.5 w-3.5 text-emerald-300" /> {currentUser.email}
-              </span>
-              {currentUser.phone && (
-                <span className="flex items-center gap-1.5">
-                  <Phone className="h-3.5 w-3.5 text-emerald-300" /> {currentUser.phone}
-                </span>
-              )}
-              {currentUser.location && (
-                <span className="flex items-center gap-1.5">
-                  <MapPin className="h-3.5 w-3.5 text-emerald-300" /> {currentUser.location}
-                </span>
-              )}
-            </div>
-
-            {currentUser.bio && (
-              <p className="text-xs text-emerald-100/80 italic max-w-xl pt-1 leading-relaxed">
-                "{currentUser.bio}"
-              </p>
-            )}
-          </div>
-
-          <Button
-            onClick={() => navigate('/settings')}
-            variant="outline"
-            size="sm"
-            className="rounded-full bg-white/10 hover:bg-white/20 text-white border-white/20 text-xs font-bold gap-1.5 shrink-0"
+          {/* Floating Top-Right Share Button */}
+          <button
+            onClick={() => {
+              if (navigator.share) {
+                navigator.share({ title: `${currentUser.name}'s Profile`, url: window.location.href }).catch(() => {});
+              } else {
+                navigator.clipboard.writeText(window.location.href);
+                toast.success('Profile link copied to clipboard!');
+              }
+            }}
+            className="absolute top-4 right-4 h-10 w-10 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/40 border border-white/30 text-white flex items-center justify-center transition-all shadow-sm z-10"
+            title="Share Profile"
           >
-            <Settings className="h-3.5 w-3.5" /> Account Settings
-          </Button>
+            <Share2 className="h-4.5 w-4.5" />
+          </button>
         </div>
-      </Card>
 
-      {/* Overview Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="border border-zinc-200/80 shadow-xs rounded-2xl bg-white p-5 flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-emerald-50 text-[#1E3A8A] flex items-center justify-center shrink-0">
-            <Package className="h-6 w-6" />
-          </div>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Sent Item Shipments</p>
-            <p className="text-xl font-bold text-zinc-900 mt-0.5">{itemDonations.length}</p>
-          </div>
-        </Card>
+        {/* Card Body Section */}
+        <div className="px-6 sm:px-8 pb-6 sm:pb-8 pt-0 relative">
+          {/* Overlapping Avatar Profile Picture */}
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-zinc-100 pb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-12 sm:-mt-16">
+              <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-full border-4 border-white shadow-md bg-zinc-100 overflow-hidden shrink-0 relative z-10 flex items-center justify-center font-serif text-3xl font-bold text-zinc-700">
+                {currentUser.avatarUrl ? (
+                  <img src={currentUser.avatarUrl} alt={currentUser.name} className="h-full w-full object-cover" />
+                ) : (
+                  currentUser.name?.charAt(0)?.toUpperCase() || 'U'
+                )}
+              </div>
 
-        <Card className="border border-zinc-200/80 shadow-xs rounded-2xl bg-white p-5 flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
-            <ShieldCheck className="h-6 w-6" />
+              <div className="space-y-1 sm:mb-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight">{currentUser.name}</h1>
+                  <Badge className="bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">
+                    {currentUser.role === 'super_admin' ? 'Super Admin' : currentUser.role === 'admin' ? 'Ashram Admin' : 'Supporter'}
+                  </Badge>
+                </div>
+                <p className="text-xs text-zinc-500 font-medium">
+                  {currentUser.bio || 'Niswartha Donor & Community Supporter'}
+                </p>
+                <div className="flex flex-wrap items-center gap-3 text-[11px] text-zinc-500 pt-0.5">
+                  <span className="flex items-center gap-1"><Mail className="h-3 w-3 text-zinc-400" /> {currentUser.email}</span>
+                  {currentUser.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3 text-zinc-400" /> {currentUser.phone}</span>}
+                  {currentUser.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-zinc-400" /> {currentUser.location}</span>}
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Verified Proof Receipts</p>
-            <p className="text-xl font-bold text-zinc-900 mt-0.5">{verifiedDonationsCount}</p>
-          </div>
-        </Card>
 
-        <Card className="border border-zinc-200/80 shadow-xs rounded-2xl bg-white p-5 flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-            <Users className="h-6 w-6" />
+          {/* Bottom Row: 3 Metrics Columns Divided by Vertical Lines + Rounded Pill Action Button */}
+          <div className="pt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-6">
+            {/* Stat Metrics Divided by Vertical Lines */}
+            <div className="flex items-center gap-4 sm:gap-8 text-left">
+              {/* Stat 1 */}
+              <div>
+                <div className="flex items-center gap-1.5 text-zinc-900 font-bold text-sm sm:text-base">
+                  <Package className="h-4 w-4 text-primary" />
+                  <span>{itemDonations.length}</span>
+                </div>
+                <p className="text-[10px] sm:text-xs text-zinc-400 font-medium mt-0.5">Item Shipments</p>
+              </div>
+
+              {/* Vertical Divider */}
+              <div className="h-8 w-px bg-zinc-200" />
+
+              {/* Stat 2 */}
+              <div>
+                <div className="flex items-center gap-1.5 text-zinc-900 font-bold text-sm sm:text-base">
+                  <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                  <span>{verifiedDonationsCount}</span>
+                </div>
+                <p className="text-[10px] sm:text-xs text-zinc-400 font-medium mt-0.5">Verified Receipts</p>
+              </div>
+
+              {/* Vertical Divider */}
+              <div className="h-8 w-px bg-zinc-200" />
+
+              {/* Stat 3 */}
+              <div>
+                <div className="flex items-center gap-1.5 text-zinc-900 font-bold text-sm sm:text-base">
+                  <Users className="h-4 w-4 text-amber-600" />
+                  <span>{visitBookings.length}</span>
+                </div>
+                <p className="text-[10px] sm:text-xs text-zinc-400 font-medium mt-0.5">Visit Bookings</p>
+              </div>
+            </div>
+
+            {/* Prominent Action Pill Button (Matching "Get in touch" style from screenshot) */}
+            <Button
+              onClick={() => navigate('/settings')}
+              className="bg-zinc-950 hover:bg-zinc-800 text-white font-bold text-xs sm:text-sm rounded-full px-7 py-3 shadow-md transition-all shrink-0 self-start sm:self-auto gap-2"
+            >
+              <Settings className="h-4 w-4" /> Account Settings
+            </Button>
           </div>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Ashram Visit Bookings</p>
-            <p className="text-xl font-bold text-zinc-900 mt-0.5">{visitBookings.length}</p>
-          </div>
-        </Card>
+        </div>
       </div>
 
       {/* Content Navigation Tabs */}
       <div className="flex border-b border-zinc-200 gap-6 text-sm font-bold">
         <button
           onClick={() => setActiveTab('itemDonations')}
-          className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${
-            activeTab === 'itemDonations'
+          className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${activeTab === 'itemDonations'
               ? 'border-[#1E3A8A] text-[#1E3A8A]'
               : 'border-transparent text-zinc-500 hover:text-zinc-800'
-          }`}
+            }`}
         >
-          <Package className="h-4 w-4" /> My Item Donations & Proof Receipts ({itemDonations.length})
+          <Package className="h-4 w-4" /> My Item Donations and Proof Receipts ({itemDonations.length})
         </button>
 
         <button
           onClick={() => setActiveTab('visitBookings')}
-          className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${
-            activeTab === 'visitBookings'
+          className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${activeTab === 'visitBookings'
               ? 'border-[#1E3A8A] text-[#1E3A8A]'
               : 'border-transparent text-zinc-500 hover:text-zinc-800'
-          }`}
+            }`}
         >
           <Calendar className="h-4 w-4" /> My Visit Bookings ({visitBookings.length})
         </button>
 
         <button
           onClick={() => setActiveTab('details')}
-          className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${
-            activeTab === 'details'
+          className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${activeTab === 'details'
               ? 'border-[#1E3A8A] text-[#1E3A8A]'
               : 'border-transparent text-zinc-500 hover:text-zinc-800'
-          }`}
+            }`}
         >
           <User className="h-4 w-4" /> Account Information
         </button>

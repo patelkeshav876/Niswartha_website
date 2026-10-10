@@ -11,6 +11,7 @@ export type VisitBookingFormState = {
   gender: string;
   durationMinutes: string;
   purpose: string;
+  notes?: string;
   idNumber: string;
   idDocumentDataUrl: string;
   emergencyContactName: string;

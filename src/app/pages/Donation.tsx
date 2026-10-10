@@ -80,7 +80,7 @@ export function Donation() {
         </div>
 
         {/* Main Notice & Action Card */}
-        <Card className="border border-emerald-800/20 bg-gradient-to-br from-[#1E3A8A] to-emerald-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl space-y-6 relative overflow-hidden">
+        <Card className="bg-gradient-to-br from-[#60a5fa] via-[#a7f3d0] to-[#bef264] text-zinc-900 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
             <Heart className="h-40 w-40 text-white" />
           </div>

@@ -106,12 +106,12 @@ export function About() {
       icon: Trophy,
     },
     {
-      title: 'Free Uniforms and Textbooks',
+      title: 'Free Uniforms & Textbooks',
       description: 'Students receive free uniforms and textbooks to support uninterrupted learning.',
       icon: BookOpen,
     },
     {
-      title: 'Free Transportation and Disability Guidance',
+      title: 'Free Transportation & Disability Guidance',
       description: 'Free bus transportation is provided along with guidance for obtaining disability certification cards.',
       icon: Bus,
     },
@@ -136,12 +136,12 @@ export function About() {
       icon: Volume2,
     },
     {
-      title: 'Sports and Physical Activities',
+      title: 'Sports & Physical Activities',
       description: 'A well-developed playground and regular sports competitions promote physical fitness and teamwork.',
       icon: Dumbbell,
     },
     {
-      title: 'Modern Fitness and Yoga Training',
+      title: 'Fitness & Yoga Training',
       description: 'Students benefit from modern exercise equipment and regular yoga sessions for holistic development.',
       icon: Smile,
     },
@@ -156,7 +156,7 @@ export function About() {
       icon: Calendar,
     },
     {
-      title: 'Financial Assistance and Government Scholarships',
+      title: 'Financial Aid & Scholarships',
       description: 'Needy and deserving students receive financial aid along with support from Social Welfare Department scholarship schemes.',
       icon: IndianRupee,
     },
@@ -166,22 +166,22 @@ export function About() {
       icon: FileCheck,
     },
     {
-      title: 'Higher Education Guidance Center',
+      title: 'Higher Education Guidance',
       description: 'We provide dedicated guidance for hearing-impaired students pursuing higher education opportunities.',
       icon: Compass,
     },
     {
-      title: 'Parent Guidance and Counseling',
+      title: 'Parent Counseling',
       description: 'Special counseling and structured guidance services are available for parents of children with disabilities.',
       icon: Heart,
     },
     {
-      title: 'Competition and Career Guidance',
+      title: 'Competition & Career Guidance',
       description: 'Students receive mentoring for various competitions as well as career and job opportunities.',
       icon: Lightbulb,
     },
     {
-      title: 'Post-Grade 12 Support',
+      title: 'Post-Grade 12 Career Support',
       description: 'We provide continued guidance and support for students pursuing higher education after Grade 12.',
       icon: Award,
     },
@@ -383,70 +383,52 @@ export function About() {
               </div>
             </div>
 
-            {/* Category Collapsible Dropdown Accordions */}
-            <div className="section-container max-w-4xl mx-auto space-y-4">
-              {[
-                { key: 'Management', label: 'Management & Leadership', desc: 'School Principal And Academic Lead' },
-                { key: 'Faculty', label: 'Special Educators & Art Instructors', desc: 'Qualified Special Teachers (Since 1996) And Art Teachers' },
-                { key: 'Staff', label: 'Support Staff, Caretakers & Accountants', desc: 'Hostel Superintendents, Caretakers, Clerks And Office Staff' },
-              ].map((cat) => {
-                const members = team.filter((m) => m.category === cat.key);
-                const isOpen = activeCategory === 'All' ? openCategories.includes(cat.key) : activeCategory === cat.key;
-
-                const toggleCat = () => {
-                  if (activeCategory !== 'All') setActiveCategory('All');
-                  setOpenCategories((prev) =>
-                    prev.includes(cat.key) ? prev.filter((k) => k !== cat.key) : [...prev, cat.key]
-                  );
-                };
-
-                return (
-                  <div key={cat.key} className="border border-zinc-200/90 rounded-3xl bg-white overflow-hidden shadow-xs">
-                    <button
-                      onClick={toggleCat}
-                      className="w-full p-5 sm:p-6 flex items-center justify-between text-left hover:bg-secondary/40 transition-colors"
+            {/* 3 Categories Layout in a Single Horizontal Line (3-Column Grid) */}
+            <div className="section-container max-w-7xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                  { key: 'Management', label: 'Management & Leadership', desc: 'School Principal & Academic Leads' },
+                  { key: 'Faculty', label: 'Special Educators & Art Instructors', desc: 'Qualified Special Teachers & Art Faculty' },
+                  { key: 'Staff', label: 'Support Staff, Caretakers & Accountants', desc: 'Hostel Superintendents, Caretakers & Admin Staff' },
+                ].map((cat) => {
+                  const members = team.filter((m) => m.category === cat.key);
+                  return (
+                    <div
+                      key={cat.key}
+                      className="border border-zinc-200/90 rounded-3xl bg-white p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow"
                     >
-                      <div className="flex items-center gap-3.5">
-                        <div className="h-10 w-10 rounded-2xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold">
-                          <Users className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-serif font-bold text-base sm:text-lg text-zinc-900">{cat.label}</h3>
-                            <Badge className="bg-primary/10 text-primary border-none font-bold text-[10px]">
-                              {members.length} Members
-                            </Badge>
+                      <div>
+                        {/* Category Header */}
+                        <div className="flex items-start gap-3.5 mb-5 pb-4 border-b border-zinc-100">
+                          <div className="h-11 w-11 rounded-2xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold shrink-0">
+                            <Users className="h-5.5 w-5.5" />
                           </div>
-                          <p className="text-xs text-zinc-500 mt-0.5">{cat.desc}</p>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-serif font-bold text-base text-zinc-900 leading-snug">{cat.label}</h3>
+                              <Badge className="bg-primary/10 text-primary border-none font-bold text-[10px] px-2 py-0.5">
+                                {members.length} Members
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">{cat.desc}</p>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-primary hidden sm:inline">
-                          {isOpen ? 'Click to collapse' : 'Click to view team'}
-                        </span>
-                        <div className="h-8 w-8 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-600">
-                          {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                        </div>
-                      </div>
-                    </button>
-
-                    {isOpen && (
-                      <div className="p-5 border-t border-zinc-100 bg-zinc-50/40 animate-fade-up">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        {/* Members List inside Column */}
+                        <div className="space-y-3">
                           {members.map((member) => (
                             <div
                               key={member.id}
-                              className="p-3 rounded-2xl bg-white border border-zinc-200/80 shadow-xs flex items-center gap-3 hover:border-primary/40 transition-colors"
+                              className="p-3 rounded-2xl bg-zinc-50/70 border border-zinc-200/70 flex items-center gap-3 hover:bg-white hover:border-primary/40 transition-all"
                             >
                               {member.imageUrl ? (
                                 <img
                                   src={member.imageUrl}
                                   alt={member.name}
-                                  className="h-11 w-11 rounded-xl object-cover border border-primary/20 shrink-0"
+                                  className="h-10 w-10 rounded-xl object-cover border border-primary/20 shrink-0"
                                 />
                               ) : (
-                                <div className="h-11 w-11 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-sm font-serif shrink-0">
+                                <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-xs font-serif shrink-0">
                                   {member.name?.charAt(0)?.toUpperCase() || 'T'}
                                 </div>
                               )}
@@ -461,10 +443,10 @@ export function About() {
                           ))}
                         </div>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </section>
@@ -509,7 +491,7 @@ export function About() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <ScrollReveal>
               <Card className="border border-primary/20 shadow-md bg-gradient-to-br from-white to-secondary/40 rounded-3xl p-8">
-                <CardContent className="p-0 space-y-4">
+                <CardContent className="p-0 space-y-4 ">
                   <div className="flex items-center gap-3">
                     <div className="h-12 w-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-xl shadow-lg shadow-primary/20">
                       V
@@ -528,7 +510,7 @@ export function About() {
 
             <ScrollReveal delay={0.1}>
               <Card className="border border-primary/20 shadow-md bg-gradient-to-br from-white to-secondary/40 rounded-3xl p-8">
-                <CardContent className="p-0 space-y-4">
+                <CardContent className="p-0 space-y-4 min-h-[167px]">
                   <div className="flex items-center gap-3">
                     <div className="h-12 w-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-xl shadow-lg shadow-primary/20">
                       M
@@ -540,6 +522,7 @@ export function About() {
                   </div>
                   <p className="text-sm sm:text-base text-zinc-700 font-serif leading-relaxed">
                     To deliver accessible, student-centered education and skill development that empowers hearing-impaired learners to reach their full potential.
+
                   </p>
                 </CardContent>
               </Card>
@@ -547,11 +530,11 @@ export function About() {
           </div>
         </section>
 
-        {/* ──── Key Facilities and Student Support (18 Grid Tiles) ──── */}
-        <section className="bg-zinc-50/80 py-16 border-t border-b">
-          <div className="section-container space-y-8">
+        {/* ──── Key Facilities and Student Support (Infinite Bi-Directional Marquee) ──── */}
+        <section className="bg-zinc-50 py-16 border-y border-zinc-200/80 overflow-hidden">
+          <div className="space-y-8">
             <ScrollReveal>
-              <div className="text-center space-y-2">
+              <div className="section-container text-center space-y-2">
                 <h2 className="text-2xl sm:text-3xl font-serif font-bold text-zinc-900">
                   Key Facilities and Student Support
                 </h2>
@@ -559,20 +542,83 @@ export function About() {
               </div>
             </ScrollReveal>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {facilities.map((fac, idx) => (
-                <ScrollReveal key={idx} delay={(idx % 6) * 0.05}>
-                  <Card className="border border-zinc-200/80 shadow-xs hover:shadow-md transition-shadow bg-white rounded-2xl h-full">
-                    <CardContent className="p-5 space-y-2">
-                      <h4 className="font-bold text-xs text-primary leading-snug">{fac.title}</h4>
-                      <p className="text-[11px] text-zinc-500 leading-relaxed">{fac.description}</p>
-                    </CardContent>
-                  </Card>
-                </ScrollReveal>
-              ))}
+            {/* Marquee Wrapper with Edge Fade Masks */}
+            <div className="relative w-full overflow-hidden py-2 space-y-4">
+              {/* Left & Right Soft Edge Fade Overlay matching background */}
+              <div className="absolute top-0 bottom-0 left-0 w-16 sm:w-32 bg-gradient-to-r from-zinc-50 via-zinc-50/80 to-transparent z-10 pointer-events-none" />
+              <div className="absolute top-0 bottom-0 right-0 w-16 sm:w-32 bg-gradient-to-l from-zinc-50 via-zinc-50/80 to-transparent z-10 pointer-events-none" />
+
+              {/* Row 1: Moves Left */}
+              <div className="flex overflow-hidden group/row1">
+                <div
+                  className="flex gap-4 animate-marquee whitespace-nowrap group-hover/row1:[animation-play-state:paused] hover:[animation-play-state:paused]"
+                  style={{ animationDuration: '28s' }}
+                >
+                  {[...facilities.slice(0, 6), ...facilities.slice(0, 6), ...facilities.slice(0, 6), ...facilities.slice(0, 6)].map((fac, idx) => (
+                    <div
+                      key={`row1-${idx}`}
+                      className="inline-flex items-start gap-3 bg-white border border-zinc-200/80 hover:border-primary/40 p-4 rounded-2xl min-w-[280px] max-w-[340px] sm:min-w-[320px] shadow-xs hover:shadow-md transition-all duration-300 group/card shrink-0"
+                    >
+                      <div className="h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 group-hover/card:bg-primary group-hover/card:text-primary-foreground transition-colors mt-0.5">
+                        <fac.icon className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1 text-left">
+                        <h4 className="font-bold text-xs text-zinc-900 group-hover/card:text-primary transition-colors leading-snug">{fac.title}</h4>
+                        <p className="text-[11px] text-zinc-500 leading-relaxed mt-1 line-clamp-2">{fac.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Row 2: Moves Right (Reverse) */}
+              <div className="flex overflow-hidden group/row2">
+                <div
+                  className="flex gap-4 animate-marquee-reverse whitespace-nowrap group-hover/row2:[animation-play-state:paused] hover:[animation-play-state:paused]"
+                  style={{ animationDuration: '34s' }}
+                >
+                  {[...facilities.slice(6, 12), ...facilities.slice(6, 12), ...facilities.slice(6, 12), ...facilities.slice(6, 12)].map((fac, idx) => (
+                    <div
+                      key={`row2-${idx}`}
+                      className="inline-flex items-start gap-3 bg-white border border-zinc-200/80 hover:border-primary/40 p-4 rounded-2xl min-w-[280px] max-w-[340px] sm:min-w-[320px] shadow-xs hover:shadow-md transition-all duration-300 group/card shrink-0"
+                    >
+                      <div className="h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 group-hover/card:bg-primary group-hover/card:text-primary-foreground transition-colors mt-0.5">
+                        <fac.icon className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1 text-left">
+                        <h4 className="font-bold text-xs text-zinc-900 group-hover/card:text-primary transition-colors leading-snug">{fac.title}</h4>
+                        <p className="text-[11px] text-zinc-500 leading-relaxed mt-1 line-clamp-2">{fac.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Row 3: Moves Left */}
+              <div className="flex overflow-hidden group/row3">
+                <div
+                  className="flex gap-4 animate-marquee whitespace-nowrap group-hover/row3:[animation-play-state:paused] hover:[animation-play-state:paused]"
+                  style={{ animationDuration: '26s' }}
+                >
+                  {[...facilities.slice(12, 18), ...facilities.slice(12, 18), ...facilities.slice(12, 18), ...facilities.slice(12, 18)].map((fac, idx) => (
+                    <div
+                      key={`row3-${idx}`}
+                      className="inline-flex items-start gap-3 bg-white border border-zinc-200/80 hover:border-primary/40 p-4 rounded-2xl min-w-[280px] max-w-[340px] sm:min-w-[320px] shadow-xs hover:shadow-md transition-all duration-300 group/card shrink-0"
+                    >
+                      <div className="h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 group-hover/card:bg-primary group-hover/card:text-primary-foreground transition-colors mt-0.5">
+                        <fac.icon className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1 text-left">
+                        <h4 className="font-bold text-xs text-zinc-900 group-hover/card:text-primary transition-colors leading-snug">{fac.title}</h4>
+                        <p className="text-[11px] text-zinc-500 leading-relaxed mt-1 line-clamp-2">{fac.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            <p className="text-center text-[11px] text-zinc-400 pt-2">
+            <p className="section-container text-center text-[11px] text-zinc-400 pt-2">
               We admit hearing-impaired students from Grades 1 to 12 based on age eligibility and educational assessment.
             </p>
           </div>

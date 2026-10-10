@@ -88,7 +88,7 @@ export function DonationHistory() {
       {/* Header section */}
       <div className="border-b border-zinc-200/80 pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-serif font-bold text-zinc-950">Donation History & Verified Proof</h2>
+          <h2 className="text-xl sm:text-2xl font-serif font-bold text-zinc-950">Donation History and Verified Proof</h2>
           <p className="text-xs text-muted-foreground mt-0.5">Summary of your monetary support and physical item shipments</p>
         </div>
 
@@ -123,21 +123,19 @@ export function DonationHistory() {
       <div className="flex border-b border-zinc-200">
         <button
           onClick={() => setActiveTab('money')}
-          className={`flex-1 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 ${
-            activeTab === 'money'
+          className={`flex-1 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'money'
               ? 'border-[#1E3A8A] text-[#1E3A8A]'
               : 'border-transparent text-muted-foreground hover:text-zinc-800'
-          }`}
+            }`}
         >
           <IndianRupee className="h-4 w-4" /> Monetary Contributions ({donations.length})
         </button>
         <button
           onClick={() => setActiveTab('items')}
-          className={`flex-1 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 ${
-            activeTab === 'items'
+          className={`flex-1 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'items'
               ? 'border-[#1E3A8A] text-[#1E3A8A]'
               : 'border-transparent text-muted-foreground hover:text-zinc-800'
-          }`}
+            }`}
         >
           <Truck className="h-4 w-4" /> Sent Item Donations ({itemDonations.length})
         </button>
@@ -170,9 +168,8 @@ export function DonationHistory() {
               size="sm"
               variant={statusFilter === tab.id ? 'default' : 'outline'}
               onClick={() => setStatusFilter(tab.id)}
-              className={`rounded-full h-8 text-xs font-bold px-3.5 ${
-                statusFilter === tab.id ? 'bg-[#1E3A8A] hover:bg-[#0c593f] text-white' : 'border-zinc-200 text-zinc-700'
-              }`}
+              className={`rounded-full h-8 text-xs font-bold px-3.5 ${statusFilter === tab.id ? 'bg-[#1E3A8A] hover:bg-[#0c593f] text-white' : 'border-zinc-200 text-zinc-700'
+                }`}
             >
               {tab.label}
             </Button>
@@ -216,9 +213,8 @@ export function DonationHistory() {
                     <div className="flex items-center gap-3 self-end sm:self-auto">
                       <div className="text-right">
                         <p className="text-base font-bold text-[#1E3A8A] font-mono">₹{donation.amount.toLocaleString()}</p>
-                        <Badge className={`font-bold border-none uppercase text-[8px] px-2 py-0.5 ${
-                          donation.status === 'completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                        }`}>
+                        <Badge className={`font-bold border-none uppercase text-[8px] px-2 py-0.5 ${donation.status === 'completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                          }`}>
                           {donation.status ?? 'completed'}
                         </Badge>
                       </div>
@@ -257,9 +253,8 @@ export function DonationHistory() {
                 <Card key={item.id} className="border border-zinc-200/80 shadow-xs rounded-2xl overflow-hidden bg-white p-5 space-y-3">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b pb-3">
                     <div className="flex items-center gap-3">
-                      <div className={`h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 ${
-                        isReceived ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
-                      }`}>
+                      <div className={`h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 ${isReceived ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        }`}>
                         <Package className="h-5 w-5" />
                       </div>
                       <div>
@@ -270,13 +265,12 @@ export function DonationHistory() {
                       </div>
                     </div>
 
-                    <Badge className={`font-bold border-none uppercase text-[10px] px-3 py-1 rounded-full ${
-                      isReceived
+                    <Badge className={`font-bold border-none uppercase text-[10px] px-3 py-1 rounded-full ${isReceived
                         ? 'bg-emerald-100 text-emerald-800'
                         : item.status === 'in_transit'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-amber-100 text-amber-800'
-                    }`}>
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}>
                       {isReceived ? 'Received & Verified ✓' : item.status === 'in_transit' ? 'In Transit 🚚' : 'Pending Verification ⏳'}
                     </Badge>
                   </div>

@@ -74,7 +74,6 @@ export function UserLayout() {
           {!collapsed && (
             <div>
               <p className="text-md font-bold tracking-tight font-serif text-zinc-900">Niswartha</p>
-              <p className="-mt-1 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">User Dashboard</p>
             </div>
           )}
         </Link>

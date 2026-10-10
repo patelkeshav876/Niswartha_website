@@ -211,7 +211,7 @@ export function Home() {
         {/* ──── Quick Actions ──── */}
         <section className="section-container py-16 lg:py-20">
           <ScrollReveal>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 ">
               {[
                 {
                   tint: 'bg-gradient-to-b from-primary-500/12 to-primary-500/5 ring-1 ring-primary-500/15',
@@ -222,7 +222,7 @@ export function Home() {
                   onClick: () => navigate(`/donate/${ashram.id}`),
                 },
                 {
-                  tint: 'bg-gradient-to-b from-blue-500/12 to-blue-500/5 ring-1 ring-blue-500/15',
+                  tint: 'bg-gradient-to-b from-blue-500/12 to-blue-500/5 ring-1 ring-blue-500/15 ',
                   iconBg: 'text-blue-600',
                   title: 'About Us',
                   subtitle: 'Our story, mission & impact',
@@ -494,7 +494,7 @@ export function Home() {
             </ScrollReveal>
           </div>
         </section>
-        
+
         <div className="section-container pb-8 mt-6">
           <AdBanner placement="home_bottom" />
         </div>

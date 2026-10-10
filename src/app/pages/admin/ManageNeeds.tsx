@@ -204,16 +204,9 @@ export function ManageNeeds() {
     <div className="flex flex-col min-h-screen bg-background">
       <div className="bg-background/95 sticky top-0 z-40 border-b px-6 py-4 backdrop-blur-md">
         <div className="mb-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Link to="/admin">
-              <Button variant="ghost" size="icon" className="h-9 w-9">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-xl font-serif font-bold text-zinc-950">Manage Needs & Item Donations</h1>
-              <p className="text-xs text-muted-foreground">Track funding goals, verify physical item shipments, and issue acknowledgment receipts</p>
-            </div>
+          <div>
+            <h1 className="text-xl font-serif font-bold text-zinc-950">Manage Needs and Item Donations</h1>
+            <p className="text-xs text-muted-foreground">Track funding goals, verify physical item shipments, and issue acknowledgment receipts</p>
           </div>
           {activeTab === 'needs' && (
             <Button onClick={openCreate} className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 text-xs font-bold px-4 py-2 shadow-sm">
@@ -226,17 +219,15 @@ export function ManageNeeds() {
         <div className="flex border-b mb-3">
           <button
             onClick={() => setActiveTab('needs')}
-            className={`px-5 py-2 text-xs font-bold border-b-2 transition-all ${
-              activeTab === 'needs' ? 'border-primary text-primary' : 'border-transparent text-zinc-500'
-            }`}
+            className={`px-5 py-2 text-xs font-bold border-b-2 transition-all ${activeTab === 'needs' ? 'border-primary text-primary' : 'border-transparent text-zinc-500'
+              }`}
           >
             Active Needs List ({needs.length})
           </button>
           <button
             onClick={() => setActiveTab('shipments')}
-            className={`px-5 py-2 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
-              activeTab === 'shipments' ? 'border-primary text-primary' : 'border-transparent text-zinc-500'
-            }`}
+            className={`px-5 py-2 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${activeTab === 'shipments' ? 'border-primary text-primary' : 'border-transparent text-zinc-500'
+              }`}
           >
             Item Shipments & Proof Receipts ({itemDonations.length})
             {itemDonations.some((i) => i.status === 'pending') && (
@@ -376,9 +367,8 @@ export function ManageNeeds() {
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="text-base font-bold text-zinc-900 font-serif">{item.needTitle || 'Donated Item'}</h3>
-                          <Badge className={`font-bold border-none uppercase text-[9px] px-2.5 py-0.5 rounded-full ${
-                            isReceived ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                          }`}>
+                          <Badge className={`font-bold border-none uppercase text-[9px] px-2.5 py-0.5 rounded-full ${isReceived ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                            }`}>
                             {isReceived ? 'Received & Verified ✓' : 'Pending Verification ⏳'}
                           </Badge>
                         </div>

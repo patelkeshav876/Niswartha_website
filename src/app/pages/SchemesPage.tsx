@@ -153,8 +153,8 @@ export function SchemesPage() {
     <div className="min-h-screen bg-background pb-16">
       {/* Hero Section with Configurable Super Admin Video Background */}
       <PremiumHeroBackdrop pageKey="schemes" className="min-h-[45vh] lg:min-h-[55vh]">
-        <div className="section-container relative flex flex-col items-center justify-center py-16 lg:py-24 text-center text-white">
-          <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 uppercase tracking-widest text-[10px] font-bold px-3.5 py-1 mb-3">
+        <div className="section-container relative flex flex-col items-center justify-center py-16 lg:py-24 text-center text-black">
+          <Badge className="bg-#100c08 text-emerald-300 border-emerald-500/30 uppercase tracking-widest text-[10px] font-bold px-3.5 py-1 mb-3">
             Government Welfare and Empowerment
           </Badge>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-white tracking-tight">
@@ -189,11 +189,10 @@ export function SchemesPage() {
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                    activeCategory === cat
-                      ? 'bg-[#1E3A8A] text-white shadow-md shadow-[#1E3A8A]/20 scale-105'
-                      : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
-                  }`}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${activeCategory === cat
+                    ? 'bg-[#1E3A8A] text-white shadow-md shadow-[#1E3A8A]/20 scale-105'
+                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                    }`}
                 >
                   {cat}
                 </button>
@@ -214,14 +213,14 @@ export function SchemesPage() {
               <Card className="h-full border border-zinc-200/80 shadow-xs hover:shadow-xl transition-all duration-300 rounded-3xl bg-white flex flex-col justify-between overflow-hidden group">
                 <CardHeader className="p-6 pb-4 space-y-3">
                   <div className="flex items-start justify-between gap-3">
-                    <Badge className="bg-emerald-50 text-[#1E3A8A] border border-emerald-200 font-bold text-[10px] uppercase px-3 py-1">
+                    <Badge className="bg-emerald-50 text-[#100c08] border border-emerald-200 font-bold text-[10px] uppercase px-3 py-1">
                       {scheme.category}
                     </Badge>
                     <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
                       <CheckCircle className="h-3 w-3 text-emerald-500" /> Active Scheme
                     </span>
                   </div>
-                  <CardTitle className="text-lg font-serif font-bold text-zinc-950 group-hover:text-[#1E3A8A] transition-colors leading-snug">
+                  <CardTitle className="text-lg font-serif font-bold text-zinc-950 group-hover:text-[#100c08] transition-colors leading-snug">
                     {scheme.title}
                   </CardTitle>
                 </CardHeader>
@@ -233,7 +232,7 @@ export function SchemesPage() {
 
                   {scheme.eligibility && (
                     <div className="bg-zinc-50 p-3.5 rounded-2xl border border-zinc-100 space-y-1">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#1E3A8A]">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#100c08]">
                         Eligibility Criteria
                       </p>
                       <p className="text-xs text-zinc-700 leading-relaxed">

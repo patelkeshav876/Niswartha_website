@@ -301,8 +301,8 @@ export const mockGalleryAlbums = [
   },
   {
     id: 'album-3',
-    name: 'Vocational Workshop & Speech Therapy',
-    title: 'Vocational Workshop & Speech Therapy',
+    name: 'Vocational Workshop and Speech Therapy',
+    title: 'Vocational Workshop and Speech Therapy',
     description: 'Deaf and dumb vocational training classes, computer literacy, and speech therapy sessions.',
     coverUrl: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&q=80',
     coverImage: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&q=80',

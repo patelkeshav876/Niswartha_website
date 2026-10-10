@@ -132,14 +132,9 @@ export function ManageEvents() {
     <div className="flex min-h-screen flex-col bg-background">
       <div className="sticky top-0 z-40 border-b bg-background/95 px-6 py-4 backdrop-blur-md">
         <div className="mb-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/admin')} className="h-9 w-9">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-xl font-serif font-bold text-zinc-950">Manage Events</h1>
-              <p className="text-xs text-muted-foreground">Schedule and manage institute events</p>
-            </div>
+          <div>
+            <h1 className="text-xl font-serif font-bold text-zinc-950">Manage Events</h1>
+            <p className="text-xs text-muted-foreground">Schedule and manage institute events</p>
           </div>
           <Button onClick={() => navigate('/admin/events/create')} className="rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white gap-1.5 text-xs font-bold px-4 py-2 shadow-sm">
             <Plus className="h-4 w-4" /> Create New Event
