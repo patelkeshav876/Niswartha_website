@@ -124,8 +124,8 @@ export function DonationHistory() {
         <button
           onClick={() => setActiveTab('money')}
           className={`flex-1 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'money'
-              ? 'border-[#1E3A8A] text-[#1E3A8A]'
-              : 'border-transparent text-muted-foreground hover:text-zinc-800'
+            ? 'border-[#1E3A8A] text-[#1E3A8A]'
+            : 'border-transparent text-muted-foreground hover:text-zinc-800'
             }`}
         >
           <IndianRupee className="h-4 w-4" /> Monetary Contributions ({donations.length})
@@ -133,8 +133,8 @@ export function DonationHistory() {
         <button
           onClick={() => setActiveTab('items')}
           className={`flex-1 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'items'
-              ? 'border-[#1E3A8A] text-[#1E3A8A]'
-              : 'border-transparent text-muted-foreground hover:text-zinc-800'
+            ? 'border-[#1E3A8A] text-[#1E3A8A]'
+            : 'border-transparent text-muted-foreground hover:text-zinc-800'
             }`}
         >
           <Truck className="h-4 w-4" /> Sent Item Donations ({itemDonations.length})
@@ -266,10 +266,10 @@ export function DonationHistory() {
                     </div>
 
                     <Badge className={`font-bold border-none uppercase text-[10px] px-3 py-1 rounded-full ${isReceived
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : item.status === 'in_transit'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-amber-100 text-amber-800'
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : item.status === 'in_transit'
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-amber-100 text-amber-800'
                       }`}>
                       {isReceived ? 'Received & Verified ✓' : item.status === 'in_transit' ? 'In Transit 🚚' : 'Pending Verification ⏳'}
                     </Badge>
@@ -298,18 +298,18 @@ export function DonationHistory() {
 
                   {/* Admin Receipt Acknowledgment & Proof Section */}
                   {isReceived ? (
-                    <div className="mt-2 rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50/40 p-3.5 text-xs text-emerald-900 flex items-start gap-3">
-                      <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-bold text-emerald-950 flex items-center gap-1.5">
+                    <div className="mt-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-xs text-zinc-800 flex items-start gap-3">
+                      <ShieldCheck className="h-5 w-5 text-[#1E3A8A] shrink-0 mt-0.5" />
+                      <div className="w-full">
+                        <p className="font-bold text-zinc-950 flex items-center gap-1.5">
                           Admin Acknowledgment & Verification Proof
-                          <Check className="h-3.5 w-3.5 text-emerald-600 inline" />
+                          <Check className="h-3.5 w-3.5 text-[#1E3A8A] inline" />
                         </p>
-                        <p className="mt-0.5 text-emerald-800">
+                        <p className="mt-0.5 text-zinc-600">
                           Verified by Ashram Admin on {item.receivedAt ? new Date(item.receivedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'recently'}.
                         </p>
                         {item.adminNotes && (
-                          <p className="mt-1 font-medium bg-white/70 p-2 rounded-lg border border-emerald-200 text-emerald-900">
+                          <p className="mt-2 font-medium bg-white p-2.5 rounded-xl border border-zinc-200 text-zinc-800 shadow-2xs">
                             "{item.adminNotes}"
                           </p>
                         )}

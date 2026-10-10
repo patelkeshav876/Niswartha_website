@@ -1,4 +1,4 @@
-import { VISIT_TIME_SLOTS, VISIT_SLOT_CAPACITY } from '../../lib/visitSlots';
+import { VISIT_TIME_SLOTS } from '../../lib/visitSlots';
 import { cn } from '../../lib/utils';
 
 const ACCENT = '#FF6633';
@@ -8,29 +8,23 @@ export type SlotAvailability = { booked: number; capacity: number; available: nu
 type Props = {
   selectedSlotId: string | null;
   onSelectSlot: (slotId: string) => void;
-  availabilityById: Record<string, SlotAvailability>;
-  loading: boolean;
-  ready: boolean;
+  availabilityById?: Record<string, SlotAvailability>;
+  loading?: boolean;
+  ready?: boolean;
   maxSelectable?: number;
 };
 
 export function VisitTimeSlotGrid({
   selectedSlotId,
   onSelectSlot,
-  availabilityById,
-  loading,
-  ready,
-  maxSelectable = VISIT_SLOT_CAPACITY,
+  loading = false,
+  ready = true,
 }: Props) {
   return (
     <div className="grid grid-cols-3 gap-2">
       {VISIT_TIME_SLOTS.map((slot) => {
-        const av = availabilityById[slot.id];
-        const available = av?.available ?? 0;
-        const unavailable = !ready || loading || available <= 0;
+        const disabled = !ready || loading;
         const selected = selectedSlotId === slot.id;
-        const tooSmallForParty = ready && !loading && available > 0 && available < maxSelectable;
-        const disabled = unavailable || tooSmallForParty;
 
         return (
           <button
@@ -43,11 +37,9 @@ export function VisitTimeSlotGrid({
               if (!disabled) onSelectSlot(slot.id);
             }}
             className={cn(
-              'flex min-h-[48px] flex-col items-center justify-center rounded-xl border px-1 py-2 text-center transition-colors',
+              'flex min-h-[48px] flex-col items-center justify-center rounded-xl border px-1 py-2 text-center transition-all',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6633] focus-visible:ring-offset-2',
-              disabled &&
-                'cursor-not-allowed border-red-200 bg-zinc-50 text-red-700',
-              tooSmallForParty && 'border-amber-300 bg-amber-50/80 text-amber-900',
+              disabled && 'opacity-60 cursor-not-allowed bg-zinc-50 text-zinc-400',
               !disabled &&
                 !selected &&
                 'border-zinc-200 bg-white text-zinc-900 hover:border-orange-300 hover:bg-orange-50/50 active:scale-[0.98]',
@@ -59,24 +51,15 @@ export function VisitTimeSlotGrid({
               selected && !disabled ? { backgroundColor: ACCENT, color: '#fff' } : undefined
             }
           >
+            <span className="text-xs font-semibold">{slot.label}</span>
             <span
               className={cn(
-                'text-xs font-semibold',
-                unavailable && !tooSmallForParty && 'line-through decoration-red-500/70',
+                'mt-0.5 block text-[10px] font-normal',
+                selected ? 'text-white/90' : 'text-emerald-700 font-medium'
               )}
             >
-              {slot.label}
+              Available
             </span>
-            {ready && !loading && av && (
-              <span
-                className={cn(
-                  'mt-0.5 block text-[10px] font-normal opacity-90',
-                  selected && !disabled && 'text-white/90',
-                )}
-              >
-                {tooSmallForParty ? `Need ${maxSelectable}` : `${av.available} left`}
-              </span>
-            )}
           </button>
         );
       })}

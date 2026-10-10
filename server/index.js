@@ -66,6 +66,14 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('/uploads', express.static(path.join(__dirname, './uploads')));
 
+// Normalize paths for Vercel serverless (where /api might be stripped)
+app.use((req, res, next) => {
+  if (!req.url.startsWith('/api') && !req.url.startsWith('/uploads')) {
+    req.url = '/api' + (req.url.startsWith('/') ? req.url : '/' + req.url);
+  }
+  next();
+});
+
 // --- Security Middleware: Headers ---
 app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'DENY');

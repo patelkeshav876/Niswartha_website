@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -12,7 +12,6 @@ import { Plus, Search, Edit2, Trash2, User, Users, Upload, FileText } from 'luci
 import { api } from '../../lib/api';
 import { toast } from 'sonner';
 import type { TeamMember } from '../../types';
-import { MediaPickerModal } from '../../components/MediaPickerModal';
 
 export function ManageTeam() {
   const [team, setTeam] = useState<TeamMember[]>([]);
@@ -37,7 +36,54 @@ export function ManageTeam() {
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please choose a valid image file');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (result) {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_SIZE = 400;
+          let width = img.width;
+          let height = img.height;
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height = Math.round((height * MAX_SIZE) / width);
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width = Math.round((width * MAX_SIZE) / height);
+              height = MAX_SIZE;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            setImageUrl(canvas.toDataURL('image/jpeg', 0.85));
+          } else {
+            setImageUrl(result);
+          }
+          toast.success('Photo selected from device');
+        };
+        img.onerror = () => setImageUrl(result);
+        img.src = result;
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
 
   const loadTeam = async () => {
     setLoading(true);
@@ -322,24 +368,51 @@ export function ManageTeam() {
               </Select>
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-zinc-700 font-semibold">Profile Photo URL (Optional - Leave blank to show initials)</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="Paste picture URL or pick from library..."
-                  className="rounded-xl border-zinc-200 flex-1 text-xs"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setMediaPickerOpen(true)}
-                  className="rounded-xl text-xs whitespace-nowrap"
-                >
-                  <Upload className="h-3.5 w-3.5 mr-1" /> Pick
-                </Button>
+            <div className="space-y-2">
+              <Label className="text-zinc-700 font-semibold">Profile Photo (Direct from System)</Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageFileChange}
+                className="hidden"
+              />
+              <div className="flex items-center gap-3 p-3 rounded-2xl border border-zinc-200 bg-zinc-50/60">
+                {imageUrl ? (
+                  <div className="relative h-14 w-14 rounded-full overflow-hidden border-2 border-zinc-200 shrink-0 shadow-sm bg-white">
+                    <img src={imageUrl} alt="Preview" className="h-full w-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="h-14 w-14 rounded-full bg-zinc-200 border border-zinc-300 flex items-center justify-center text-zinc-500 shrink-0">
+                    <User className="h-7 w-7" />
+                  </div>
+                )}
+                <div className="flex flex-col gap-1.5 flex-1">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="rounded-xl text-xs font-bold gap-1.5 h-8 bg-white hover:bg-zinc-100 border-zinc-300 text-zinc-800"
+                    >
+                      <Upload className="h-3.5 w-3.5 text-[#1E3A8A]" />
+                      {imageUrl ? 'Change Photo' : 'Choose Picture from Device'}
+                    </Button>
+                    {imageUrl && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setImageUrl('')}
+                        className="rounded-xl text-xs text-red-600 hover:bg-red-50 h-8 font-semibold"
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-zinc-500">Pick image directly from system files or phone gallery</p>
+                </div>
               </div>
             </div>
 
@@ -454,14 +527,6 @@ export function ManageTeam() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <MediaPickerModal
-        open={mediaPickerOpen}
-        onOpenChange={setMediaPickerOpen}
-        allowedTypes="image"
-        title="Select Teacher Profile Photo"
-        onSelectMedia={(m) => setImageUrl(m.url)}
-      />
     </div>
   );
 }

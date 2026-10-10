@@ -83,13 +83,47 @@ export function ManageGallery() {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const compressImage = (dataUrl: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_DIM = 1200;
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > MAX_DIM) {
+            height = Math.round((height * MAX_DIM) / width);
+            width = MAX_DIM;
+          }
+        } else {
+          if (height > MAX_DIM) {
+            width = Math.round((width * MAX_DIM) / height);
+            height = MAX_DIM;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(dataUrl);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  };
+
   const saveAlbum = async () => {
     if (!name.trim()) {
       toast.error('Album name is required');
       return;
     }
     if (images.length === 0) {
-      toast.error('Add at least one image URL');
+      toast.error('Add at least one image');
       return;
     }
 
@@ -113,32 +147,39 @@ export function ManageGallery() {
       await loadAlbums();
     } catch (err) {
       console.error(err);
-      toast.error('Could not save album');
+      toast.error('Could not save album. Please try again with fewer or smaller images.');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleMultipleFilesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMultipleFilesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        if (result) {
-          setImages((prev) => {
-            if (prev.includes(result)) return prev;
-            return [...prev, result];
-          });
-          setCoverUrl((prev) => prev || result);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+    const fileList = Array.from(files);
+    toast.info(`Optimizing ${fileList.length} photo(s)...`);
 
-    toast.success(`Imported ${files.length} photo(s) directly!`);
+    for (const file of fileList) {
+      if (!file.type.startsWith('image/')) continue;
+      const reader = new FileReader();
+      const readPromise = new Promise<string>((resolve) => {
+        reader.onload = (event) => resolve((event.target?.result as string) || '');
+        reader.onerror = () => resolve('');
+      });
+      reader.readAsDataURL(file);
+      const rawData = await readPromise;
+      if (rawData) {
+        const compressed = await compressImage(rawData);
+        setImages((prev) => {
+          if (prev.includes(compressed)) return prev;
+          return [...prev, compressed];
+        });
+        setCoverUrl((prev) => prev || compressed);
+      }
+    }
+
+    toast.success(`Imported and optimized ${fileList.length} photo(s)!`);
     e.target.value = '';
   };
 

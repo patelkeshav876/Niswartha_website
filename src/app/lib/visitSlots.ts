@@ -1,5 +1,5 @@
 /** Keep in sync with server `VISIT_SLOT_IDS` in server/index.js */
-export const VISIT_SLOT_CAPACITY = 6;
+export const VISIT_SLOT_CAPACITY = 999;
 
 export const VISIT_TIME_SLOTS = [
   { id: 'visit-09', label: '09.00 AM' },

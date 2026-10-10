@@ -326,16 +326,16 @@ export function Profile() {
 
                     {/* Official Acknowledgment & Proof Box if received/verified */}
                     {(item.status === 'received' || item.status === 'verified') && (
-                      <div className="bg-emerald-50 border border-emerald-200/80 rounded-xl p-3.5 space-y-1.5">
-                        <div className="flex items-center gap-2 text-emerald-900 font-bold text-xs">
-                          <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                      <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-3.5 space-y-1.5">
+                        <div className="flex items-center gap-2 text-zinc-950 font-bold text-xs">
+                          <ShieldCheck className="h-4 w-4 text-[#1E3A8A]" />
                           Official Acknowledgment Proof & Receipt
                         </div>
-                        <p className="text-xs text-emerald-800">
+                        <p className="text-xs text-zinc-700">
                           {item.adminNotes || 'The ashram team has verified and physically received your donated items. Thank you for your support!'}
                         </p>
                         {item.acknowledgedAt && (
-                          <p className="text-[10px] font-mono text-emerald-700 font-bold pt-1">
+                          <p className="text-[10px] font-mono text-zinc-500 font-bold pt-1">
                             Verified on: {new Date(item.acknowledgedAt).toLocaleString()}
                           </p>
                         )}

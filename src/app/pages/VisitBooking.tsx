@@ -2,7 +2,7 @@ import 'react-day-picker/dist/style.css';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { addDays, startOfDay, isBefore } from 'date-fns';
-import { ArrowLeft, Calendar, Check, Clock, MapPin, ExternalLink, Building, Info, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Calendar, Check, Clock, MapPin, ExternalLink, Building, Info, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Calendar as CalendarUi } from '../components/ui/calendar';
@@ -130,6 +130,7 @@ export function VisitBooking() {
   const [form, setForm] = useState<VisitBookingFormState>(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [fieldError, setFieldError] = useState<string | null>(null);
+  const [validationErrorPopup, setValidationErrorPopup] = useState<string | null>(null);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmed, setConfirmed] = useState<{
@@ -209,13 +210,6 @@ export function VisitBooking() {
     setSelectedSlot(null);
   }, [dateStr]);
 
-  useEffect(() => {
-    if (!selectedSlot || !slotAvail[selectedSlot]) return;
-    if (slotAvail[selectedSlot].available < form.visitorCount) {
-      setSelectedSlot(null);
-    }
-  }, [selectedSlot, slotAvail, form.visitorCount]);
-
   const handleSubmit = async () => {
     if (!ashramId || !selectedDate || !ashram || !currentUser?.id) {
       if (!currentUser?.id) {
@@ -225,6 +219,7 @@ export function VisitBooking() {
       return;
     }
     setFieldError(null);
+    setValidationErrorPopup(null);
     const err = validateVisitBookingForm(form, {
       selectedDateIso: dateStr,
       selectedSlotId: selectedSlot,
@@ -232,10 +227,12 @@ export function VisitBooking() {
     });
     if (err) {
       setFieldError(err);
+      setValidationErrorPopup(err);
       return;
     }
     if (isBefore(startOfDay(selectedDate), today)) {
       setFieldError('Cannot book a past date');
+      setValidationErrorPopup('Cannot book a past date. Please select today or a future date.');
       return;
     }
 
@@ -287,7 +284,9 @@ export function VisitBooking() {
       });
       setConfirmOpen(true);
     } catch (e) {
-      setFieldError(parseApiError(e));
+      const msg = parseApiError(e);
+      setFieldError(msg);
+      setValidationErrorPopup(msg);
     } finally {
       setSubmitting(false);
     }
@@ -374,7 +373,7 @@ export function VisitBooking() {
                     Select Time Slot
                   </h3>
                   <p className="text-xs text-zinc-500 leading-relaxed">
-                    Up to {VISIT_SLOT_CAPACITY} visitors per slot. Please choose a slot that accommodates your party.
+                    Please select your preferred visiting time slot for your party.
                   </p>
                   {loadingSlots && !slotsReady ? (
                     <p className="text-xs text-muted-foreground animate-pulse">Loading availability…</p>
@@ -778,6 +777,52 @@ export function VisitBooking() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Validation Error Popup Warning Dialog */}
+      <Dialog
+        open={Boolean(validationErrorPopup)}
+        onOpenChange={(o) => {
+          if (!o) setValidationErrorPopup(null);
+        }}
+      >
+        <DialogContent
+          className="max-w-md rounded-3xl border-none bg-white p-6 shadow-2xl"
+          onPointerDownOutside={(e) => e.preventDefault()}
+        >
+          <div className="space-y-4 text-center">
+            <DialogHeader className="items-center space-y-3">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+                <AlertTriangle className="h-8 w-8" />
+              </div>
+              <DialogTitle className="text-xl font-bold font-serif text-zinc-950">
+                Incomplete Visit Details
+              </DialogTitle>
+              <DialogDescription className="text-sm text-zinc-600 font-medium">
+                {validationErrorPopup}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4 text-xs text-amber-900 leading-relaxed text-left">
+              <p className="font-semibold mb-1">Please ensure:</p>
+              <ul className="list-disc list-inside space-y-1 text-amber-800">
+                <li>All required name, email and 10-digit mobile numbers are filled</li>
+                <li>A valid visiting date and time slot have been selected</li>
+                <li>Visitor details and group purpose are specified</li>
+              </ul>
+            </div>
+
+            <div className="pt-2">
+              <Button
+                type="button"
+                onClick={() => setValidationErrorPopup(null)}
+                className="w-full rounded-full bg-[#1E3A8A] text-white hover:bg-[#0c593f] h-12 font-bold shadow-md"
+              >
+                Okay, Check & Fix Details
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

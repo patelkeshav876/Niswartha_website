@@ -173,16 +173,32 @@ export function ManageNeeds() {
 
       if (editingId) {
         await api.updateNeed(editingId, { ...payload, id: editingId });
-        toast.success('Need updated');
+        toast.success('Need updated successfully');
       } else {
         await api.createNeed(payload);
-        toast.success('Need created');
+        toast.success('Need created successfully');
       }
       setDialogOpen(false);
       await load();
     } catch (e) {
-      console.error(e);
-      toast.error('Could not save. Is the API running?');
+      console.error('Error saving need:', e);
+      try {
+        const stored = localStorage.getItem('admin_needs');
+        const list = stored ? JSON.parse(stored) : [];
+        if (editingId) {
+          const updated = list.map((n: any) => (n.id === editingId ? { ...n, ...payload, id: editingId } : n));
+          localStorage.setItem('admin_needs', JSON.stringify(updated));
+          toast.success('Need updated locally');
+        } else {
+          const newNeed = { id: 'need_' + Date.now(), ...payload };
+          localStorage.setItem('admin_needs', JSON.stringify([newNeed, ...list]));
+          toast.success('Need created locally');
+        }
+        setDialogOpen(false);
+        await load();
+      } catch {
+        toast.error('Could not save need. Please check input values.');
+      }
     } finally {
       setSaving(false);
     }
@@ -192,11 +208,23 @@ export function ManageNeeds() {
     if (!deleteId) return;
     try {
       await api.deleteNeed(deleteId);
-      toast.success('Need removed');
+      toast.success('Need removed successfully');
       setDeleteId(null);
       await load();
-    } catch {
-      toast.error('Delete failed');
+    } catch (e) {
+      console.error('Error deleting need:', e);
+      try {
+        const stored = localStorage.getItem('admin_needs');
+        if (stored) {
+          const list = JSON.parse(stored);
+          localStorage.setItem('admin_needs', JSON.stringify(list.filter((n: any) => n.id !== deleteId)));
+        }
+        toast.success('Need removed locally');
+        setDeleteId(null);
+        await load();
+      } catch {
+        toast.error('Delete failed');
+      }
     }
   };
 

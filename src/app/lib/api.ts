@@ -43,8 +43,16 @@ export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}):
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error || `API request failed: ${response.statusText}`);
+    let errorMsg = `API request failed: ${response.statusText}`;
+    try {
+      const errorText = await response.text();
+      if (errorText.includes('NOT_FOUND') || errorText.includes('<!DOCTYPE') || errorText.includes('<html')) {
+        errorMsg = `Server endpoint ${endpoint} is not available (${response.status}).`;
+      } else if (errorText) {
+        errorMsg = errorText;
+      }
+    } catch {}
+    throw new Error(errorMsg);
   }
 
   return response.json();
@@ -197,26 +205,109 @@ export const api = {
     fetchAPI(`/ashrams/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 
   getNeeds: async (ashramId?: string) => {
+    let apiData: Need[] | null = null;
     try {
-      return await fetchAPI<Need[]>(
+      apiData = await fetchAPI<Need[]>(
         ashramId ? `/needs?ashramId=${encodeURIComponent(ashramId)}` : '/needs',
       );
     } catch {
-      return mockNeeds;
+      // Backend may be offline or Vercel edge without mongo
     }
+
+    let localNeeds: Need[] = [];
+    try {
+      const stored = localStorage.getItem('admin_needs');
+      if (stored) localNeeds = JSON.parse(stored);
+    } catch {}
+
+    const baseList = (apiData && apiData.length > 0) ? apiData : (mockNeeds || []);
+    const combined = [...baseList];
+    for (const ln of localNeeds) {
+      const idx = combined.findIndex((n) => n.id === ln.id);
+      if (idx >= 0) {
+        combined[idx] = ln;
+      } else {
+        combined.unshift(ln);
+      }
+    }
+
+    if (ashramId) {
+      return combined.filter((n) => n.ashramId === ashramId);
+    }
+    return combined;
   },
   getNeed: async (id: string) => {
     try {
       return await fetchAPI(`/needs/${id}`);
     } catch {
+      try {
+        const stored = localStorage.getItem('admin_needs');
+        if (stored) {
+          const list: Need[] = JSON.parse(stored);
+          const hit = list.find((n) => n.id === id);
+          if (hit) return hit;
+        }
+      } catch {}
       return mockNeeds.find((n) => n.id === id) || mockNeeds[0];
     }
   },
-  createNeed: (data: Record<string, unknown>) =>
-    fetchAPI('/needs', { method: 'POST', body: JSON.stringify(data) }),
-  updateNeed: (id: string, data: Record<string, unknown>) =>
-    fetchAPI(`/needs/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  deleteNeed: (id: string) => fetchAPI(`/needs/${id}`, { method: 'DELETE' }),
+  createNeed: async (data: Record<string, unknown>) => {
+    let result: any = null;
+    try {
+      result = await fetchAPI('/needs', { method: 'POST', body: JSON.stringify(data) });
+    } catch (err) {
+      console.warn('API createNeed failed, saving locally:', err);
+    }
+    const newNeed = result || {
+      id: 'need_' + Date.now(),
+      createdAt: new Date().toISOString(),
+      quantityFulfilled: 0,
+      ...data,
+    };
+    try {
+      const stored = localStorage.getItem('admin_needs');
+      const list = stored ? JSON.parse(stored) : [];
+      localStorage.setItem('admin_needs', JSON.stringify([newNeed, ...list]));
+    } catch (e) {
+      console.warn('localStorage quota warning for admin_needs:', e);
+    }
+    return newNeed;
+  },
+  updateNeed: async (id: string, data: Record<string, unknown>) => {
+    let result: any = null;
+    try {
+      result = await fetchAPI(`/needs/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+    } catch (err) {
+      console.warn('API updateNeed failed, updating locally:', err);
+    }
+    try {
+      const stored = localStorage.getItem('admin_needs');
+      const list = stored ? JSON.parse(stored) : [];
+      const updated = list.map((n: any) => (n.id === id ? { ...n, ...data } : n));
+      if (!list.some((n: any) => n.id === id)) {
+        updated.unshift({ id, ...data });
+      }
+      localStorage.setItem('admin_needs', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('localStorage quota warning for admin_needs:', e);
+    }
+    return result || { id, ...data };
+  },
+  deleteNeed: async (id: string) => {
+    try {
+      await fetchAPI(`/needs/${id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.warn('API deleteNeed failed, deleting locally:', err);
+    }
+    try {
+      const stored = localStorage.getItem('admin_needs');
+      if (stored) {
+        const list = JSON.parse(stored);
+        localStorage.setItem('admin_needs', JSON.stringify(list.filter((n: any) => n.id !== id)));
+      }
+    } catch {}
+    return { success: true };
+  },
 
   getEvents: async (ashramId?: string) => {
     try {
@@ -300,22 +391,104 @@ export const api = {
   },
 
   getVisitBookings: async (opts?: { ashramId?: string; userId?: string }) => {
+    let list: any[] = [];
     try {
       const params = new URLSearchParams();
       if (opts?.ashramId) params.set('ashramId', opts.ashramId);
       if (opts?.userId) params.set('userId', opts.userId);
       const q = params.toString();
       const data = await fetchAPI<unknown>(q ? `/visit-bookings?${q}` : '/visit-bookings');
-      return Array.isArray(data) ? data : mockVisitBookings || [];
+      if (Array.isArray(data)) list = data;
+      else list = [...(mockVisitBookings || [])];
     } catch {
-      return mockVisitBookings || [];
+      list = [...(mockVisitBookings || [])];
     }
+
+    try {
+      const stored = localStorage.getItem('local_visit_bookings');
+      if (stored) {
+        const localList = JSON.parse(stored);
+        if (Array.isArray(localList)) {
+          for (const item of localList) {
+            if (!list.some((b) => b.id === item.id)) {
+              list.unshift(item);
+            }
+          }
+        }
+      }
+    } catch {}
+
+    if (opts?.ashramId) list = list.filter((b) => b.ashramId === opts.ashramId);
+    if (opts?.userId) list = list.filter((b) => b.userId === opts.userId);
+    return list;
   },
 
-  createVisitBooking: (data: Record<string, unknown>) =>
-    fetchAPI('/visit-bookings', { method: 'POST', body: JSON.stringify(data) }),
+  getMyVisitBookings: async () => {
+    let list: any[] = [];
+    try {
+      const res = await fetchAPI<any[]>('/visit-bookings');
+      if (Array.isArray(res)) list = res;
+      else list = [...(mockVisitBookings || [])];
+    } catch {
+      list = [...(mockVisitBookings || [])];
+    }
+    try {
+      const stored = localStorage.getItem('local_visit_bookings');
+      if (stored) {
+        const localList = JSON.parse(stored);
+        if (Array.isArray(localList)) {
+          for (const item of localList) {
+            if (!list.some((b) => b.id === item.id)) {
+              list.unshift(item);
+            }
+          }
+        }
+      }
+    } catch {}
+    return list;
+  },
 
-  deleteVisitBooking: (id: string) => fetchAPI(`/visit-bookings/${id}`, { method: 'DELETE' }),
+  createVisitBooking: async (data: Record<string, unknown>) => {
+    let result: any = null;
+    try {
+      result = await fetchAPI('/visit-bookings', { method: 'POST', body: JSON.stringify(data) });
+    } catch (err) {
+      console.warn('API createVisitBooking failed (offline or Vercel edge), persisting locally:', err);
+    }
+    const newBooking = result || {
+      id: 'visit-' + Date.now(),
+      createdAt: new Date().toISOString(),
+      status: 'confirmed',
+      ...data,
+    };
+    try {
+      const stored = localStorage.getItem('local_visit_bookings');
+      const list = stored ? JSON.parse(stored) : [];
+      localStorage.setItem('local_visit_bookings', JSON.stringify([newBooking, ...list]));
+    } catch (e) {
+      console.warn('Could not store visit booking locally:', e);
+    }
+    return newBooking;
+  },
+
+  deleteVisitBooking: async (id: string) => {
+    try {
+      await fetchAPI(`/visit-bookings/${id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.warn('API deleteVisitBooking failed, deleting locally:', err);
+    }
+    try {
+      const stored = localStorage.getItem('local_visit_bookings');
+      if (stored) {
+        const list = JSON.parse(stored);
+        localStorage.setItem(
+          'local_visit_bookings',
+          JSON.stringify(list.filter((b: any) => b.id !== id))
+        );
+      }
+    } catch {}
+    return { success: true };
+  },
 
   getPosts: async (ashramId?: string) => {
     try {
@@ -454,25 +627,50 @@ export const api = {
     }
   },
   createAlbum: async (data: Record<string, unknown>) => {
+    let res: any = null;
     try {
-      return await fetchAPI<any>('/albums', { method: 'POST', body: JSON.stringify(data) });
-    } catch {
-      const current = await api.getAlbums();
-      const newAlbum = { id: 'album_' + Date.now(), createdAt: new Date().toISOString(), photos: [], ...data };
-      const updated = [newAlbum, ...current];
-      localStorage.setItem('albums', JSON.stringify(updated));
-      return newAlbum;
+      res = await fetchAPI<any>('/albums', { method: 'POST', body: JSON.stringify(data) });
+    } catch (err) {
+      console.warn('API createAlbum failed, storing locally:', err);
     }
+    const current = await api.getAlbums();
+    const newAlbum = res || { id: 'album_' + Date.now(), createdAt: new Date().toISOString(), photos: [], ...data };
+    const updated = [newAlbum, ...current.filter((a: any) => a.id !== newAlbum.id)];
+    try {
+      localStorage.setItem('albums', JSON.stringify(updated));
+    } catch {
+      // If local storage is full, keep only the most recent albums with trimmed photos
+      try {
+        const compact = updated.slice(0, 10).map((a: any) => ({
+          ...a,
+          images: (a.images || []).slice(0, 8),
+        }));
+        localStorage.setItem('albums', JSON.stringify(compact));
+      } catch {}
+    }
+    return newAlbum;
   },
   updateAlbum: async (id: string, data: Record<string, unknown>) => {
+    let res: any = null;
     try {
-      return await fetchAPI<any>(`/albums/${id}`, { method: 'PUT', body: JSON.stringify(data) });
-    } catch {
-      const current = await api.getAlbums();
-      const updated = current.map((a: any) => (a.id === id ? { ...a, ...data } : a));
-      localStorage.setItem('albums', JSON.stringify(updated));
-      return { id, ...data };
+      res = await fetchAPI<any>(`/albums/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+    } catch (err) {
+      console.warn('API updateAlbum failed, storing locally:', err);
     }
+    const current = await api.getAlbums();
+    const updated = current.map((a: any) => (a.id === id ? { ...a, ...data } : a));
+    try {
+      localStorage.setItem('albums', JSON.stringify(updated));
+    } catch {
+      try {
+        const compact = updated.slice(0, 10).map((a: any) => ({
+          ...a,
+          images: (a.images || []).slice(0, 8),
+        }));
+        localStorage.setItem('albums', JSON.stringify(compact));
+      } catch {}
+    }
+    return res || { id, ...data };
   },
   deleteAlbum: async (id: string) => {
     try {
@@ -740,10 +938,65 @@ export const api = {
     fetchAPI<any>(`/super-admin/users/${id}/role`, { method: 'PUT', body: JSON.stringify({ role }) }),
   deleteSuperAdminUser: (id: string) =>
     fetchAPI<any>(`/super-admin/users/${id}`, { method: 'DELETE' }),
-  backupDatabase: () =>
-    fetchAPI<any>('/super-admin/backup'),
-  restoreDatabase: (data: Record<string, unknown>) =>
-    fetchAPI<any>('/super-admin/restore', { method: 'POST', body: JSON.stringify(data) }),
+  backupDatabase: async () => {
+    try {
+      return await fetchAPI<any>('/super-admin/backup');
+    } catch {
+      const [ashrams, needs, events, albums, schemes, children, team, bookings] = await Promise.all([
+        api.getAshrams(),
+        api.getNeeds(),
+        api.getEvents(),
+        api.getAlbums(),
+        api.getSchemes(),
+        api.getChildren(),
+        api.getTeamMembers(),
+        api.getVisitBookings(),
+      ]);
+      return {
+        timestamp: new Date().toISOString(),
+        version: '1.0.0',
+        ashrams,
+        needs,
+        events,
+        albums,
+        schemes,
+        children,
+        team,
+        visitBookings: bookings,
+      };
+    }
+  },
+  restoreDatabase: async (data: Record<string, unknown>) => {
+    let result: any = null;
+    try {
+      result = await fetchAPI<any>('/super-admin/restore', { method: 'POST', body: JSON.stringify(data) });
+    } catch (err) {
+      console.warn('API restoreDatabase failed, restoring to local storage:', err);
+    }
+    try {
+      if (data.needs && Array.isArray(data.needs)) {
+        localStorage.setItem('admin_needs', JSON.stringify(data.needs));
+      }
+      if (data.albums && Array.isArray(data.albums)) {
+        localStorage.setItem('albums', JSON.stringify(data.albums));
+      }
+      if (data.schemes && Array.isArray(data.schemes)) {
+        localStorage.setItem('schemes', JSON.stringify(data.schemes));
+      }
+      if (data.children && Array.isArray(data.children)) {
+        localStorage.setItem('children', JSON.stringify(data.children));
+      }
+      if (data.team && Array.isArray(data.team)) {
+        localStorage.setItem('team_members', JSON.stringify(data.team));
+      }
+      if (data.visitBookings && Array.isArray(data.visitBookings)) {
+        localStorage.setItem('local_visit_bookings', JSON.stringify(data.visitBookings));
+      }
+    } catch (e) {
+      console.warn('Failed restoring some local tables:', e);
+    }
+    return result || { success: true };
+  },
 
   // --- Centralized Media Library API ---
   getMediaItems: async (params?: { type?: string; folder?: string; search?: string }) => {

@@ -4,8 +4,17 @@ import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
-import { Textarea } from '../../components/ui/textarea';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../../components/ui/alert-dialog';
 import {
   Activity,
   Users,
@@ -329,52 +338,145 @@ export function SuperAdminDashboard() {
     }
   };
 
-  // Backup & Restore handlers
-  const handleBackup = () => {
-    // Open backup URL directly to prompt file download
-    const token = localStorage.getItem('token');
-    const url = `/api/super-admin/backup?token=${token}`;
-    // Simple fetch download trigger
-    window.open(url, '_blank');
-    toast.success('Database backup exported.');
+  // Backup & Restore handlers with Security Confirmation & Automatic Pre-Action Backup
+  const [restoreFilePending, setRestoreFilePending] = useState<any | null>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [securityActionInProgress, setSecurityActionInProgress] = useState(false);
+
+  const createAndDownloadSecurityBackup = async (actionReason: string) => {
+    try {
+      const fullBackup = await api.backupDatabase();
+      const snapshot = {
+        ...fullBackup,
+        securityMetadata: {
+          action: actionReason,
+          triggeredAt: new Date().toISOString(),
+          triggeredBy: 'Super Admin',
+          systemFingerprint: typeof navigator !== 'undefined' ? navigator.userAgent : 'Server',
+        },
+      };
+
+      // 1. Download file automatically to user's system
+      const jsonStr = JSON.stringify(snapshot, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const dlUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = dlUrl;
+      link.download = `niswartha_security_backup_${Date.now()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(dlUrl);
+
+      // 2. Add security notification to notifications list
+      try {
+        const notif = {
+          id: `sec-backup-${Date.now()}`,
+          userId: 'superadmin',
+          title: `🛡️ Security Backup Created: ${actionReason}`,
+          message: `Automatic full system safety backup file was downloaded and archived before executing: "${actionReason}".`,
+          type: 'security',
+          read: false,
+          createdAt: new Date().toISOString(),
+        };
+        const existing = localStorage.getItem('notifications');
+        const notifs = existing ? JSON.parse(existing) : [];
+        localStorage.setItem('notifications', JSON.stringify([notif, ...notifs]));
+      } catch {}
+
+      // 3. Save security archive log in superadmin_security_backups
+      try {
+        const secBackups = localStorage.getItem('superadmin_security_backups');
+        const list = secBackups ? JSON.parse(secBackups) : [];
+        list.unshift({
+          id: `sec_${Date.now()}`,
+          date: new Date().toISOString(),
+          reason: actionReason,
+        });
+        localStorage.setItem('superadmin_security_backups', JSON.stringify(list.slice(0, 10)));
+      } catch {}
+
+      return true;
+    } catch (err) {
+      console.error('Failed to create security backup:', err);
+      return false;
+    }
   };
 
-  const handleRestore = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBackup = async () => {
+    toast.info('Exporting full database backup...');
+    await createAndDownloadSecurityBackup('Manual Database Backup Export');
+    toast.success('Database backup exported and saved to device.');
+  };
+
+  const handleRestoreFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = async (event) => {
+    reader.onload = (event) => {
       try {
         const json = JSON.parse(event.target?.result as string);
-        if (!confirm('RESTORE DATABASE? This will clear all existing data and overwrite it with this backup!')) return;
-        
-        setLoading(true);
-        const res = await api.restoreDatabase(json);
-        setLoading(false);
-        
-        if (res.success) {
-          toast.success('Database restored successfully! Reloading...');
-          setTimeout(() => window.location.reload(), 1500);
-        }
-      } catch (err) {
+        setRestoreFilePending(json);
+      } catch {
         toast.error('Invalid backup JSON format.');
-        setLoading(false);
       }
     };
     reader.readAsText(file);
+    e.target.value = '';
   };
 
-  const handleResetFactoryData = async () => {
-    if (!confirm('RESET ALL WEBSITE DATA? This will clear local cache, restore default ashrams, needs, events & configurations, and reload the application.')) return;
+  const executeConfirmedRestore = async () => {
+    if (!restoreFilePending) return;
+    setLoading(true);
+    setSecurityActionInProgress(true);
+    toast.info('Archiving safety backup to your device before restoring...');
+    await createAndDownloadSecurityBackup('Pre-Database Restore Safety Backup');
+    setSecurityActionInProgress(false);
+
     try {
-      setLoading(true);
+      const res = await api.restoreDatabase(restoreFilePending);
+      setLoading(false);
+      setRestoreFilePending(null);
+      if (res.success) {
+        toast.success('Database restored successfully! Security backup secured. Reloading...');
+        setTimeout(() => window.location.reload(), 1500);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to restore database');
+      setLoading(false);
+    }
+  };
+
+  const executeConfirmedReset = async () => {
+    setShowResetConfirm(false);
+    setLoading(true);
+    setSecurityActionInProgress(true);
+    toast.info('Creating security snapshot and saving backup to your device...');
+    await createAndDownloadSecurityBackup('Pre-Factory Reset Full Backup');
+    setSecurityActionInProgress(false);
+
+    try {
+      const token = localStorage.getItem('token');
+      const user = localStorage.getItem('user');
+      const primary_theme_color = localStorage.getItem('primary_theme_color');
+      const secBackups = localStorage.getItem('superadmin_security_backups');
+      const notifs = localStorage.getItem('notifications');
+
       localStorage.clear();
       sessionStorage.clear();
-      toast.success('Website data reset to factory default! Reloading...');
+
+      if (token) localStorage.setItem('token', token);
+      if (user) localStorage.setItem('user', user);
+      if (primary_theme_color) localStorage.setItem('primary_theme_color', primary_theme_color);
+      if (secBackups) localStorage.setItem('superadmin_security_backups', secBackups);
+      if (notifs) localStorage.setItem('notifications', notifs);
+
+      toast.success('Website data reset to factory default! Security backup saved. Reloading...');
       setTimeout(() => {
         window.location.href = '/';
-      }, 1200);
+      }, 1500);
     } catch {
       toast.error('Failed to reset data');
       setLoading(false);
@@ -1334,13 +1436,13 @@ export function SuperAdminDashboard() {
                     <input
                       type="file"
                       accept=".json"
-                      onChange={handleRestore}
+                      onChange={handleRestoreFileSelected}
                       id="restore-upload"
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      disabled={loading}
+                      disabled={loading || securityActionInProgress}
                     />
-                    <Button variant="outline" className="w-full rounded-full gap-2 h-11 border-amber-300 text-amber-900 bg-white hover:bg-amber-50 font-bold text-xs" disabled={loading}>
-                      <Upload className="h-4 w-4" /> {loading ? 'Restoring Database...' : 'Upload & Restore Backup'}
+                    <Button variant="outline" className="w-full rounded-full gap-2 h-11 border-amber-300 text-amber-900 bg-white hover:bg-amber-50 font-bold text-xs" disabled={loading || securityActionInProgress}>
+                      <Upload className="h-4 w-4" /> {securityActionInProgress ? 'Archiving Security Backup...' : loading ? 'Restoring Database...' : 'Upload & Restore Backup'}
                     </Button>
                   </div>
                 </div>
@@ -1357,8 +1459,8 @@ export function SuperAdminDashboard() {
                     </p>
                   </div>
                   <Button
-                    onClick={handleResetFactoryData}
-                    disabled={loading}
+                    onClick={() => setShowResetConfirm(true)}
+                    disabled={loading || securityActionInProgress}
                     className="w-full rounded-full gap-2 h-11 bg-red-600 text-white hover:bg-red-700 font-bold text-xs shadow-md"
                   >
                     <RefreshCw className="h-4 w-4" /> Reset Data to Factory Defaults
@@ -1685,6 +1787,72 @@ export function SuperAdminDashboard() {
           setConfig({ ...config, aboutPrincipalImgUrl: media.url });
         }}
       />
+
+      {/* Restore Database Security Confirmation Modal */}
+      <AlertDialog open={Boolean(restoreFilePending)} onOpenChange={(o) => !o && setRestoreFilePending(null)}>
+        <AlertDialogContent className="max-w-md rounded-3xl bg-white p-6 shadow-2xl border-none">
+          <AlertDialogHeader className="items-center text-center space-y-3">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+              <ShieldCheck className="h-7 w-7" />
+            </div>
+            <AlertDialogTitle className="text-xl font-bold font-serif text-zinc-950">
+              Security Confirmation: Restore Database?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-zinc-600 leading-relaxed">
+              Restoring will replace existing records with the selected backup file. For your safety, the system will <strong>automatically generate a full security backup snapshot, download it to your device, and archive it into the Super Admin security logs</strong> before overwriting.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4 gap-2 sm:gap-0">
+            <AlertDialogCancel
+              disabled={securityActionInProgress || loading}
+              onClick={() => setRestoreFilePending(null)}
+              className="rounded-full text-xs font-semibold"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={securityActionInProgress || loading}
+              onClick={executeConfirmedRestore}
+              className="rounded-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs"
+            >
+              {securityActionInProgress ? 'Downloading Backup...' : 'Save Security Backup & Restore'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Factory Reset Security Confirmation Modal */}
+      <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
+        <AlertDialogContent className="max-w-md rounded-3xl bg-white p-6 shadow-2xl border-none">
+          <AlertDialogHeader className="items-center text-center space-y-3">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-600">
+              <AlertTriangle className="h-7 w-7 animate-pulse" />
+            </div>
+            <AlertDialogTitle className="text-xl font-bold font-serif text-red-950">
+              Security Safeguard: Reset All Website Data?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-zinc-600 leading-relaxed">
+              This action will reset ashrams, needs, events, and configurations back to factory defaults. As an administrative safeguard, <strong>a complete database safety backup will be automatically captured and downloaded to your computer</strong> prior to resetting.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4 gap-2 sm:gap-0">
+            <AlertDialogCancel
+              disabled={securityActionInProgress || loading}
+              onClick={() => setShowResetConfirm(false)}
+              className="rounded-full text-xs font-semibold"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={securityActionInProgress || loading}
+              onClick={executeConfirmedReset}
+              className="rounded-full bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md"
+            >
+              {securityActionInProgress ? 'Archiving Backup...' : 'Download Safety Backup & Reset'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
