@@ -29,10 +29,11 @@ import {
   AlertDialogTitle,
 } from '../../components/ui/alert-dialog';
 import { Badge } from '../../components/ui/badge';
-import { Plus, Search, Edit2, Trash2, ArrowLeft, IndianRupee, Package, Upload, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, ArrowLeft, IndianRupee, Package, Upload, Sparkles, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { mockNeeds } from '../../data/mock';
 import { Link } from 'react-router';
 import { api } from '../../lib/api';
+import { fetchAutoImage } from '../../lib/unsplash';
 import type { Need, NeedCategory } from '../../types';
 import { toast } from 'sonner';
 
@@ -94,6 +95,46 @@ export function ManageNeeds() {
   const [form, setForm] = useState(emptyForm);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
+
+  // Debounced auto-match background photo search as the user types Title
+  useEffect(() => {
+    if (!dialogOpen || form.isCustomImage) return;
+    const query = form.title.trim();
+    if (!query) {
+      setForm((prev) => ({ ...prev, imageUrl: matchNeedImage('', prev.category) }));
+      return;
+    }
+
+    // Immediate keyword match
+    setForm((prev) => ({ ...prev, imageUrl: matchNeedImage(query, prev.category) }));
+
+    setImageLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const autoUrl = await fetchAutoImage(query);
+        if (autoUrl) {
+          setForm((prev) => ({ ...prev, imageUrl: autoUrl }));
+        }
+      } finally {
+        setImageLoading(false);
+      }
+    }, 450);
+
+    return () => clearTimeout(timer);
+  }, [form.title, form.category, form.isCustomImage, dialogOpen]);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setForm((prev) => ({ ...prev, imageUrl: reader.result as string, isCustomImage: true }));
+      toast.success('Custom photo uploaded!');
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
 
   // Acknowledge Shipment Modal state
   const [ackItem, setAckItem] = useState<any | null>(null);
@@ -148,6 +189,7 @@ export function ManageNeeds() {
     setForm({
       ...emptyForm,
       imageUrl: matchNeedImage('', 'Food'),
+      isCustomImage: false,
     });
     setDialogOpen(true);
   };
@@ -556,20 +598,68 @@ export function ManageNeeds() {
             <DialogTitle>{editingId ? 'Edit need' : 'Add need'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
+            {/* Live Auto-matched Item Image Preview */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                Item Photo Preview
+              </Label>
+              <div className="relative rounded-2xl overflow-hidden border border-zinc-200 bg-zinc-50 aspect-video flex items-center justify-center group shadow-sm">
+                <img
+                  src={form.imageUrl || matchNeedImage(form.title, form.category)}
+                  alt="Item photo preview"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-2 left-2 flex items-center gap-1.5">
+                  <Badge className="bg-black/60 backdrop-blur-md text-white text-[10px] font-bold border-none flex items-center gap-1.5">
+                    {imageLoading ? (
+                      <Loader2 className="h-3 w-3 animate-spin text-cyan-300" />
+                    ) : (
+                      <Sparkles className="h-3 w-3 text-emerald-400" />
+                    )}
+                    {form.isCustomImage
+                      ? 'Custom Photo'
+                      : imageLoading
+                        ? 'Searching matching photo…'
+                        : 'Auto-matched to item'}
+                  </Badge>
+                </div>
+                <div className="absolute bottom-2 right-2 flex items-center gap-2">
+                  <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/75 hover:bg-black text-white text-xs font-semibold backdrop-blur-md shadow-md transition-all">
+                    <Upload className="h-3.5 w-3.5" />
+                    Upload Photo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
+                  </label>
+                  {form.isCustomImage && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setForm((prev) => ({
+                          ...prev,
+                          isCustomImage: false,
+                          imageUrl: matchNeedImage(prev.title, prev.category),
+                        }));
+                      }}
+                      className="px-2.5 py-1.5 rounded-full bg-black/75 hover:bg-black text-white text-[11px] font-medium backdrop-blur-md"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div>
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title">Title *</Label>
               <Input
                 id="title"
                 value={form.title}
-                onChange={(e) => {
-                  const newTitle = e.target.value;
-                  setForm((f) => ({
-                    ...f,
-                    title: newTitle,
-                    imageUrl: !f.isCustomImage ? matchNeedImage(newTitle, f.category) : f.imageUrl,
-                  }));
-                }}
-                placeholder="e.g. Monthly groceries"
+                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                placeholder="e.g. School bags, Monthly groceries, Textbooks"
               />
             </div>
             <div>
@@ -588,11 +678,7 @@ export function ManageNeeds() {
                   value={form.category}
                   onValueChange={(v) => {
                     const newCat = v as NeedCategory;
-                    setForm((f) => ({
-                      ...f,
-                      category: newCat,
-                      imageUrl: !f.isCustomImage ? matchNeedImage(f.title, newCat) : f.imageUrl,
-                    }));
+                    setForm((f) => ({ ...f, category: newCat }));
                   }}
                 >
                   <SelectTrigger>

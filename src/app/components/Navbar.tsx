@@ -159,7 +159,12 @@ export function Navbar() {
                   {isActive(link.to) && (
                     <motion.div
                       layoutId="nav-indicator"
-                      className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee,0_0_16px_#06b6d4]"
+                      className={cn(
+                        'absolute bottom-0 left-2 right-2 h-0.5 rounded-full transition-colors',
+                        !scrolled && isHeroPage
+                          ? 'bg-[#60A5FA] shadow-[0_0_8px_#60A5FA,0_0_16px_#2563EB]'
+                          : 'bg-[#1E3A8A] shadow-[0_0_8px_#3B82F6,0_0_14px_#2563EB]'
+                      )}
                       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                     />
                   )}

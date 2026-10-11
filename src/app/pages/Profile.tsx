@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useUser } from '../context/UserContext';
 import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -137,7 +138,16 @@ export function Profile() {
                 {currentUser.avatarUrl ? (
                   <img src={currentUser.avatarUrl} alt={currentUser.name} className="h-full w-full object-cover" />
                 ) : (
-                  currentUser.name?.charAt(0)?.toUpperCase() || 'U'
+                  <DotLottieReact
+                    src={
+                      String((currentUser as any)?.gender || '').toLowerCase() === 'female'
+                        ? 'https://lottie.host/eab28687-876c-4b0d-aab1-50a270e33b26/ExpSYjKsB3.lottie'
+                        : 'https://lottie.host/746f208e-aac4-4f77-a70f-c14d50d4eae3/VXWluFleHq.lottie'
+                    }
+                    loop
+                    autoplay
+                    className="h-full w-full object-cover scale-110"
+                  />
                 )}
               </div>
 

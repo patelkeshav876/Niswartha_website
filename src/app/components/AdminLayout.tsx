@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate, useLocation, Outlet } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useUser } from '../context/UserContext';
 import { Button } from './ui/button';
 import {
@@ -201,20 +202,27 @@ export function AdminLayout() {
               <Menu className="h-5 w-5 text-zinc-700" />
             </Button>
             <div className="flex items-center gap-3">
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.4 }}
-                className="relative hidden sm:flex items-center justify-center h-11 w-11 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 shadow-xs"
-              >
-                <motion.span
-                  animate={{ rotate: [0, 14, -8, 14, -4, 10, 0] }}
-                  transition={{ repeat: Infinity, repeatDelay: 3, duration: 1.8, ease: 'easeInOut' }}
-                  className="text-2xl select-none inline-block origin-[70%_70%]"
-                >
-                  👋
-                </motion.span>
-              </motion.div>
+              {(() => {
+                const isFemale = String((currentUser as any)?.gender || '').toLowerCase() === 'female';
+                const animationSrc = isFemale
+                  ? 'https://lottie.host/eab28687-876c-4b0d-aab1-50a270e33b26/ExpSYjKsB3.lottie'
+                  : 'https://lottie.host/746f208e-aac4-4f77-a70f-c14d50d4eae3/VXWluFleHq.lottie';
+                return (
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.4 }}
+                    className="relative hidden sm:flex items-center justify-center h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 shadow-xs overflow-hidden shrink-0"
+                  >
+                    <DotLottieReact
+                      src={animationSrc}
+                      loop
+                      autoplay
+                      className="h-full w-full object-cover scale-110"
+                    />
+                  </motion.div>
+                );
+              })()}
 
               <div>
                 <div className="flex items-center gap-2">

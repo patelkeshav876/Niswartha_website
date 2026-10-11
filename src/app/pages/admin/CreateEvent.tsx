@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
 import { Badge } from '../../components/ui/badge';
-import { ArrowLeft, Save, Calendar, MapPin, Clock, Users, Upload, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Save, Calendar, MapPin, Clock, Users, Upload, Sparkles, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { api } from '../../lib/api';
+import { fetchAutoImage } from '../../lib/unsplash';
 
 const ASHRAM_ID = 'ashram-1';
 
@@ -64,6 +65,7 @@ export function CreateEvent() {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [isCustomImage, setIsCustomImage] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     date: '',
@@ -73,6 +75,33 @@ export function CreateEvent() {
     capacity: '',
     imageUrl: matchEventImage(''),
   });
+
+  // Debounced auto-match background photo search as the user types Title
+  useEffect(() => {
+    if (isCustomImage) return;
+    const query = formData.title.trim();
+    if (!query) {
+      setFormData((prev) => ({ ...prev, imageUrl: matchEventImage('') }));
+      return;
+    }
+
+    // Immediate instant keyword match
+    setFormData((prev) => ({ ...prev, imageUrl: matchEventImage(query) }));
+
+    setImageLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const autoUrl = await fetchAutoImage(query);
+        if (autoUrl) {
+          setFormData((prev) => ({ ...prev, imageUrl: autoUrl }));
+        }
+      } finally {
+        setImageLoading(false);
+      }
+    }, 450);
+
+    return () => clearTimeout(timer);
+  }, [formData.title, isCustomImage]);
 
   const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -147,10 +176,14 @@ export function CreateEvent() {
                   alt="Event banner preview"
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-2 left-2">
-                  <Badge className="bg-black/60 backdrop-blur-md text-white text-[10px] font-bold border-none">
-                    <Sparkles className="h-3 w-3 mr-1 text-emerald-400" />
-                    {isCustomImage ? 'Custom Photo' : 'Auto-matched to event'}
+                <div className="absolute top-2 left-2 flex items-center gap-2">
+                  <Badge className="bg-black/60 backdrop-blur-md text-white text-[10px] font-bold border-none flex items-center gap-1.5">
+                    {imageLoading ? (
+                      <Loader2 className="h-3 w-3 animate-spin text-cyan-300" />
+                    ) : (
+                      <Sparkles className="h-3 w-3 text-emerald-400" />
+                    )}
+                    {isCustomImage ? 'Custom Photo' : imageLoading ? 'Searching matching photo…' : 'Auto-matched to event'}
                   </Badge>
                 </div>
                 <div className="absolute bottom-2 right-2 flex items-center gap-2">
@@ -194,16 +227,9 @@ export function CreateEvent() {
                 </Label>
                 <Input
                   id="title"
-                  placeholder="Enter event name"
+                  placeholder="Enter event name (e.g. Annual Sports Day, Diwali Celebration)"
                   value={formData.title}
-                  onChange={(e) => {
-                    const newTitle = e.target.value;
-                    setFormData((prev) => ({
-                      ...prev,
-                      title: newTitle,
-                      imageUrl: !isCustomImage ? matchEventImage(newTitle) : prev.imageUrl,
-                    }));
-                  }}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
                   required
                 />
               </div>
