@@ -231,11 +231,41 @@ export function UserLayout() {
             >
               <Menu className="h-5 w-5 text-zinc-700" />
             </Button>
-            <div className="hidden sm:block">
-              <h1 className="text-xl font-bold tracking-wider text-zinc-950 font-serif">
-                HELLO, {firstName}!
-              </h1>
-              <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-widest mt-0.5">Welcome back to Niswartha portal</p>
+            <div className="flex items-center gap-3">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.4 }}
+                className="relative hidden sm:flex items-center justify-center h-11 w-11 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 shadow-xs"
+              >
+                <motion.span
+                  animate={{ rotate: [0, 14, -8, 14, -4, 10, 0] }}
+                  transition={{ repeat: Infinity, repeatDelay: 3, duration: 1.8, ease: 'easeInOut' }}
+                  className="text-2xl select-none inline-block origin-[70%_70%]"
+                >
+                  👋
+                </motion.span>
+              </motion.div>
+
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-base sm:text-lg font-bold tracking-tight text-zinc-950 font-serif">
+                    Hello, <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">{firstName}</span>!
+                  </h1>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shadow-xs">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                    </span>
+                    Donor Portal
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground font-medium mt-0.5 flex items-center gap-1.5">
+                  <span>Welcome back to Niswartha portal</span>
+                  <span className="text-zinc-300">•</span>
+                  <span className="text-zinc-500">{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                </p>
+              </div>
             </div>
           </div>
 

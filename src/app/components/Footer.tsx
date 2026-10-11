@@ -80,7 +80,6 @@ export function Footer() {
               <ul className="space-y-2.5">
                 {[
                   { to: '/donate/ashram-1', label: 'Support Our Mission' },
-                  { to: '/events/suggest', label: 'Suggest Event' },
                   { to: '/help', label: 'Help and FAQ' },
                   { to: '/profile', label: 'My Account' },
                 ].map((link) => (

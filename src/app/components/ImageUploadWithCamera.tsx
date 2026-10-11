@@ -149,11 +149,11 @@ export function ImageUploadWithCamera({
       ) : (
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="border-2 border-dashed border-zinc-200 hover:border-[#1E3A8A] rounded-2xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all bg-zinc-50/50 hover:bg-[#1E3A8A]/5"
+          className="border-2 border-dashed border-zinc-200 hover:border-zinc-400 rounded-2xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all bg-zinc-50/50 hover:bg-zinc-100/60"
         >
-          <div className="h-10 w-10 rounded-full bg-[#1E3A8A]/10 text-[#1E3A8A] flex items-center justify-center">
+          <div className="h-10 w-10 rounded-full bg-zinc-100 text-zinc-700 flex items-center justify-center">
             {uploading ? (
-              <div className="h-4 w-4 border-2 border-[#1E3A8A] border-t-transparent rounded-full animate-spin" />
+              <div className="h-4 w-4 border-2 border-zinc-600 border-t-transparent rounded-full animate-spin" />
             ) : (
               <ImageIcon className="h-5 w-5" />
             )}

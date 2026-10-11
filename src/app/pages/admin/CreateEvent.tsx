@@ -4,13 +4,39 @@ import { Card, CardContent } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
-import { ImageSearchPicker } from '../../components/ImageSearchPicker';
-import { ArrowLeft, Save, Calendar, MapPin, Clock, Users } from 'lucide-react';
+import { Badge } from '../../components/ui/badge';
+import { ArrowLeft, Save, Calendar, MapPin, Clock, Users, Upload, Sparkles, Image as ImageIcon } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { api } from '../../lib/api';
 
 const ASHRAM_ID = 'ashram-1';
+
+function matchEventImage(title: string): string {
+  const t = title.toLowerCase();
+  if (t.includes('diwali') || t.includes('festival') || t.includes('light') || t.includes('celebrat')) {
+    return 'https://images.unsplash.com/photo-1512341689857-198e7e2f3ca8?auto=format&fit=crop&q=80&w=800';
+  }
+  if (t.includes('art') || t.includes('paint') || t.includes('draw') || t.includes('craft') || t.includes('workshop')) {
+    return 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?auto=format&fit=crop&q=80&w=800';
+  }
+  if (t.includes('sport') || t.includes('race') || t.includes('cricket') || t.includes('athletic') || t.includes('game') || t.includes('match')) {
+    return 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=80&w=800';
+  }
+  if (t.includes('music') || t.includes('dance') || t.includes('sing') || t.includes('recital') || t.includes('cultur')) {
+    return 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800';
+  }
+  if (t.includes('volunt') || t.includes('orient') || t.includes('meet') || t.includes('gathering')) {
+    return 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&q=80&w=800';
+  }
+  if (t.includes('christmas') || t.includes('gift') || t.includes('new year') || t.includes('holiday')) {
+    return 'https://images.unsplash.com/photo-1512389142860-9c449e58a543?auto=format&fit=crop&q=80&w=800';
+  }
+  if (t.includes('food') || t.includes('dinner') || t.includes('lunch') || t.includes('meal') || t.includes('feast')) {
+    return 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=800';
+  }
+  return 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=800';
+}
 
 function createEventErrorMessage(err: unknown): string {
   if (err instanceof Error) {
@@ -37,6 +63,7 @@ function createEventErrorMessage(err: unknown): string {
 export function CreateEvent() {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+  const [isCustomImage, setIsCustomImage] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     date: '',
@@ -44,13 +71,27 @@ export function CreateEvent() {
     location: '',
     description: '',
     capacity: '',
-    imageUrl: '',
+    imageUrl: matchEventImage(''),
   });
+
+  const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setFormData((prev) => ({ ...prev, imageUrl: reader.result as string }));
+      setIsCustomImage(true);
+      toast.success('Custom banner uploaded!');
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     try {
+      const finalBanner = formData.imageUrl || matchEventImage(formData.title);
       const payload = {
         id: `event-${Date.now()}`,
         ashramId: ASHRAM_ID,
@@ -59,7 +100,7 @@ export function CreateEvent() {
         time: formData.time,
         location: formData.location,
         description: formData.description,
-        imageUrl: formData.imageUrl || '',
+        imageUrl: finalBanner,
         capacity: formData.capacity || '',
         status: 'approved',
         createdAt: new Date().toISOString(),
@@ -99,12 +140,44 @@ export function CreateEvent() {
         <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto">
           <Card className="border-none shadow-sm">
             <CardContent className="p-5 space-y-3">
-              <Label className="text-sm font-bold block">Event banner</Label>
-              <ImageSearchPicker
-                value={formData.imageUrl}
-                onChange={(url) => setFormData((f) => ({ ...f, imageUrl: url }))}
-                searchQuery={formData.title}
-              />
+              <Label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">Event Banner (Auto-Matched)</Label>
+              <div className="relative rounded-2xl overflow-hidden border border-zinc-200 bg-zinc-50 aspect-video flex items-center justify-center group shadow-sm">
+                <img
+                  src={formData.imageUrl || matchEventImage(formData.title)}
+                  alt="Event banner preview"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-2 left-2">
+                  <Badge className="bg-black/60 backdrop-blur-md text-white text-[10px] font-bold border-none">
+                    <Sparkles className="h-3 w-3 mr-1 text-emerald-400" />
+                    {isCustomImage ? 'Custom Photo' : 'Auto-matched to event'}
+                  </Badge>
+                </div>
+                <div className="absolute bottom-2 right-2 flex items-center gap-2">
+                  <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/75 hover:bg-black text-white text-xs font-semibold backdrop-blur-md shadow-md transition-all">
+                    <Upload className="h-3.5 w-3.5" />
+                    Upload Photo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleBannerUpload}
+                    />
+                  </label>
+                  {isCustomImage && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsCustomImage(false);
+                        setFormData((prev) => ({ ...prev, imageUrl: matchEventImage(prev.title) }));
+                      }}
+                      className="px-2.5 py-1.5 rounded-full bg-black/75 hover:bg-black text-white text-[11px] font-medium backdrop-blur-md"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -123,7 +196,14 @@ export function CreateEvent() {
                   id="title"
                   placeholder="Enter event name"
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={(e) => {
+                    const newTitle = e.target.value;
+                    setFormData((prev) => ({
+                      ...prev,
+                      title: newTitle,
+                      imageUrl: !isCustomImage ? matchEventImage(newTitle) : prev.imageUrl,
+                    }));
+                  }}
                   required
                 />
               </div>

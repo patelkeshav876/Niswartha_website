@@ -145,6 +145,24 @@ export function ManageSchemes() {
     }
   };
 
+  const publishDirectly = async (scheme: GovScheme) => {
+    const targetId = scheme.id || (scheme as any)._id;
+    if (!targetId) return;
+    try {
+      const { _id, ...cleanScheme } = scheme as any;
+      setSchemes((prev) =>
+        prev.map((s) => (s.id === targetId || (s as any)._id === targetId ? { ...s, published: true } : s))
+      );
+      await api.updateScheme(targetId, { ...cleanScheme, published: true });
+      toast.success(`Scheme "${scheme.title}" published live on the website!`);
+      await loadSchemes();
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to publish scheme');
+      await loadSchemes();
+    }
+  };
+
   const togglePublishStatus = async (scheme: GovScheme) => {
     const targetId = scheme.id || (scheme as any)._id;
     if (!targetId) return;
@@ -155,7 +173,7 @@ export function ManageSchemes() {
         prev.map((s) => (s.id === targetId || (s as any)._id === targetId ? { ...s, published: nextStatus } : s))
       );
       await api.updateScheme(targetId, { ...cleanScheme, published: nextStatus });
-      toast.success(`Scheme ${nextStatus ? 'published' : 'moved to drafts'}`);
+      toast.success(`Scheme ${nextStatus ? 'published live on website' : 'moved to drafts'}`);
       await loadSchemes();
     } catch (err) {
       console.error(err);
@@ -296,9 +314,9 @@ export function ManageSchemes() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => togglePublishStatus(scheme)}
+                            onClick={() => publishDirectly(scheme)}
                             className="h-8 w-8 rounded-lg hover:bg-emerald-50 text-emerald-600"
-                            title="Approve & Publish"
+                            title="Approve & Publish Live on Website"
                           >
                             <Check className="h-3.5 w-3.5" />
                           </Button>

@@ -27,7 +27,6 @@ import { api } from '../lib/api';
 const SIDEBAR_ITEMS = [
   { to: '/super-admin', label: 'System Health', icon: Activity, end: true },
   { to: '/notifications', label: 'Notifications & Complaints', icon: Bell },
-  { to: '/super-admin/media', label: 'Media Library', icon: ImageIcon },
   { to: '/super-admin/hero', label: 'Page Hero Manager', icon: Layers },
   { to: '/super-admin/users', label: 'User Directory', icon: Users },
   { to: '/super-admin/ads', label: 'Ad Placements', icon: Megaphone },

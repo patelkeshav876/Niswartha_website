@@ -29,8 +29,7 @@ import {
   AlertDialogTitle,
 } from '../../components/ui/alert-dialog';
 import { Badge } from '../../components/ui/badge';
-import { ImageSearchPicker } from '../../components/ImageSearchPicker';
-import { Plus, Search, Edit2, Trash2, ArrowLeft, IndianRupee, Package } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, ArrowLeft, IndianRupee, Package, Upload, Sparkles, Image as ImageIcon } from 'lucide-react';
 import { mockNeeds } from '../../data/mock';
 import { Link } from 'react-router';
 import { api } from '../../lib/api';
@@ -47,6 +46,32 @@ const categories: NeedCategory[] = [
   'Other',
 ];
 
+function matchNeedImage(title: string, category: string): string {
+  const t = `${title} ${category}`.toLowerCase();
+  if (t.includes('rice') || t.includes('grocer') || t.includes('ration') || t.includes('food') || t.includes('meal') || t.includes('grain')) {
+    return 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&q=80&w=800';
+  }
+  if (t.includes('book') || t.includes('study') || t.includes('textbook') || t.includes('notebook') || t.includes('pen') || t.includes('pencil') || t.includes('stationer') || t.includes('school') || t.includes('educat')) {
+    return 'https://images.unsplash.com/flagged/photo-1574097656146-0b43b7660cb6?auto=format&fit=crop&q=80&w=800';
+  }
+  if (t.includes('cloth') || t.includes('sweater') || t.includes('blanket') || t.includes('jacket') || t.includes('dress') || t.includes('uniform') || t.includes('winter') || t.includes('wear')) {
+    return 'https://images.unsplash.com/photo-1489710437720-ebb67ec84dd2?auto=format&fit=crop&q=80&w=800';
+  }
+  if (t.includes('medic') || t.includes('doctor') || t.includes('health') || t.includes('first aid') || t.includes('tablet') || t.includes('hearing') || t.includes('aid') || t.includes('care')) {
+    return 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?auto=format&fit=crop&q=80&w=800';
+  }
+  if (t.includes('computer') || t.includes('laptop') || t.includes('screen') || t.includes('tech') || t.includes('keyboard')) {
+    return 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800';
+  }
+  if (t.includes('sport') || t.includes('cricket') || t.includes('ball') || t.includes('football') || t.includes('play') || t.includes('game')) {
+    return 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&q=80&w=800';
+  }
+  if (t.includes('milk') || t.includes('fruit') || t.includes('apple') || t.includes('banana') || t.includes('snack') || t.includes('vegetable')) {
+    return 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=800';
+  }
+  return 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800';
+}
+
 const emptyForm = {
   title: '',
   description: '',
@@ -55,6 +80,7 @@ const emptyForm = {
   imageUrl: '',
   quantityRequired: '',
   quantityFulfilled: '',
+  isCustomImage: false,
 };
 
 export function ManageNeeds() {
@@ -115,9 +141,14 @@ export function ManageNeeds() {
     (need.title || '').toLowerCase().includes((searchTerm || '').toLowerCase()),
   );
 
+
+
   const openCreate = () => {
     setEditingId(null);
-    setForm(emptyForm);
+    setForm({
+      ...emptyForm,
+      imageUrl: matchNeedImage('', 'Food'),
+    });
     setDialogOpen(true);
   };
 
@@ -128,9 +159,10 @@ export function ManageNeeds() {
       description: need.description,
       category: need.category,
       urgency: need.urgency,
-      imageUrl: need.imageUrl || '',
+      imageUrl: need.imageUrl || matchNeedImage(need.title, need.category),
       quantityRequired: String(need.quantityRequired),
       quantityFulfilled: String(need.quantityFulfilled),
+      isCustomImage: Boolean(need.imageUrl),
     });
     setDialogOpen(true);
   };
@@ -163,7 +195,7 @@ export function ManageNeeds() {
         description: form.description.trim(),
         category: form.category,
         urgency: form.urgency,
-        imageUrl: form.imageUrl.trim() || undefined,
+        imageUrl: form.imageUrl.trim() || matchNeedImage(form.title, form.category),
         quantityRequired: req,
         quantityFulfilled: ful,
         createdAt: editingId
@@ -529,7 +561,14 @@ export function ManageNeeds() {
               <Input
                 id="title"
                 value={form.title}
-                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                onChange={(e) => {
+                  const newTitle = e.target.value;
+                  setForm((f) => ({
+                    ...f,
+                    title: newTitle,
+                    imageUrl: !f.isCustomImage ? matchNeedImage(newTitle, f.category) : f.imageUrl,
+                  }));
+                }}
                 placeholder="e.g. Monthly groceries"
               />
             </div>
@@ -547,7 +586,14 @@ export function ManageNeeds() {
                 <Label>Category</Label>
                 <Select
                   value={form.category}
-                  onValueChange={(v) => setForm((f) => ({ ...f, category: v as NeedCategory }))}
+                  onValueChange={(v) => {
+                    const newCat = v as NeedCategory;
+                    setForm((f) => ({
+                      ...f,
+                      category: newCat,
+                      imageUrl: !f.isCustomImage ? matchNeedImage(f.title, newCat) : f.imageUrl,
+                    }));
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -580,14 +626,7 @@ export function ManageNeeds() {
                 </Select>
               </div>
             </div>
-            <div>
-              <Label className="mb-2 block">Need image</Label>
-              <ImageSearchPicker
-                value={form.imageUrl}
-                onChange={(url) => setForm((f) => ({ ...f, imageUrl: url }))}
-                searchQuery={form.title}
-              />
-            </div>
+
             <div>
               <Label htmlFor="goal">Units Needed (Total Quantity Required)</Label>
               <Input

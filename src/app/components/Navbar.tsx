@@ -159,10 +159,7 @@ export function Navbar() {
                   {isActive(link.to) && (
                     <motion.div
                       layoutId="nav-indicator"
-                      className={cn(
-                        'absolute bottom-0 left-2 right-2 h-0.5 rounded-full',
-                        !scrolled && isHeroPage ? 'bg-white' : 'bg-primary'
-                      )}
+                      className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee,0_0_16px_#06b6d4]"
                       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                     />
                   )}

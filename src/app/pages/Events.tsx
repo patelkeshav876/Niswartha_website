@@ -218,17 +218,9 @@ export function Events() {
               <Button
                 size="lg"
                 className="rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                onClick={() => navigate('/events/suggest')}
-              >
-                <Sparkles className="mr-2 h-5 w-5" /> Suggest Event
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="rounded-full border-white/20 bg-white/5 text-white hover:bg-white/10"
                 onClick={() => navigate(`/visit-book/${primaryAshramId}`)}
               >
-                <Calendar className="mr-2 h-5 w-5" /> Visit Us
+                <Calendar className="mr-2 h-5 w-5" /> Visit Us & Join Events
               </Button>
             </motion.div>
           </div>

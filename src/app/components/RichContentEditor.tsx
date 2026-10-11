@@ -4,7 +4,6 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Plus, Trash, ArrowUp, ArrowDown, Type, Image as ImageIcon, Video, Eye, EyeOff, Layout } from 'lucide-react';
 import { ImageUploadWithCamera } from './ImageUploadWithCamera';
-import { MediaPickerModal } from './MediaPickerModal';
 
 export interface ContentBlock {
   id: string;
@@ -29,11 +28,6 @@ interface Props {
 
 export function RichContentEditor({ blocks, onChange }: Props) {
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
-
-  // Media Picker state
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [pickerBlockId, setPickerBlockId] = useState<string | null>(null);
-  const [pickerType, setPickerType] = useState<'image' | 'video'>('image');
 
   const addTextBlock = () => {
     const newBlock: ContentBlock = {
@@ -279,19 +273,6 @@ export function RichContentEditor({ blocks, onChange }: Props) {
                             updateBlock(block.id, { images: list });
                           }}
                         />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="rounded-xl text-xs"
-                          onClick={() => {
-                            setPickerBlockId(block.id);
-                            setPickerType('image');
-                            setPickerOpen(true);
-                          }}
-                        >
-                          Select from Media Library
-                        </Button>
                       </div>
                     </div>
                   )}
@@ -305,19 +286,6 @@ export function RichContentEditor({ blocks, onChange }: Props) {
                           placeholder="Paste YouTube video link or direct mp4 URL..."
                           className="text-xs flex-1"
                         />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="rounded-xl text-xs whitespace-nowrap"
-                          onClick={() => {
-                            setPickerBlockId(block.id);
-                            setPickerType('video');
-                            setPickerOpen(true);
-                          }}
-                        >
-                          Media Library
-                        </Button>
                       </div>
                       {block.videoUrl && (
                         <div className="aspect-video w-full max-w-sm rounded-lg overflow-hidden border">
@@ -452,24 +420,6 @@ export function RichContentEditor({ blocks, onChange }: Props) {
         </div>
       )}
 
-      {/* Media Picker Modal */}
-      <MediaPickerModal
-        open={pickerOpen}
-        onOpenChange={setPickerOpen}
-        allowedTypes={pickerType}
-        onSelectMedia={(media) => {
-          if (!pickerBlockId) return;
-          const targetBlock = blocks.find((b) => b.id === pickerBlockId);
-          if (!targetBlock) return;
-
-          if (pickerType === 'image') {
-            const list = [...(targetBlock.images || []), media.url];
-            updateBlock(pickerBlockId, { images: list });
-          } else if (pickerType === 'video') {
-            updateBlock(pickerBlockId, { videoUrl: media.url });
-          }
-        }}
-      />
     </div>
   );
 }

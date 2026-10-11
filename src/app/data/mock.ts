@@ -392,15 +392,3 @@ export const mockVisitBookings = [
     purpose: 'Volunteering & Book Donation',
   },
 ];
-
-export const mockMediaItems = [
-  {
-    id: 'media-1',
-    name: 'Campus Building Front',
-    url: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80',
-    type: 'image',
-    folder: 'Campus',
-    size: '1.2 MB',
-    createdAt: new Date().toISOString(),
-  },
-];

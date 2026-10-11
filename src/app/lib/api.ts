@@ -9,7 +9,6 @@ import {
   mockTeamMembers,
   mockVisitBookings,
   mockNotifications,
-  mockMediaItems,
 } from '../data/mock';
 
 function getApiBase(): string {
@@ -996,53 +995,6 @@ export const api = {
       console.warn('Failed restoring some local tables:', e);
     }
     return result || { success: true };
-  },
-
-  // --- Centralized Media Library API ---
-  getMediaItems: async (params?: { type?: string; folder?: string; search?: string }) => {
-    try {
-      const q = new URLSearchParams();
-      if (params?.type) q.append('type', params.type);
-      if (params?.folder) q.append('folder', params.folder);
-      if (params?.search) q.append('search', params.search);
-      const queryString = q.toString();
-      return await fetchAPI<any[]>(`/media${queryString ? `?${queryString}` : ''}`);
-    } catch {
-      const saved = localStorage.getItem('media_items');
-      if (saved) return JSON.parse(saved);
-      return mockMediaItems || [];
-    }
-  },
-  uploadMediaItem: async (data: Record<string, unknown>) => {
-    try {
-      return await fetchAPI<any>('/media/upload', { method: 'POST', body: JSON.stringify(data) });
-    } catch {
-      const current = await api.getMediaItems();
-      const newItem = { id: 'media_' + Date.now(), createdAt: new Date().toISOString(), ...data };
-      const updated = [newItem, ...current];
-      localStorage.setItem('media_items', JSON.stringify(updated));
-      return newItem;
-    }
-  },
-  updateMediaItem: async (id: string, data: Record<string, unknown>) => {
-    try {
-      return await fetchAPI<any>(`/media/${id}`, { method: 'PUT', body: JSON.stringify(data) });
-    } catch {
-      const current = await api.getMediaItems();
-      const updated = current.map((m: any) => (m.id === id ? { ...m, ...data } : m));
-      localStorage.setItem('media_items', JSON.stringify(updated));
-      return { id, ...data };
-    }
-  },
-  deleteMediaItem: async (id: string) => {
-    try {
-      return await fetchAPI<any>(`/media/${id}`, { method: 'DELETE' });
-    } catch {
-      const current = await api.getMediaItems();
-      const updated = current.filter((m: any) => m.id !== id);
-      localStorage.setItem('media_items', JSON.stringify(updated));
-      return { success: true };
-    }
   },
 
   // --- Page Hero Background Configurations API ---

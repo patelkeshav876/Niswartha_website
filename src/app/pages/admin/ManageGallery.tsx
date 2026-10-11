@@ -23,7 +23,6 @@ export function ManageGallery() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [coverUrl, setCoverUrl] = useState('');
-  const [imageUrlInput, setImageUrlInput] = useState('');
   const [images, setImages] = useState<string[]>([]);
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -52,7 +51,6 @@ export function ManageGallery() {
     setDescription('');
     setCoverUrl('');
     setImages([]);
-    setImageUrlInput('');
     setDialogOpen(true);
   };
 
@@ -62,21 +60,7 @@ export function ManageGallery() {
     setDescription(album.description);
     setCoverUrl(album.coverUrl || '');
     setImages(album.images || []);
-    setImageUrlInput('');
     setDialogOpen(true);
-  };
-
-  const addImageUrl = () => {
-    if (!imageUrlInput.trim()) return;
-    if (images.includes(imageUrlInput.trim())) {
-      toast.error('Image URL already added');
-      return;
-    }
-    setImages((prev) => [...prev, imageUrlInput.trim()]);
-    if (!coverUrl) {
-      setCoverUrl(imageUrlInput.trim()); // Set coverUrl to first image by default
-    }
-    setImageUrlInput('');
   };
 
   const removeImageUrl = (index: number) => {
@@ -306,16 +290,6 @@ export function ManageGallery() {
               />
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-zinc-700 font-semibold">Cover Image URL (Optional)</Label>
-              <Input
-                value={coverUrl}
-                onChange={(e) => setCoverUrl(e.target.value)}
-                placeholder="URL for the primary cover photo"
-                className="rounded-xl border-zinc-200"
-              />
-            </div>
-
             <div className="space-y-3 border-t pt-3">
               <Label className="text-zinc-700 font-semibold flex items-center gap-1.5">
                 <ImageIcon className="h-4 w-4 text-[#1E3A8A]" />
@@ -323,11 +297,11 @@ export function ManageGallery() {
               </Label>
 
               <div className="space-y-2 bg-emerald-50/50 border border-emerald-200/80 rounded-2xl p-4 text-center border-dashed">
-                <p className="text-xs font-bold text-zinc-800 mb-1">Direct Multi-Photo Import</p>
-                <p className="text-[11px] text-zinc-500 mb-3">Select multiple images directly from your device to import all at once</p>
+                <p className="text-xs font-bold text-zinc-800 mb-1">Direct Photo Upload</p>
+                <p className="text-[11px] text-zinc-500 mb-3">Select photos directly from your device. The first photo will serve as the album cover.</p>
                 
                 <label htmlFor="gallery-multi-upload" className="inline-flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white text-xs font-bold shadow-sm transition-all">
-                  <ImageIcon className="h-4 w-4" /> Select & Import Multiple Images
+                  <ImageIcon className="h-4 w-4" /> Select Photos from Device
                 </label>
                 <input
                   id="gallery-multi-upload"
@@ -337,21 +311,6 @@ export function ManageGallery() {
                   onChange={handleMultipleFilesUpload}
                   className="hidden"
                 />
-              </div>
-
-              <div className="space-y-1.5">
-                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Or Optional Direct URL</p>
-                <div className="flex gap-2">
-                  <Input
-                    value={imageUrlInput}
-                    onChange={(e) => setImageUrlInput(e.target.value)}
-                    placeholder="Paste direct photo URL..."
-                    className="rounded-xl border-zinc-200"
-                  />
-                  <Button type="button" onClick={addImageUrl} className="rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800">
-                    Add URL
-                  </Button>
-                </div>
               </div>
             </div>
 
@@ -392,7 +351,7 @@ export function ManageGallery() {
                 })}
                 {images.length === 0 && (
                   <div className="col-span-4 py-8 text-center text-xs text-zinc-400 font-medium">
-                    No images added. Upload photos or paste URLs.
+                    No images added yet. Click above to select photos from your device.
                   </div>
                 )}
               </div>

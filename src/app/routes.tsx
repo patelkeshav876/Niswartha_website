@@ -17,7 +17,6 @@ const Donation = lazy(() => import('./pages/Donation').then((m) => ({ default: m
 const DonationFlow = lazy(() => import('./pages/DonationFlow').then((m) => ({ default: m.DonationFlow })));
 const EventBooking = lazy(() => import('./pages/EventBooking').then((m) => ({ default: m.EventBooking })));
 const VisitBooking = lazy(() => import('./pages/VisitBooking').then((m) => ({ default: m.VisitBooking })));
-const SuggestEvent = lazy(() => import('./pages/SuggestEvent').then((m) => ({ default: m.SuggestEvent })));
 const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
 const MyBookings = lazy(() => import('./pages/MyBookings').then((m) => ({ default: m.MyBookings })));
 const DonationHistory = lazy(() => import('./pages/DonationHistory').then((m) => ({ default: m.DonationHistory })));
@@ -112,7 +111,7 @@ export const router = createBrowserRouter([
       { path: 'ashram/:id', element: <SuspenseWrap><AshramDetail /></SuspenseWrap> },
 
       // Protected pages
-      { path: 'events/suggest', element: <ProtectedRoute><SuspenseWrap><SuggestEvent /></SuspenseWrap></ProtectedRoute> },
+      { path: 'events/suggest', element: <Navigate to="/events" replace /> },
       { path: 'events/book/:id', element: <ProtectedRoute><SuspenseWrap><EventBooking /></SuspenseWrap></ProtectedRoute> },
       { path: 'visit-book/:ashramId', element: <ProtectedRoute><SuspenseWrap><VisitBooking /></SuspenseWrap></ProtectedRoute> },
       { path: 'visit-booking/:ashramId', element: <ProtectedRoute><SuspenseWrap><VisitBooking /></SuspenseWrap></ProtectedRoute> },
@@ -163,7 +162,6 @@ export const router = createBrowserRouter([
         element: <SuperAdminRoute><SuspenseWrap><SuperAdminLayout /></SuspenseWrap></SuperAdminRoute>,
         children: [
           { index: true, element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
-          { path: 'media', element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
           { path: 'hero', element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
           { path: 'users', element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
           { path: 'ads', element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },

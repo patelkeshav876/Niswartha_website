@@ -116,9 +116,9 @@ export function Help() {
         'We provide specialized digital classrooms, speech therapy labs, hostel residence for boys and girls up to 14 years, free uniforms, textbooks, bus transport, sports grounds, and vocational training.',
     },
     {
-      question: 'Can I suggest or sponsor a special event?',
+      question: 'How can I participate in ashram events or celebrations?',
       answer:
-        'Yes! Navigate to the Events page and click "Suggest / Sponsor Event". You can propose birthday celebrations, meal distribution, or cultural programs for the children.',
+        'You can view upcoming gatherings on our Events page and click "Register / Join". To organize meal distribution or special visits, navigate to Visit Us to schedule a slot directly with the ashram administration.',
     },
     {
       question: 'What payment methods are supported?',

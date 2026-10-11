@@ -3,7 +3,6 @@ import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
-import { MediaPickerModal } from './MediaPickerModal';
 import {
   Sparkles,
   Image as ImageIcon,
@@ -17,7 +16,8 @@ import {
   Monitor,
   Smartphone,
   Eye,
-  Check
+  Check,
+  Upload
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { toast } from 'sonner';
@@ -55,10 +55,16 @@ export function HeroManager() {
   const [saving, setSaving] = useState(false);
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
 
-  // Media Picker modal states
-  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
-  const [mediaPickerTarget, setMediaPickerTarget] = useState<'bgUrl' | 'bgVideoUrl' | 'mobileFallbackUrl'>('bgUrl');
-  const [mediaPickerType, setMediaPickerType] = useState<'image' | 'video' | 'any'>('any');
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, field: 'bgUrl' | 'bgVideoUrl' | 'mobileFallbackUrl') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setForm((prev) => ({ ...prev, [field]: reader.result as string }));
+      toast.success('File loaded successfully');
+    };
+    reader.readAsDataURL(file);
+  };
 
   const fetchConfig = async (pageKey: string) => {
     setLoading(true);
@@ -102,12 +108,6 @@ export function HeroManager() {
     } finally {
       setSaving(false);
     }
-  };
-
-  const openPicker = (target: 'bgUrl' | 'bgVideoUrl' | 'mobileFallbackUrl', allowed: 'image' | 'video' | 'any') => {
-    setMediaPickerTarget(target);
-    setMediaPickerType(allowed);
-    setMediaPickerOpen(true);
   };
 
   return (
@@ -177,14 +177,21 @@ export function HeroManager() {
                   <label className="text-xs font-bold text-zinc-700 uppercase">Background Image URL</label>
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Paste image URL or pick from Media Library..."
+                      placeholder="Paste image URL or choose file..."
                       value={form.bgUrl}
                       onChange={(e) => setForm({ ...form, bgUrl: e.target.value })}
                       className="text-xs rounded-xl flex-1"
                     />
-                    <Button type="button" variant="outline" className="rounded-xl text-xs whitespace-nowrap" onClick={() => openPicker('bgUrl', 'image')}>
-                      Media Library
-                    </Button>
+                    <label className="cursor-pointer inline-flex items-center justify-center rounded-xl border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 text-xs font-medium whitespace-nowrap shadow-sm">
+                      <Upload className="h-3.5 w-3.5 mr-1" />
+                      Upload Image
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleFileUpload(e, 'bgUrl')}
+                      />
+                    </label>
                   </div>
                 </div>
               )}
@@ -196,14 +203,21 @@ export function HeroManager() {
                     <label className="text-xs font-bold text-zinc-700 uppercase">Background Video Link URL (.mp4 / WebM)</label>
                     <div className="flex gap-2">
                       <Input
-                        placeholder="Paste video URL or select video from Media Library..."
+                        placeholder="Paste video URL or choose file..."
                         value={form.bgVideoUrl}
                         onChange={(e) => setForm({ ...form, bgVideoUrl: e.target.value })}
                         className="text-xs rounded-xl flex-1"
                       />
-                      <Button type="button" variant="outline" className="rounded-xl text-xs whitespace-nowrap" onClick={() => openPicker('bgVideoUrl', 'video')}>
-                        Media Library
-                      </Button>
+                      <label className="cursor-pointer inline-flex items-center justify-center rounded-xl border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 text-xs font-medium whitespace-nowrap shadow-sm">
+                        <Upload className="h-3.5 w-3.5 mr-1" />
+                        Upload Video
+                        <input
+                          type="file"
+                          accept="video/*"
+                          className="hidden"
+                          onChange={(e) => handleFileUpload(e, 'bgVideoUrl')}
+                        />
+                      </label>
                     </div>
                   </div>
 
@@ -216,9 +230,16 @@ export function HeroManager() {
                         onChange={(e) => setForm({ ...form, mobileFallbackUrl: e.target.value })}
                         className="text-xs rounded-xl flex-1"
                       />
-                      <Button type="button" variant="outline" className="rounded-xl text-xs whitespace-nowrap" onClick={() => openPicker('mobileFallbackUrl', 'image')}>
-                        Media Library
-                      </Button>
+                      <label className="cursor-pointer inline-flex items-center justify-center rounded-xl border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 text-xs font-medium whitespace-nowrap shadow-sm">
+                        <Upload className="h-3.5 w-3.5 mr-1" />
+                        Upload Image
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleFileUpload(e, 'mobileFallbackUrl')}
+                        />
+                      </label>
                     </div>
                   </div>
 
@@ -519,15 +540,6 @@ export function HeroManager() {
         </div>
       </div>
 
-      {/* Media Picker Modal */}
-      <MediaPickerModal
-        open={mediaPickerOpen}
-        onOpenChange={setMediaPickerOpen}
-        allowedTypes={mediaPickerType}
-        onSelectMedia={(media) => {
-          setForm({ ...form, [mediaPickerTarget]: media.url });
-        }}
-      />
     </div>
   );
 }

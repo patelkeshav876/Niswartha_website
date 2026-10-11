@@ -4,10 +4,9 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-import { ArrowLeft, User, Bell, Shield, LogOut, Image as ImageIcon, Save } from 'lucide-react';
+import { ArrowLeft, User, Bell, Shield, LogOut, Image as ImageIcon, Save, Upload } from 'lucide-react';
 import { api } from '../../lib/api';
 import { toast } from 'sonner';
-import { MediaPickerModal } from '../../components/MediaPickerModal';
 
 export function Settings() {
   const [config, setConfig] = useState<any>({
@@ -17,7 +16,17 @@ export function Settings() {
     aboutPrincipalImgUrl: '',
   });
   const [loading, setLoading] = useState(false);
-  const [activePicker, setActivePicker] = useState<string | null>(null);
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const res = ev.target?.result as string;
+      if (res) setConfig((prev: any) => ({ ...prev, [field]: res }));
+    };
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     (async () => {
@@ -69,7 +78,7 @@ export function Settings() {
           </div>
           <Card className="border border-zinc-200 shadow-sm rounded-2xl bg-white overflow-hidden p-5">
             <p className="text-xs text-zinc-500 mb-4 leading-relaxed">
-              Customize the images displayed on the public About Us page. Choose photos from your Media Library or upload new pictures.
+              Customize the images displayed on the public About Us page. Upload photos from your device or set custom image URLs.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -82,15 +91,15 @@ export function Settings() {
                     placeholder="Entrance building picture URL..."
                     className="rounded-xl text-xs bg-white flex-1"
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="rounded-xl text-xs whitespace-nowrap"
-                    onClick={() => setActivePicker('hero')}
-                  >
-                    Select Photo
-                  </Button>
+                  <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs whitespace-nowrap">
+                    <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleUpload(e, 'aboutHeroImgUrl')}
+                    />
+                  </label>
                 </div>
                 {config.aboutHeroImgUrl && (
                   <img src={config.aboutHeroImgUrl} alt="" className="h-20 w-full object-cover rounded-xl border mt-2" />
@@ -106,15 +115,15 @@ export function Settings() {
                     placeholder="School ground assembly picture URL..."
                     className="rounded-xl text-xs bg-white flex-1"
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="rounded-xl text-xs whitespace-nowrap"
-                    onClick={() => setActivePicker('assembly')}
-                  >
-                    Select Photo
-                  </Button>
+                  <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs whitespace-nowrap">
+                    <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleUpload(e, 'aboutAssemblyImgUrl')}
+                    />
+                  </label>
                 </div>
                 {config.aboutAssemblyImgUrl && (
                   <img src={config.aboutAssemblyImgUrl} alt="" className="h-20 w-full object-cover rounded-xl border mt-2" />
@@ -130,15 +139,15 @@ export function Settings() {
                     placeholder="Award certificate picture URL..."
                     className="rounded-xl text-xs bg-white flex-1"
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="rounded-xl text-xs whitespace-nowrap"
-                    onClick={() => setActivePicker('award')}
-                  >
-                    Select Photo
-                  </Button>
+                  <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs whitespace-nowrap">
+                    <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleUpload(e, 'aboutAwardImgUrl')}
+                    />
+                  </label>
                 </div>
                 {config.aboutAwardImgUrl && (
                   <img src={config.aboutAwardImgUrl} alt="" className="h-20 w-full object-cover rounded-xl border mt-2" />
@@ -169,15 +178,15 @@ export function Settings() {
                       className="rounded-xl text-xs bg-white"
                     />
                     <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="rounded-xl text-xs flex-1 bg-white border-zinc-200"
-                        onClick={() => setActivePicker('principal')}
-                      >
-                        Select from Media Library
-                      </Button>
+                      <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs flex-1 justify-center">
+                        <Upload className="h-3.5 w-3.5 mr-1" /> Upload Photo from Device
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleUpload(e, 'aboutPrincipalImgUrl')}
+                        />
+                      </label>
                     </div>
                   </div>
                 </div>
@@ -209,19 +218,6 @@ export function Settings() {
           </Card>
         </section>
       </div>
-
-      <MediaPickerModal
-        open={Boolean(activePicker)}
-        onOpenChange={() => setActivePicker(null)}
-        allowedTypes="image"
-        title="Select Photo from Media Library"
-        onSelectMedia={(media) => {
-          if (activePicker === 'hero') setConfig({ ...config, aboutHeroImgUrl: media.url });
-          if (activePicker === 'assembly') setConfig({ ...config, aboutAssemblyImgUrl: media.url });
-          if (activePicker === 'award') setConfig({ ...config, aboutAwardImgUrl: media.url });
-          if (activePicker === 'principal') setConfig({ ...config, aboutPrincipalImgUrl: media.url });
-        }}
-      />
     </div>
   );
 }

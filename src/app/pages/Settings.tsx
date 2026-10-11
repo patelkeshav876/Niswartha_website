@@ -303,18 +303,12 @@ export function Settings() {
                 </div>
               </div>
 
-              {/* Colorful Mini Rainbow Dash Status Bar (Matching Screenshot 1) */}
-              <div className="mb-2 flex items-center gap-1">
-                <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider mr-1">Status</span>
-                <div className="flex items-center gap-0.5">
-                  {['#f43f5e', '#fb923c', '#facc15', '#4ade80', '#2dd4bf', '#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#e2e8f0', '#cbd5e1'].map((color, idx) => (
-                    <span
-                      key={idx}
-                      className="w-1 h-3 rounded-full"
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                </div>
+              {/* Donor Portal Status Badge */}
+              <div className="mb-2 flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                  {currentUser.role === 'super_admin' ? 'Super Admin' : 'Verified Donor'}
+                </span>
               </div>
             </div>
 
@@ -324,30 +318,30 @@ export function Settings() {
                 {firstName} {lastName}
               </h3>
               <p className="text-xs text-zinc-500 font-normal leading-relaxed mt-1">
-                {currentUser.bio || 'Donor.'}
+                {currentUser.bio || 'Dedicated supporter of the deaf and speech-impaired children community.'}
               </p>
             </div>
           </div>
 
-          {/* 3 Metrics Stats Row Divided by Vertical Lines (Matching Screenshot 1) */}
+          {/* 3 Metrics Stats Row: Visits, Shipments, Status */}
           <div className="border-t border-b border-zinc-100 grid grid-cols-3 text-center py-3.5 bg-zinc-50/60">
             <div className="px-2">
               <p className="text-base font-bold text-zinc-900 leading-tight">
                 {userStats.visits ? `${userStats.visits}` : '3'}
               </p>
-              <p className="text-[11px] font-medium text-zinc-400 mt-0.5">Likes</p>
+              <p className="text-[11px] font-medium text-zinc-500 mt-0.5">Visits</p>
             </div>
             <div className="border-x border-zinc-200/60 px-2">
               <p className="text-base font-bold text-zinc-900 leading-tight">
                 {userStats.donations ? `${userStats.donations}` : '8'}
               </p>
-              <p className="text-[11px] font-medium text-zinc-400 mt-0.5">Posts</p>
+              <p className="text-[11px] font-medium text-zinc-500 mt-0.5">Shipments</p>
             </div>
             <div className="px-2">
-              <p className="text-base font-bold text-zinc-900 leading-tight">
-                {currentUser.role === 'super_admin' ? '342.9K' : '12.4K'}
+              <p className="text-base font-bold text-emerald-600 leading-tight">
+                Active
               </p>
-              <p className="text-[11px] font-medium text-zinc-400 mt-0.5">Views</p>
+              <p className="text-[11px] font-medium text-zinc-500 mt-0.5">Status</p>
             </div>
           </div>
 

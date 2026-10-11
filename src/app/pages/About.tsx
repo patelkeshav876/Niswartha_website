@@ -237,34 +237,94 @@ export function About() {
       </PremiumHeroBackdrop>
 
       <main className="flex-1 space-y-16 py-12">
-        {/* ──── Empowering Students Overview ──── */}
+        {/* ──── Wander 2-Column Overview: Why Families Choose Us ──── */}
         <section className="section-container">
           <ScrollReveal>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-              <div className="lg:col-span-5 order-2 lg:order-1">
-                <div className="relative w-[90%] sm:w-full max-w-sm sm:max-w-none mx-auto rounded-3xl overflow-hidden shadow-xl border border-emerald-100 bg-white p-2">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+              <div className="lg:col-span-6 space-y-6">
+                <div className="space-y-3">
+                  <span className="text-xs font-bold uppercase tracking-widest text-primary">Why Families Choose Us</span>
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-zinc-900 leading-tight">
+                    Empowering hearing-impaired students with quality education and skills for an independent future
+                  </h2>
+                  <p className="text-sm text-zinc-600 leading-relaxed">
+                    The Deaf and Dumb Industrial Institute, Nagpur, provides a structured and inclusive educational environment designed specifically for hearing-impaired students. Our experienced and specially trained teachers ensure that every child receives personalized attention and the opportunity to develop academic, communication, and life skills.
+                  </p>
+                </div>
+
+                {/* Wander 3-Stat Counters Row */}
+                <div className="grid grid-cols-3 gap-3 pt-2 border-t border-zinc-100">
+                  <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/70 text-center">
+                    <p className="font-serif font-bold text-2xl sm:text-3xl text-primary">100%</p>
+                    <p className="text-[11px] font-semibold text-zinc-600 mt-0.5">Board Results</p>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/70 text-center">
+                    <p className="font-serif font-bold text-2xl sm:text-3xl text-primary">78+</p>
+                    <p className="text-[11px] font-semibold text-zinc-600 mt-0.5">Years Legacy</p>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/70 text-center">
+                    <p className="font-serif font-bold text-2xl sm:text-3xl text-primary">1 - 12</p>
+                    <p className="text-[11px] font-semibold text-zinc-600 mt-0.5">Grades Taught</p>
+                  </div>
+                </div>
+
+                {/* Campus Image & Caption */}
+                <div className="relative rounded-2xl overflow-hidden shadow-md border border-emerald-100 bg-white p-2">
                   <img
                     src={assemblyImage}
                     alt="School Assembly and Ground Activities"
-                    className="w-full h-64 sm:h-80 object-cover rounded-2xl"
+                    className="w-full h-48 sm:h-56 object-cover rounded-xl"
                   />
-                  <div className="p-3 text-center">
-                    <p className="text-xs font-bold text-zinc-700">Holistic Campus and School Assembly</p>
+                  <div className="p-2 text-center">
+                    <p className="text-xs font-bold text-zinc-700">Holistic Campus Life & School Assembly</p>
                   </div>
                 </div>
               </div>
 
-              <div className="lg:col-span-7 order-1 lg:order-2 space-y-4">
-                <span className="text-xs font-bold uppercase tracking-widest text-primary">About us</span>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-zinc-900 leading-tight">
-                  Empowering hearing-impaired students with quality education and skills for an independent future
-                </h2>
-                <p className="text-sm text-zinc-600 leading-relaxed">
-                  The Deaf and Dumb Industrial Institute, Nagpur, provides a structured and inclusive educational environment designed specifically for hearing-impaired students. Our experienced and specially trained teachers ensure that every child receives personalized attention and the opportunity to develop academic, communication, and life skills.
-                </p>
-                <p className="text-sm text-zinc-600 leading-relaxed">
-                  The Institute offers well-equipped classrooms, digital learning facilities, speech therapy support, a rich library, and a safe campus. We focus on the overall development of students through academics, sports, vocational guidance, and regular parent engagement, helping each student move towards independence and a successful future.
-                </p>
+              {/* Right Column: 3 Wander Feature Cards */}
+              <div className="lg:col-span-6 space-y-4">
+                {[
+                  {
+                    title: 'Specialized Special Educators',
+                    description: 'Qualified and specially trained teachers who provide sign-language and speech-therapy personalized development.',
+                    icon: GraduationCap,
+                    tag: 'Academics',
+                  },
+                  {
+                    title: 'Free Uniforms, Textbooks & Hostels',
+                    description: 'Full residential accommodation for hearing-impaired boys and girls with free school resources and bus transport.',
+                    icon: ShieldCheck,
+                    tag: 'Campus Care',
+                  },
+                  {
+                    title: 'Digital Classrooms & Speech Therapy Labs',
+                    description: 'State-of-the-art speech therapy rooms, audio testing equipment, and digital interactive visual displays.',
+                    icon: Volume2,
+                    tag: 'Facilities',
+                  },
+                ].map((feat, i) => (
+                  <div
+                    key={i}
+                    className="p-5 rounded-3xl bg-white border border-zinc-200/80 hover:border-primary/40 shadow-xs hover:shadow-md transition-all duration-300 flex items-start gap-4 group"
+                  >
+                    <div className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                      <feat.icon className="h-6 w-6" />
+                    </div>
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-serif font-bold text-base text-zinc-900 group-hover:text-primary transition-colors">
+                          {feat.title}
+                        </h4>
+                        <Badge className="bg-primary/10 text-primary border-none text-[9px] uppercase font-bold px-2 py-0.5">
+                          {feat.tag}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-zinc-500 leading-relaxed">
+                        {feat.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </ScrollReveal>
@@ -528,6 +588,58 @@ export function About() {
               </Card>
             </ScrollReveal>
           </div>
+        </section>
+
+        {/* ──── Connecting as Easy as 1-2-3 (Wander Layout) ──── */}
+        <section className="section-container">
+          <ScrollReveal>
+            <div className="rounded-3xl p-8 sm:p-12 bg-white border border-zinc-200/80 shadow-xs space-y-8">
+              <div className="text-center max-w-2xl mx-auto space-y-2">
+                <span className="text-xs font-bold uppercase tracking-widest text-primary">Admission & Community</span>
+                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-zinc-900">
+                  Connecting with Our Institute as Easy as 1-2-3
+                </h2>
+                <p className="text-xs sm:text-sm text-zinc-500 leading-relaxed">
+                  We welcome parents, donors, and volunteers to participate in the growth and empowerment of our hearing-impaired students.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                  {
+                    step: '01',
+                    title: 'Schedule Visit or Inquire',
+                    description: 'Book an ashram visit online or call our team to learn about admissions and our educational curriculum.',
+                  },
+                  {
+                    step: '02',
+                    title: 'Campus Tour & Child Evaluation',
+                    description: 'Meet our experienced educators and speech therapists for a tailored assessment of the child’s learning needs.',
+                  },
+                  {
+                    step: '03',
+                    title: 'Empowerment & Growth',
+                    description: 'Students join an uplifting, inclusive family environment with free lodging, books, and career guidance.',
+                  },
+                ].map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="p-6 rounded-2xl bg-zinc-50/70 border border-zinc-200/70 relative space-y-3 hover:bg-white hover:border-primary/30 transition-all shadow-xs"
+                  >
+                    <span className="font-serif font-bold text-3xl text-primary/40 block">
+                      {item.step}
+                    </span>
+                    <h3 className="font-serif font-bold text-base text-zinc-900">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs text-zinc-500 leading-relaxed">
+                      {item.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </ScrollReveal>
         </section>
 
         {/* ──── Key Facilities and Student Support (Infinite Bi-Directional Marquee) ──── */}

@@ -44,34 +44,42 @@ import {
 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { toast } from 'sonner';
-import { MediaLibrary } from '../../components/MediaLibrary';
 import { HeroManager } from '../../components/HeroManager';
-import { MediaPickerModal } from '../../components/MediaPickerModal';
 import { ImageUploadWithCamera } from '../../components/ImageUploadWithCamera';
-import { BadgeCanvaStudio } from '../../components/BadgeCanvaStudio';
-import { SUPERHERO_BADGES, type SuperheroBadge } from '../../lib/superheroBadges';
 import { applyThemeColor } from '../../lib/api';
 
-type ActiveTab = 'health' | 'users' | 'ads' | 'logs' | 'configs' | 'hero' | 'media' | 'backup' | 'badges';
+type ActiveTab = 'health' | 'users' | 'ads' | 'logs' | 'configs' | 'hero' | 'backup';
+
+const DEFAULT_SUPERADMIN_CONFIG = {
+  siteName: 'Niswartha — Selfless Service',
+  siteTagline: 'Empowering Deaf & Dumb Children',
+  contactEmail: 'contact@niswartha.org',
+  contactPhone: '+91 9876543210',
+  maintenanceMode: false,
+  allowNewRegistrations: true,
+  enableNotifications: true,
+  globalAnnouncement: '',
+  marqueeSpeed: 35,
+  supportCauseTitle: 'Support Our Cause',
+  supportCauseSubtitle: 'Your generous contribution helps us provide better care, education, and opportunities to our children.',
+  supportCauseBgUrl: '',
+  donationWording: 'Support Our Mission',
+  whatsappNumber: '+91 98230 11223',
+  whatsappWelcomeMessage: 'Hello Niswartha Team, I would like to support your noble mission.',
+  heroBgType: 'gradient',
+  heroOverlayOpacity: 0.55,
+  heroBgUrl: '',
+  heroParallax: true,
+  aboutHeroImgUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80',
+  aboutAssemblyImgUrl: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=80',
+  aboutAwardImgUrl: 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?auto=format&fit=crop&w=800&q=80',
+  aboutPrincipalImgUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80',
+  primaryThemeColor: 'green',
+};
 
 export function SuperAdminDashboard() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('health');
   const location = useLocation();
-
-  const [badgeList, setBadgeList] = useState<any[]>(SUPERHERO_BADGES);
-  const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
-  const [badgePickerOpen, setBadgePickerOpen] = useState(false);
-  const [canvaStudioOpen, setCanvaStudioOpen] = useState(false);
-  const [editingBadgeId, setEditingBadgeId] = useState<string | null>(null);
-
-  const [badgeForm, setBadgeForm] = useState({
-    name: 'Gryffindor Lion of Courage',
-    hero: 'Gryffindor',
-    universe: 'Harry Potter',
-    iconSymbol: '🦁',
-    imageUrl: '',
-    amount: 500,
-  });
 
   useEffect(() => {
     if (location.pathname.endsWith('/users')) setActiveTab('users');
@@ -79,29 +87,22 @@ export function SuperAdminDashboard() {
     else if (location.pathname.endsWith('/logs')) setActiveTab('logs');
     else if (location.pathname.endsWith('/configs')) setActiveTab('configs');
     else if (location.pathname.endsWith('/hero')) setActiveTab('hero');
-    else if (location.pathname.endsWith('/media')) setActiveTab('media');
     else if (location.pathname.endsWith('/backup')) setActiveTab('backup');
     else setActiveTab('health');
   }, [location.pathname]);
   
-  // States
-  const [config, setConfig] = useState<any>(null);
+  // States - Initialize with full default config so Configurations tab NEVER renders blank!
+  const [config, setConfig] = useState<any>(DEFAULT_SUPERADMIN_CONFIG);
   const [users, setUsers] = useState<any[]>([]);
   const [ads, setAds] = useState<any[]>([]);
   const [logs, setLogs] = useState<{ email: any[]; security: any[]; audit: any[] }>({ email: [], security: [], audit: [] });
   const [loading, setLoading] = useState(false);
   const [logsFilter, setLogsFilter] = useState<'all' | 'email' | 'security' | 'audit'>('all');
   
-  // Ad modal & picker states
+  // Ad modal states
   const [isAdModalOpen, setIsAdModalOpen] = useState(false);
   const [editingAd, setEditingAd] = useState<any>(null);
   const [previewAd, setPreviewAd] = useState<any>(null);
-  const [adPickerOpen, setAdPickerOpen] = useState(false);
-  const [causePickerOpen, setCausePickerOpen] = useState(false);
-  const [aboutHeroPickerOpen, setAboutHeroPickerOpen] = useState(false);
-  const [aboutAssemblyPickerOpen, setAboutAssemblyPickerOpen] = useState(false);
-  const [aboutAwardPickerOpen, setAboutAwardPickerOpen] = useState(false);
-  const [aboutPrincipalPickerOpen, setAboutPrincipalPickerOpen] = useState(false);
   const [adForm, setAdForm] = useState({
     title: '',
     bannerUrl: '',
@@ -116,6 +117,17 @@ export function SuperAdminDashboard() {
     popupDelay: 3,
   });
 
+  const handleDirectUpload = (e: React.ChangeEvent<HTMLInputElement>, setter: (url: string) => void) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const res = ev.target?.result as string;
+      if (res) setter(res);
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Simulated metrics for System Health
   const [metrics, setMetrics] = useState({
     cpu: 18,
@@ -129,21 +141,12 @@ export function SuperAdminDashboard() {
     try {
       const c = await api.getConfig();
       if (c && typeof c === 'object') {
-        setConfig(c);
+        setConfig((prev: any) => ({ ...DEFAULT_SUPERADMIN_CONFIG, ...prev, ...c }));
         return;
       }
     } catch {
-      // Ignore
+      // Default config already set
     }
-    setConfig({
-      siteName: 'Niswartha — Selfless Service',
-      siteTagline: 'Empowering Deaf & Dumb Children',
-      contactEmail: 'contact@niswartha.org',
-      contactPhone: '+91 9876543210',
-      maintenanceMode: false,
-      allowNewRegistrations: true,
-      enableNotifications: true,
-    });
   };
 
   const fetchUsers = async () => {
@@ -500,11 +503,9 @@ export function SuperAdminDashboard() {
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide border-b border-zinc-200">
         {[
           { id: 'health' as const, label: 'System Health', icon: Activity },
-          { id: 'media' as const, label: 'Media Library', icon: ImageIcon },
           { id: 'hero' as const, label: 'Page Hero Manager', icon: Layers },
           { id: 'users' as const, label: 'User Management', icon: Users },
           { id: 'ads' as const, label: 'Ads Manager', icon: Megaphone },
-          { id: 'badges' as const, label: 'Superhero Badges', icon: Award },
           { id: 'logs' as const, label: 'System Logs', icon: FileText },
           { id: 'configs' as const, label: 'Configurations', icon: Settings },
           { id: 'backup' as const, label: 'Backup / Restore', icon: Database }
@@ -526,255 +527,6 @@ export function SuperAdminDashboard() {
 
       {/* Tab Contents */}
       <div className="pt-2">
-        {activeTab === 'badges' && (
-          <div className="space-y-6 animate-fade-up">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
-              <div>
-                <h2 className="text-xl font-serif font-bold text-zinc-950 flex items-center gap-2">
-                  <Award className="h-5 w-5 text-amber-500" />
-                  Superhero Badges and Honors Manager
-                </h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Configure circular Marvel & DC badges awarded when donors make contributions
-                </p>
-              </div>
-              <Button
-                onClick={() => setIsBadgeModalOpen(true)}
-                className="rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs gap-1.5 shadow"
-              >
-                <Plus className="h-4 w-4" /> Create New Badge
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {badgeList.map((badge, idx) => (
-                <Card key={badge.id || idx} className="border border-zinc-200 shadow-xs rounded-2xl bg-white p-4 space-y-3 hover:border-amber-400 transition-all flex flex-col justify-between">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-full bg-gradient-to-tr from-zinc-900 via-amber-500 to-black border-2 border-amber-400 flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-md overflow-hidden">
-                        {badge.imageUrl ? (
-                          <img src={badge.imageUrl} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          badge.iconSymbol || '🛡️'
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-bold text-xs text-zinc-900 truncate">{badge.hero}</h4>
-                        <p className="text-[10px] text-amber-600 font-semibold truncate">{badge.name}</p>
-                        <Badge className="bg-zinc-100 text-zinc-700 border-none font-bold text-[9px] mt-1">
-                          {badge.universe || 'Marvel'}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="pt-2 border-t flex items-center justify-between text-[11px] font-medium text-zinc-500">
-                      <span>Unlock Threshold:</span>
-                      <span className="font-bold text-[#1E3A8A]">₹{(badge.amount || 500).toLocaleString()}</span>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-zinc-100 flex items-center justify-between">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setEditingBadgeId(badge.id);
-                        setBadgeForm({
-                          name: badge.name || '',
-                          hero: badge.hero || '',
-                          universe: badge.universe || 'Marvel',
-                          iconSymbol: badge.iconSymbol || '🛡️',
-                          imageUrl: badge.imageUrl || '',
-                          amount: badge.amount || 500,
-                        });
-                        setIsBadgeModalOpen(true);
-                      }}
-                      className="text-[11px] font-bold text-amber-600 h-7 px-2 hover:bg-amber-50 rounded-lg gap-1"
-                    >
-                      <Edit2 className="h-3 w-3" /> Edit Badge
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        if (confirm(`Delete badge "${badge.hero}"?`)) {
-                          setBadgeList((prev) => prev.filter((b) => b.id !== badge.id));
-                          toast.success('Badge deleted.');
-                        }
-                      }}
-                      className="h-7 w-7 rounded-lg text-rose-600 hover:bg-rose-50"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </Card>
-              ))}
-            </div>
-
-            {/* Create / Edit Badge Dialog */}
-            <Dialog open={isBadgeModalOpen} onOpenChange={setIsBadgeModalOpen}>
-              <DialogContent className="max-w-md rounded-3xl bg-white p-6 shadow-2xl overflow-y-auto max-h-[85vh]">
-                <DialogHeader>
-                  <DialogTitle className="text-lg font-serif font-bold text-zinc-950">
-                    {editingBadgeId ? 'Edit Superhero / Harry Potter Badge' : 'Add New Superhero / Harry Potter Badge'}
-                  </DialogTitle>
-                </DialogHeader>
-
-                <div className="space-y-4 py-2 text-xs">
-                  {/* Badge Custom Image Upload & Canva Studio Button */}
-                  <div className="space-y-2 flex flex-col items-center pb-3 border-b border-dashed border-zinc-200">
-                    <label className="font-bold text-zinc-700 uppercase text-[10px] self-start">
-                      Badge Circular Image / Logo *
-                    </label>
-                    <ImageUploadWithCamera
-                      value={badgeForm.imageUrl}
-                      onChange={(img) => setBadgeForm({ ...badgeForm, imageUrl: img })}
-                      aspectRatio="square"
-                      maxSizeKB={200}
-                    />
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCanvaStudioOpen(true)}
-                        className="rounded-full text-[10px] font-bold text-amber-700 bg-amber-50 border-amber-200 gap-1.5 h-7"
-                      >
-                        <Sparkles className="h-3 w-3 text-amber-500" />
-                        Canva Badge Studio
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setBadgePickerOpen(true)}
-                        className="text-[10px] text-[#1E3A8A] h-7 font-bold"
-                      >
-                        Media Library
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="font-bold text-zinc-700 uppercase text-[10px]">Badge Honor Title *</label>
-                    <Input
-                      value={badgeForm.name}
-                      onChange={(e) => setBadgeForm({ ...badgeForm, name: e.target.value })}
-                      placeholder="e.g. Lion of Courage Honor"
-                      className="rounded-xl text-xs"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-zinc-700 uppercase text-[10px]">Hero / House Name *</label>
-                      <Input
-                        value={badgeForm.hero}
-                        onChange={(e) => setBadgeForm({ ...badgeForm, hero: e.target.value })}
-                        placeholder="e.g. Gryffindor"
-                        className="rounded-xl text-xs"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-zinc-700 uppercase text-[10px]">Universe</label>
-                      <select
-                        value={badgeForm.universe}
-                        onChange={(e) => setBadgeForm({ ...badgeForm, universe: e.target.value })}
-                        className="w-full h-9 rounded-xl border border-zinc-200 text-xs px-2 bg-white font-medium"
-                      >
-                        <option value="Harry Potter">Harry Potter</option>
-                        <option value="Marvel">Marvel</option>
-                        <option value="DC">DC</option>
-                        <option value="Custom">Custom</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-zinc-700 uppercase text-[10px]">Unlock Threshold (₹) *</label>
-                      <Input
-                        type="number"
-                        value={badgeForm.amount}
-                        onChange={(e) => setBadgeForm({ ...badgeForm, amount: Number(e.target.value) })}
-                        placeholder="500"
-                        className="rounded-xl text-xs"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="font-bold text-zinc-700 uppercase text-[10px]">Emoji / Icon Fallback</label>
-                      <Input
-                        value={badgeForm.iconSymbol}
-                        onChange={(e) => setBadgeForm({ ...badgeForm, iconSymbol: e.target.value })}
-                        placeholder="e.g. 🦁"
-                        className="rounded-xl text-xs"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsBadgeModalOpen(false)} className="rounded-full text-xs">
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      if (!badgeForm.hero.trim() || !badgeForm.name.trim()) {
-                        toast.error('Hero and Badge title are required.');
-                        return;
-                      }
-                      if (editingBadgeId) {
-                        setBadgeList((prev) =>
-                          prev.map((b) => (b.id === editingBadgeId ? { ...b, ...badgeForm } : b))
-                        );
-                        toast.success(`Updated ${badgeForm.hero} Badge!`);
-                      } else {
-                        const newB = {
-                          id: `badge-${Date.now()}`,
-                          ...badgeForm,
-                          bgGradient: 'from-amber-600 via-[#1E3A8A] to-black',
-                          accentBorder: 'border-amber-400',
-                        };
-                        setBadgeList((prev) => [newB, ...prev]);
-                        toast.success(`Created ${badgeForm.hero} Badge!`);
-                      }
-                      setIsBadgeModalOpen(false);
-                      setEditingBadgeId(null);
-                    }}
-                    className="rounded-full bg-amber-500 text-zinc-950 font-bold text-xs"
-                  >
-                    {editingBadgeId ? 'Save Badge Changes' : 'Save & Publish Badge'}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            {/* Media Picker Modal for Badge Image */}
-            <MediaPickerModal
-              isOpen={badgePickerOpen}
-              onClose={() => setBadgePickerOpen(false)}
-              onSelectImage={(url) => {
-                setBadgeForm({ ...badgeForm, imageUrl: url });
-                setBadgePickerOpen(false);
-              }}
-              title="Select Badge Image"
-            />
-
-            {/* Canva Badge Studio & Creative Designer Modal */}
-            <BadgeCanvaStudio
-              isOpen={canvaStudioOpen}
-              onClose={() => setCanvaStudioOpen(false)}
-              onApplyImage={(graphicUrl) => {
-                setBadgeForm({ ...badgeForm, imageUrl: graphicUrl });
-              }}
-              initialTitle={badgeForm.name}
-              initialHero={badgeForm.hero}
-              initialSymbol={badgeForm.iconSymbol}
-            />
-          </div>
-        )}
-        {activeTab === 'media' && <MediaLibrary />}
         {activeTab === 'hero' && <HeroManager />}
         {activeTab === 'health' && (
           <div className="space-y-6 animate-fade-up">
@@ -1172,18 +924,18 @@ export function SuperAdminDashboard() {
                         <Input
                           value={config.supportCauseBgUrl || ''}
                           onChange={(e) => setConfig({ ...config, supportCauseBgUrl: e.target.value })}
-                          placeholder="Paste image URL or choose from Media Library..."
+                          placeholder="Paste image URL or choose file from device..."
                           className="rounded-xl text-xs bg-white flex-1"
                         />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="rounded-xl text-xs whitespace-nowrap bg-white"
-                          onClick={() => setCausePickerOpen(true)}
-                        >
-                          Media Library
-                        </Button>
+                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
+                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload Photo
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, supportCauseBgUrl: url }))}
+                          />
+                        </label>
                       </div>
                     </div>
                   </div>
@@ -1249,86 +1001,86 @@ export function SuperAdminDashboard() {
                   <h3 className="font-serif font-bold text-zinc-850 text-sm">About Us Custom Page Images</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-zinc-50 p-4 rounded-2xl border">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">Hero Section Photo URL</label>
+                      <label className="text-xs font-bold text-zinc-700 uppercase">Hero Section Photo</label>
                       <div className="flex gap-2">
                         <Input
                           value={config.aboutHeroImgUrl || ''}
                           onChange={(e) => setConfig({ ...config, aboutHeroImgUrl: e.target.value })}
-                          placeholder="Default school building entrance..."
+                          placeholder="Image URL or upload..."
                           className="rounded-xl text-xs bg-white flex-1"
                         />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="rounded-xl text-xs whitespace-nowrap bg-white"
-                          onClick={() => setAboutHeroPickerOpen(true)}
-                        >
-                          Pick Photo
-                        </Button>
+                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
+                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, aboutHeroImgUrl: url }))}
+                          />
+                        </label>
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">School Assembly Photo URL</label>
+                      <label className="text-xs font-bold text-zinc-700 uppercase">School Assembly Photo</label>
                       <div className="flex gap-2">
                         <Input
                           value={config.aboutAssemblyImgUrl || ''}
                           onChange={(e) => setConfig({ ...config, aboutAssemblyImgUrl: e.target.value })}
-                          placeholder="Default assembly ground image..."
+                          placeholder="Image URL or upload..."
                           className="rounded-xl text-xs bg-white flex-1"
                         />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="rounded-xl text-xs whitespace-nowrap bg-white"
-                          onClick={() => setAboutAssemblyPickerOpen(true)}
-                        >
-                          Pick Photo
-                        </Button>
+                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
+                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, aboutAssemblyImgUrl: url }))}
+                          />
+                        </label>
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">National Award Photo URL</label>
+                      <label className="text-xs font-bold text-zinc-700 uppercase">National Award Photo</label>
                       <div className="flex gap-2">
                         <Input
                           value={config.aboutAwardImgUrl || ''}
                           onChange={(e) => setConfig({ ...config, aboutAwardImgUrl: e.target.value })}
-                          placeholder="Default award certificate photo..."
+                          placeholder="Image URL or upload..."
                           className="rounded-xl text-xs bg-white flex-1"
                         />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="rounded-xl text-xs whitespace-nowrap bg-white"
-                          onClick={() => setAboutAwardPickerOpen(true)}
-                        >
-                          Pick Photo
-                        </Button>
+                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
+                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, aboutAwardImgUrl: url }))}
+                          />
+                        </label>
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">Principal Photo URL</label>
+                      <label className="text-xs font-bold text-zinc-700 uppercase">Principal Photo</label>
                       <div className="flex gap-2">
                         <Input
                           value={config.aboutPrincipalImgUrl || ''}
                           onChange={(e) => setConfig({ ...config, aboutPrincipalImgUrl: e.target.value })}
-                          placeholder="Default principal portrait..."
+                          placeholder="Image URL or upload..."
                           className="rounded-xl text-xs bg-white flex-1"
                         />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="rounded-xl text-xs whitespace-nowrap bg-white"
-                          onClick={() => setAboutPrincipalPickerOpen(true)}
-                        >
-                          Pick Photo
-                        </Button>
+                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
+                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, aboutPrincipalImgUrl: url }))}
+                          />
+                        </label>
                       </div>
                     </div>
                   </div>
@@ -1494,18 +1246,18 @@ export function SuperAdminDashboard() {
                 <Input
                   value={adForm.bannerUrl}
                   onChange={(e) => setAdForm({ ...adForm, bannerUrl: e.target.value })}
-                  placeholder="Paste banner photo URL or pick from Media Library..."
+                  placeholder="Paste banner photo URL or upload from device..."
                   className="rounded-xl text-xs flex-1"
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="rounded-xl text-xs whitespace-nowrap"
-                  onClick={() => setAdPickerOpen(true)}
-                >
-                  Media Library
-                </Button>
+                <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
+                  <Upload className="h-3.5 w-3.5 mr-1" /> Upload Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleDirectUpload(e, (url) => setAdForm({ ...adForm, bannerUrl: url }))}
+                  />
+                </label>
               </div>
             </div>
 
@@ -1653,140 +1405,6 @@ export function SuperAdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Ad Banner Media Picker */}
-      <MediaPickerModal
-        open={adPickerOpen}
-        onOpenChange={setAdPickerOpen}
-        allowedTypes="image"
-        title="Select Advertisement Banner Image"
-        onSelectMedia={(media) => {
-          setAdForm({ ...adForm, bannerUrl: media.url });
-        }}
-      />
-
-      {/* Support Our Cause Media Picker */}
-      <MediaPickerModal
-        open={causePickerOpen}
-        onOpenChange={setCausePickerOpen}
-        allowedTypes="image"
-        title="Select Support Our Cause Image"
-        onSelectMedia={(media) => {
-          setConfig({ ...config, supportCauseBgUrl: media.url });
-        }}
-      />
-
-      {/* Ad Campaign Preview Modal */}
-      {previewAd && (
-        <Dialog open={Boolean(previewAd)} onOpenChange={() => setPreviewAd(null)}>
-          <DialogContent className="max-w-xl rounded-3xl p-6 bg-white">
-            <DialogHeader className="border-b pb-3">
-              <DialogTitle className="font-serif text-lg font-bold flex items-center justify-between">
-                <span>Ad Campaign Preview</span>
-                <Badge className="bg-primary text-white text-[10px] uppercase font-bold px-2.5 py-0.5">
-                  {previewAd.placement}
-                </Badge>
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4 py-3">
-              <div>
-                <h4 className="font-bold text-sm text-zinc-900 mb-1">{previewAd.title}</h4>
-                <p className="text-xs text-zinc-500">
-                  Target Link: <a href={previewAd.targetUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline">{previewAd.targetUrl}</a>
-                </p>
-              </div>
-
-              {/* Live Placement Banner Preview Box */}
-              <div className="space-y-1 bg-zinc-950 p-4 rounded-2xl border text-white">
-                <div className="flex justify-between items-center text-[10px] text-zinc-400 font-bold uppercase mb-2">
-                  <span>Live Placement Banner Render</span>
-                  <span>{previewAd.bannerHeight || 180}px Height · {previewAd.aspectRatio || '4/1'}</span>
-                </div>
-                <div
-                  className="relative w-full rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800"
-                  style={{
-                    height: previewAd.bannerHeight ? `${previewAd.bannerHeight}px` : '160px',
-                    maxHeight: '260px',
-                  }}
-                >
-                  <img src={previewAd.bannerUrl} alt={previewAd.title} className="w-full h-full object-cover" />
-                  <span className="absolute bottom-2 right-2 text-[9px] font-bold text-white bg-black/70 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                    Sponsored
-                  </span>
-                </div>
-              </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-2 gap-3 bg-zinc-50 p-3 rounded-2xl border text-center text-xs">
-                <div>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase">Impressions</p>
-                  <p className="font-bold text-zinc-900 text-base mt-0.5">{previewAd.views || 0}</p>
-                </div>
-                <div className="border-l">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase">Clicks</p>
-                  <p className="font-bold text-zinc-900 text-base mt-0.5">{previewAd.clicks || 0}</p>
-                </div>
-              </div>
-            </div>
-
-            <DialogFooter className="border-t pt-4">
-              <Button variant="outline" className="rounded-full text-xs" onClick={() => setPreviewAd(null)}>
-                Close Preview
-              </Button>
-              <a href={previewAd.targetUrl} target="_blank" rel="noopener noreferrer">
-                <Button className="rounded-full text-xs gap-1.5 shadow">
-                  <ExternalLink className="h-3.5 w-3.5" /> Test Click Target
-                </Button>
-              </a>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* About Page Hero Picker */}
-      <MediaPickerModal
-        open={aboutHeroPickerOpen}
-        onOpenChange={setAboutHeroPickerOpen}
-        allowedTypes="image"
-        title="Select About Page Hero Photo"
-        onSelectMedia={(media) => {
-          setConfig({ ...config, aboutHeroImgUrl: media.url });
-        }}
-      />
-
-      {/* About Page Assembly Picker */}
-      <MediaPickerModal
-        open={aboutAssemblyPickerOpen}
-        onOpenChange={setAboutAssemblyPickerOpen}
-        allowedTypes="image"
-        title="Select School Assembly Photo"
-        onSelectMedia={(media) => {
-          setConfig({ ...config, aboutAssemblyImgUrl: media.url });
-        }}
-      />
-
-      {/* About Page Award Picker */}
-      <MediaPickerModal
-        open={aboutAwardPickerOpen}
-        onOpenChange={setAboutAwardPickerOpen}
-        allowedTypes="image"
-        title="Select National Award Certificate Photo"
-        onSelectMedia={(media) => {
-          setConfig({ ...config, aboutAwardImgUrl: media.url });
-        }}
-      />
-
-      {/* About Page Principal Picker */}
-      <MediaPickerModal
-        open={aboutPrincipalPickerOpen}
-        onOpenChange={setAboutPrincipalPickerOpen}
-        allowedTypes="image"
-        title="Select School Principal Photo"
-        onSelectMedia={(media) => {
-          setConfig({ ...config, aboutPrincipalImgUrl: media.url });
-        }}
-      />
 
       {/* Restore Database Security Confirmation Modal */}
       <AlertDialog open={Boolean(restoreFilePending)} onOpenChange={(o) => !o && setRestoreFilePending(null)}>
