@@ -60,8 +60,18 @@ export function AdminLayout() {
     <div className="flex h-full flex-col bg-[#F5F2EB] text-zinc-800 border-r border-zinc-200/50">
       {/* Brand Header */}
       <div className="flex h-16 items-center justify-between px-6 border-b border-zinc-200/30">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="text-lg font-bold tracking-tight font-serif text-zinc-950">Niswartha</span>
+        <Link to="/" className="flex items-center gap-3 group">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-md shadow-primary/10 group-hover:scale-105 transition-transform bg-primary/10 border border-primary/20 shrink-0">
+            <DotLottieReact
+              src="https://lottie.host/19e39cee-61a1-4b9e-bba9-81154eb140a2/XacFcVJLzd.json"
+              loop
+              autoplay
+              className="h-full w-full object-contain"
+            />
+          </div>
+          {!collapsed && (
+            <span className="text-lg font-bold tracking-tight font-serif text-zinc-950">Niswartha</span>
+          )}
         </Link>
         {mobileOpen && (
           <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)} className="rounded-full">

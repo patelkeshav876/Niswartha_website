@@ -80,8 +80,13 @@ export function UserLayout() {
       {/* Brand Header */}
       <div className="flex h-20 items-center justify-between px-6 border-b border-zinc-200/30 border-dashed">
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-md shadow-primary/10">
-            <Heart className="h-4.5 w-4.5 text-white" fill="white" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-md shadow-primary/10 group-hover:scale-105 transition-transform bg-primary/10 border border-primary/20 shrink-0">
+            <DotLottieReact
+              src="https://lottie.host/19e39cee-61a1-4b9e-bba9-81154eb140a2/XacFcVJLzd.json"
+              loop
+              autoplay
+              className="h-full w-full object-contain"
+            />
           </div>
           {!collapsed && (
             <div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate, Outlet, useLocation } from 'react-router';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useUser } from '../context/UserContext';
 import { cn } from '../lib/utils';
 import {
@@ -79,8 +80,13 @@ export function SuperAdminLayout() {
       <aside className="hidden lg:flex flex-col w-64 border-r border-zinc-200 bg-white shrink-0">
         <div className="flex h-20 items-center gap-3 px-6 border-b border-zinc-100">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md shadow-primary/20 transition-transform group-hover:scale-105">
-              <Heart className="h-5 w-5 text-white" fill="white" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-md shadow-primary/10 group-hover:scale-105 transition-transform bg-primary/10 border border-primary/20 shrink-0">
+              <DotLottieReact
+                src="https://lottie.host/19e39cee-61a1-4b9e-bba9-81154eb140a2/XacFcVJLzd.json"
+                loop
+                autoplay
+                className="h-full w-full object-contain"
+              />
             </div>
             <div>
               <p className="text-lg font-bold tracking-tight text-zinc-950 font-serif">Niswartha</p>
