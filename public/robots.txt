@@ -1,0 +1,42 @@
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /events
+Allow: /needs
+Allow: /gallery
+Allow: /schemes
+Allow: /help
+
+# Block private/dashboard pages from indexing
+Disallow: /admin
+Disallow: /super-admin
+Disallow: /profile
+Disallow: /my-bookings
+Disallow: /donation-history
+Disallow: /settings
+Disallow: /notifications
+Disallow: /api/
+Disallow: /login
+Disallow: /signup
+Disallow: /onboarding
+
+# Allow all AI crawlers (Google AI, ChatGPT, Perplexity, Bing Copilot)
+User-agent: GPTBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+Sitemap: https://deafanddumbschool.vercel.app/sitemap.xml
