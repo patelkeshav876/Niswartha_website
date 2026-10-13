@@ -42,6 +42,9 @@ export function SuperAdminLayout() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  // Defer Lottie so it doesn't block initial render
+  const [lottieReady, setLottieReady] = useState(false);
+  useEffect(() => { setLottieReady(true); }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -81,12 +84,14 @@ export function SuperAdminLayout() {
         <div className="flex h-20 items-center gap-3 px-6 border-b border-zinc-100">
           <Link to="/" className="flex items-center gap-3 group">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-md shadow-primary/10 group-hover:scale-105 transition-transform bg-primary/10 border border-primary/20 shrink-0">
-              <DotLottieReact
-                src="https://lottie.host/19e39cee-61a1-4b9e-bba9-81154eb140a2/XacFcVJLzd.json"
-                loop
-                autoplay
-                className="h-full w-full object-contain"
-              />
+              {lottieReady && (
+                <DotLottieReact
+                  src="https://lottie.host/19e39cee-61a1-4b9e-bba9-81154eb140a2/XacFcVJLzd.json"
+                  loop
+                  autoplay
+                  className="h-full w-full object-contain"
+                />
+              )}
             </div>
             <div>
               <p className="text-lg font-bold tracking-tight text-zinc-950 font-serif">Niswartha</p>

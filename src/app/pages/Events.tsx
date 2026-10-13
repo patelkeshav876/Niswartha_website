@@ -19,6 +19,7 @@ import { ScrollReveal } from '../components/ScrollReveal';
 import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
 import { PremiumHeroBackdrop } from '../components/home/PremiumHeroBackdrop';
+import { optimizeUnsplashUrl } from '../lib/unsplash';
 
 const SORT_OPTIONS = [
   { id: 'date_asc', label: 'Date (soonest first)' },
@@ -279,9 +280,11 @@ export function Events() {
       <div className="section-container py-8 lg:py-12">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {processed.map((event, idx) => {
-            const img =
+            const img = optimizeUnsplashUrl(
               event.imageUrl ||
-              'https://images.unsplash.com/photo-1512341689857-198e7e2f3ca8?auto=format&fit=crop&q=80';
+              'https://images.unsplash.com/photo-1512341689857-198e7e2f3ca8',
+              600, 400
+            );
             const reg = getRegistration(event);
             const today = startOfDay(new Date());
             const isPast = parseEventDay(event.date).getTime() < today.getTime();
@@ -302,7 +305,15 @@ export function Events() {
                   )}
                 >
                   <div className="relative aspect-[16/10] sm:h-48 w-full overflow-hidden">
-                    <img src={img} alt={event.title} className="h-full w-full object-cover transition-transform duration-500 hover:scale-105" />
+                    <img
+                      src={img}
+                      alt={event.title}
+                      width={600}
+                      height={400}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                    />
                     <div className="absolute left-3 top-3 flex flex-col gap-1">
                       <div className="rounded-lg bg-background/90 px-2.5 py-1.5 text-center shadow-sm backdrop-blur-sm">
                         <span className="block text-[10px] font-bold uppercase text-primary">

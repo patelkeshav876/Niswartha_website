@@ -115,7 +115,7 @@ export function Navbar() {
             <Link to="/" className="flex items-center gap-3 group">
               {/* Logo icon — always solid white */}
               <div className="flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-105 bg-white border border-zinc-200">
-                <img src="/logo.png" alt="Niswartha Logo" className="h-full w-full object-cover" />
+                <img src="/logo.png" alt="Niswartha Logo" width={30} height={30} fetchPriority="high" className="h-full w-full object-cover" />
               </div>
               <div className={cn('hidden sm:block transition-all duration-300', scrolled ? '' : '')}>
                 <p

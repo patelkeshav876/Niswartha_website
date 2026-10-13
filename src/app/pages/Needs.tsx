@@ -12,6 +12,7 @@ import { ScrollReveal } from '../components/ScrollReveal';
 import { AdBanner } from '../components/AdBanner';
 import { PremiumHeroBackdrop } from '../components/home/PremiumHeroBackdrop';
 import { toast } from 'sonner';
+import { optimizeUnsplashUrl } from '../lib/unsplash';
 
 export function Needs() {
   const [filter, setFilter] = useState('All');
@@ -90,11 +91,16 @@ export function Needs() {
                     <div className="flex flex-col sm:flex-row gap-4 p-4">
                       <div className="relative h-48 sm:h-32 sm:w-32 rounded-lg overflow-hidden flex-shrink-0">
                         <img
-                          src={
+                          src={optimizeUnsplashUrl(
                             need.imageUrl ||
-                            'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80'
-                          }
+                            'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c',
+                            192, 192
+                          )}
                           alt={need.title}
+                          width={192}
+                          height={192}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover"
                         />
                         {need.urgency === 'high' && (

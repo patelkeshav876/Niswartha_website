@@ -24,6 +24,7 @@ import { Ashram, type Event as EventType, Need } from '../types';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { PremiumHeroBackdrop } from '../components/home/PremiumHeroBackdrop';
 import { AdBanner } from '../components/AdBanner';
+import { optimizeUnsplashUrl } from '../lib/unsplash';
 
 /* ───── Count-Up Hook ───── */
 function useCountUp(target: number, duration = 2000) {
@@ -307,8 +308,12 @@ export function Home() {
                       <CardContent className="p-5 lg:p-6">
                         <div className="flex gap-4">
                           <img
-                            src={need.imageUrl}
+                            src={optimizeUnsplashUrl(need.imageUrl || 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c', 96, 96)}
                             alt={need.title}
+                            width={96}
+                            height={96}
+                            loading="lazy"
+                            decoding="async"
                             className="h-20 w-20 shrink-0 rounded-xl object-cover shadow-inner ring-1 ring-black/5 lg:h-24 lg:w-24"
                           />
                           <div className="min-w-0 flex-1">
@@ -383,8 +388,12 @@ export function Home() {
                 >
                   <div className="relative aspect-[16/10] sm:h-48 w-full overflow-hidden">
                     <img
-                      src={event.imageUrl}
+                      src={optimizeUnsplashUrl(event.imageUrl || 'https://images.unsplash.com/photo-1512341689857-198e7e2f3ca8', 600, 400)}
                       alt={event.title}
+                      width={600}
+                      height={400}
+                      loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute left-3 top-3">

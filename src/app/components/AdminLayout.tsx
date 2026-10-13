@@ -48,6 +48,9 @@ export function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  // Defer Lottie loading so it doesn't block initial render
+  const [lottieReady, setLottieReady] = useState(false);
+  useEffect(() => { setLottieReady(true); }, []);
 
   // Close mobile sidebar on navigate
   useEffect(() => {
@@ -62,12 +65,14 @@ export function AdminLayout() {
       <div className="flex h-16 items-center justify-between px-6 border-b border-zinc-200/30">
         <Link to="/" className="flex items-center gap-3 group">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-md shadow-primary/10 group-hover:scale-105 transition-transform bg-primary/10 border border-primary/20 shrink-0">
-            <DotLottieReact
-              src="https://lottie.host/19e39cee-61a1-4b9e-bba9-81154eb140a2/XacFcVJLzd.json"
-              loop
-              autoplay
-              className="h-full w-full object-contain"
-            />
+            {lottieReady && (
+              <DotLottieReact
+                src="https://lottie.host/19e39cee-61a1-4b9e-bba9-81154eb140a2/XacFcVJLzd.json"
+                loop
+                autoplay
+                className="h-full w-full object-contain"
+              />
+            )}
           </div>
           {!collapsed && (
             <span className="text-lg font-bold tracking-tight font-serif text-zinc-950">Niswartha</span>
@@ -224,12 +229,14 @@ export function AdminLayout() {
                     transition={{ duration: 0.4 }}
                     className="relative hidden sm:flex items-center justify-center h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 shadow-xs overflow-hidden shrink-0"
                   >
-                    <DotLottieReact
-                      src={animationSrc}
-                      loop
-                      autoplay
-                      className="h-full w-full object-cover scale-110"
-                    />
+                    {lottieReady && (
+                      <DotLottieReact
+                        src={animationSrc}
+                        loop
+                        autoplay
+                        className="h-full w-full object-cover scale-110"
+                      />
+                    )}
                   </motion.div>
                 );
               })()}

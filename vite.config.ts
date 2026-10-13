@@ -36,6 +36,34 @@ export default defineConfig(({ mode }) => {
 
   build: {
     chunkSizeWarningLimit: 2000,
+    target: 'es2020',
+    cssMinify: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // Split Lottie into its own chunk — it pulls in heavy WASM
+          if (id.includes('@lottiefiles/dotlottie-react') || id.includes('dotlottie')) {
+            return 'vendor-lottie';
+          }
+          // Split animation/motion library separately
+          if (id.includes('motion') || id.includes('framer-motion')) {
+            return 'vendor-motion';
+          }
+          // Split Radix UI primitives
+          if (id.includes('@radix-ui')) {
+            return 'vendor-radix';
+          }
+          // Split Lucide icons
+          if (id.includes('lucide-react')) {
+            return 'vendor-lucide';
+          }
+          // Everything else from node_modules goes into vendor-core
+          if (id.includes('node_modules')) {
+            return 'vendor-core';
+          }
+        },
+      },
+    },
   }
   }
 })
