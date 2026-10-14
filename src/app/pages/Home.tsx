@@ -21,7 +21,13 @@ import { motion, useInView } from 'motion/react';
 import { useUser } from '../context/UserContext';
 import { api } from '../lib/api';
 import { Ashram, type Event as EventType, Need } from '../types';
-import { ScrollReveal } from '../components/ScrollReveal';
+import {
+  ScrollReveal,
+  BlurReveal,
+  TextRevealGroup,
+  TextRevealItem,
+  SectionTransition,
+} from '../components/ScrollReveal';
 import { PremiumHeroBackdrop } from '../components/home/PremiumHeroBackdrop';
 import { AdBanner } from '../components/AdBanner';
 import { optimizeUnsplashUrl } from '../lib/unsplash';
@@ -145,9 +151,9 @@ export function Home() {
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1 }}
+            initial={{ opacity: 0, y: 30, filter: 'blur(8px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'none' }}
+            transition={{ duration: 0.75, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="mx-auto max-w-4xl font-serif text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl lg:text-7xl"
           >
             Empowering Every Child
@@ -155,9 +161,9 @@ export function Home() {
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.25 }}
+            initial={{ opacity: 0, y: 20, filter: 'blur(6px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'none' }}
+            transition={{ duration: 0.65, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="mx-auto mt-6 max-w-2xl text-base text-white/60 leading-relaxed sm:text-lg"
           >
             {ashram.description}
@@ -241,10 +247,10 @@ export function Home() {
               ].map((action, idx) => (
                 <motion.div
                   key={action.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, y: 24, filter: 'blur(6px)' }}
+                  whileInView={{ opacity: 1, y: 0, filter: 'none' }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: idx * 0.1 }}
+                  transition={{ duration: 0.55, delay: idx * 0.12, ease: [0.22, 1, 0.36, 1] }}
                 >
                   <Card
                     role="button"
@@ -274,32 +280,38 @@ export function Home() {
         {urgentNeeds.length > 0 && (
           <section className="bg-muted/30 py-16 lg:py-20">
             <div className="section-container">
-              <ScrollReveal>
-                <div className="mb-8 flex items-end justify-between">
-                  <div>
+              <div className="mb-8 flex items-end justify-between">
+                <TextRevealGroup stagger={0.1}>
+                  <TextRevealItem>
                     <div className="mb-2 flex items-center gap-2">
                       <TrendingUp className="h-5 w-5 text-orange-600" />
                       <span className="text-xs font-bold uppercase tracking-wider text-orange-600">Urgent</span>
                     </div>
-                    <h2 className="text-2xl font-bold lg:text-3xl">Help Us Reach Our Goals</h2>
+                  </TextRevealItem>
+                  <TextRevealItem>
+                    <h2 className="text-2xl font-bold lg:text-3xl font-serif">Help Us Reach Our Goals</h2>
+                  </TextRevealItem>
+                  <TextRevealItem blur={false}>
                     <p className="mt-1 text-muted-foreground">These needs require immediate attention</p>
-                  </div>
+                  </TextRevealItem>
+                </TextRevealGroup>
+                <BlurReveal delay={0.2} direction="left">
                   <Link to="/needs">
                     <Button variant="ghost" className="group text-primary">
                       View All <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Button>
                   </Link>
-                </div>
-              </ScrollReveal>
+                </BlurReveal>
+              </div>
 
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {urgentNeeds.slice(0, 3).map((need, i) => (
                   <motion.div
                     key={need.id}
-                    initial={{ opacity: 0, y: 24 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 24, filter: 'blur(6px)' }}
+                    whileInView={{ opacity: 1, y: 0, filter: 'none' }}
                     viewport={{ once: true, margin: '-5%' }}
-                    transition={{ duration: 0.4, delay: i * 0.08 }}
+                    transition={{ duration: 0.55, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <Card
                       className="card-hover cursor-pointer overflow-hidden border-0 bg-card shadow-[0_8px_30px_-10px_rgba(15,23,42,0.1)] rounded-2xl ring-1 ring-border/50"
@@ -355,32 +367,38 @@ export function Home() {
 
         {/* ──── Upcoming Events ──── */}
         <section className="section-container py-16 lg:py-20">
-          <ScrollReveal>
             <div className="mb-8 flex items-end justify-between">
-              <div>
-                <div className="mb-2 flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-purple-600" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-purple-600">Upcoming</span>
-                </div>
-                <h2 className="text-2xl font-bold lg:text-3xl">Community Events</h2>
-                <p className="mt-1 text-muted-foreground">Join us and make lasting memories</p>
-              </div>
-              <Link to="/events">
-                <Button variant="ghost" className="group text-primary">
-                  View All <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Button>
-              </Link>
+              <TextRevealGroup stagger={0.1}>
+                <TextRevealItem>
+                  <div className="mb-2 flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-purple-600" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-purple-600">Upcoming</span>
+                  </div>
+                </TextRevealItem>
+                <TextRevealItem>
+                  <h2 className="text-2xl font-bold lg:text-3xl font-serif">Community Events</h2>
+                </TextRevealItem>
+                <TextRevealItem blur={false}>
+                  <p className="mt-1 text-muted-foreground">Join us and make lasting memories</p>
+                </TextRevealItem>
+              </TextRevealGroup>
+              <BlurReveal delay={0.2} direction="left">
+                <Link to="/events">
+                  <Button variant="ghost" className="group text-primary">
+                    View All <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Button>
+                </Link>
+              </BlurReveal>
             </div>
-          </ScrollReveal>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {upcomingEvents.map((event, idx) => (
               <motion.div
                 key={event.id}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 24, filter: 'blur(6px)' }}
+                whileInView={{ opacity: 1, y: 0, filter: 'none' }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: idx * 0.1 }}
+                transition={{ duration: 0.55, delay: idx * 0.1, ease: [0.22, 1, 0.36, 1] }}
               >
                 <Card
                   className="card-hover cursor-pointer overflow-hidden border-0 bg-card shadow-[0_8px_30px_-10px_rgba(15,23,42,0.1)] rounded-2xl ring-1 ring-border/50"
@@ -432,10 +450,16 @@ export function Home() {
             <ScrollReveal>
               <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center">
                 <div>
-                  <h2 className="text-2xl font-bold lg:text-3xl">Get in Touch</h2>
-                  <p className="mt-2 text-muted-foreground">
-                    Reach out to us for visits, volunteering, or any inquiries.
-                  </p>
+                  <TextRevealGroup stagger={0.1}>
+                    <TextRevealItem>
+                      <h2 className="text-2xl font-bold lg:text-3xl font-serif">Get in Touch</h2>
+                    </TextRevealItem>
+                    <TextRevealItem blur={false}>
+                      <p className="mt-2 text-muted-foreground">
+                        Reach out to us for visits, volunteering, or any inquiries.
+                      </p>
+                    </TextRevealItem>
+                  </TextRevealGroup>
                   <div className="mt-6 space-y-3">
                     {[
                       { icon: Phone, content: ashram.contact.phone, href: `tel:${ashram.contact.phone}` },
@@ -445,8 +469,12 @@ export function Home() {
                         ? [{ icon: Facebook, content: 'Follow us on Facebook', href: ashram.facebookUrl }]
                         : []),
                     ].map((item, i) => (
-                      <div
+                      <motion.div
                         key={i}
+                        initial={{ opacity: 0, x: -20, filter: 'blur(4px)' }}
+                        whileInView={{ opacity: 1, x: 0, filter: 'none' }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
                         className="flex items-center gap-4 rounded-xl bg-card/80 px-4 py-3 shadow-sm ring-1 ring-border/40 backdrop-blur-sm"
                       >
                         <item.icon className="h-5 w-5 shrink-0 text-primary" />
@@ -462,13 +490,20 @@ export function Home() {
                         ) : (
                           <span className="text-sm text-muted-foreground">{item.content}</span>
                         )}
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 </div>
 
                 {/* Donate CTA Card with Custom Admin Image Support */}
-                <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-primary to-primary/80 shadow-xl shadow-primary/15 rounded-3xl w-[92%] sm:w-full max-w-md lg:max-w-none mx-auto">
+                <motion.div
+                  initial={{ opacity: 0, x: 30, filter: 'blur(8px)' }}
+                  whileInView={{ opacity: 1, x: 0, filter: 'none' }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                  className="w-[92%] sm:w-full max-w-md lg:max-w-none mx-auto"
+                >
+                  <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-primary to-primary/80 shadow-xl shadow-primary/15 rounded-3xl">
                   {config?.supportCauseBgUrl && (
                     <>
                       <img
@@ -499,7 +534,8 @@ export function Home() {
                     </Button>
                   </CardContent>
                 </Card>
-              </div>
+              </motion.div>
+            </div>
             </ScrollReveal>
           </div>
         </section>
