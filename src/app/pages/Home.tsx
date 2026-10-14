@@ -129,9 +129,12 @@ export function Home() {
   const urgentNeeds = needs.filter((n) => n.urgency === 'high');
   const mainRef = useRef<HTMLElement | null>(null);
 
-  const heroImage =
-    ashram.imageUrl ||
-    'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=80';
+  const heroImage = optimizeUnsplashUrl(
+    ashram.imageUrl || 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=75&fm=webp',
+    1200,
+    800,
+    75
+  );
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

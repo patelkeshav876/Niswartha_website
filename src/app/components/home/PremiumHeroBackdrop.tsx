@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { motion } from 'motion/react';
 import { cn } from '../../lib/utils';
 import { api } from '../../lib/api';
+import { optimizeUnsplashUrl } from '../../lib/unsplash';
 
 type Props = {
   children: ReactNode;
@@ -20,12 +21,41 @@ function getYouTubeEmbedUrl(url: string): string | null {
 }
 
 /**
+ * Instant cached config retriever so the background image exists at Frame 0 (0ms)
+ * without waiting for an asynchronous network waterfall.
+ */
+function getInitialConfig(pageKey: string) {
+  try {
+    const saved = localStorage.getItem('hero_config_' + pageKey);
+    if (saved) return JSON.parse(saved);
+    const globalSaved = localStorage.getItem('site_config');
+    if (globalSaved) {
+      const parsed = JSON.parse(globalSaved);
+      if (parsed) return parsed;
+    }
+  } catch {}
+
+  if (pageKey === 'about') {
+    return {
+      bgType: 'gradient',
+      overlayOpacity: 0.6,
+    };
+  }
+
+  return {
+    bgType: 'image',
+    bgUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=75&fm=webp',
+    overlayOpacity: 0.55,
+  };
+}
+
+/**
  * Premium Dynamic Hero Backdrop supporting configurable page background images,
  * video backgrounds, mobile fallback images, backdrop blur, brightness adjustments,
  * overlay opacity, text alignment, and parallax scrolling.
  */
 export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: Props) {
-  const [config, setConfig] = useState<any>(null);
+  const [config, setConfig] = useState<any>(() => getInitialConfig(pageKey));
   const [scrollY, setScrollY] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -63,9 +93,10 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
   }, [config]);
 
   const DEFAULT_VIDEO = 'https://assets.mixkit.co/videos/preview/mixkit-children-playing-in-a-park-41544-large.mp4';
-  const bgType = config?.bgType || config?.heroBgType || 'video';
-  const bgUrl = config?.bgUrl || config?.heroBgUrl || '';
-  const rawVideo = config?.bgVideoUrl || (bgType === 'video' ? bgUrl : '');
+  const bgType = config?.bgType || config?.heroBgType || (pageKey === 'about' ? 'gradient' : 'image');
+  const rawBgUrl = config?.bgUrl || config?.heroBgUrl || (pageKey === 'about' ? '' : 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=75&fm=webp');
+  const bgUrl = rawBgUrl ? optimizeUnsplashUrl(rawBgUrl, 1200, 800, 75) : '';
+  const rawVideo = config?.bgVideoUrl || (bgType === 'video' ? rawBgUrl : '');
   const bgVideoUrl = rawVideo && !rawVideo.includes('[#1E3A8A]') ? rawVideo : (bgType === 'video' ? DEFAULT_VIDEO : '');
   const mobileFallbackUrl = config?.mobileFallbackUrl || bgUrl || '';
   const overlayOpacity = config?.overlayOpacity !== undefined ? Number(config.overlayOpacity) : (config?.heroOverlayOpacity !== undefined ? Number(config.heroOverlayOpacity) : 0.55);
@@ -77,6 +108,7 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
   
   const enableParallax = config?.parallax || config?.heroParallax;
   const parallaxShift = enableParallax ? scrollY * 0.35 : 0;
+
 
   // Ensure HTML5 video plays reliably on mount and URL change
   useEffect(() => {
