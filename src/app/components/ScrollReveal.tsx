@@ -3,31 +3,25 @@ import type { ReactNode } from 'react';
 import { useRef } from 'react';
 
 /* ─────────────────────────────────────────────────────────
-   Shared easing curves
+   Shared easing curves: long gentle deceleration
 ───────────────────────────────────────────────────────── */
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
 const EASE_SMOOTH   = [0.22, 1, 0.36, 1] as const;
 
+type Direction = 'up' | 'down' | 'left' | 'right' | 'corner-left' | 'corner-right' | 'none';
+
 /* ─────────────────────────────────────────────────────────
    1. ScrollReveal — generic fade+slide+blur wrapper
-      Drop-in replacement for the old ScrollReveal.
-      Supports: direction, blur, distance, backward-compatible y.
 ───────────────────────────────────────────────────────── */
-type Direction = 'up' | 'down' | 'left' | 'right' | 'none';
-
 type ScrollRevealProps = {
   children: ReactNode;
   className?: string;
   delay?: number;
   duration?: number;
-  /** Shift amount in px along the primary axis */
   distance?: number;
-  /** Backward-compatibility alias for upward distance */
   y?: number;
   direction?: Direction;
-  /** Apply blur-to-sharp effect */
   blur?: boolean;
-  /** once=false allows re-animation on scroll back */
   once?: boolean;
 };
 
@@ -35,8 +29,8 @@ export function ScrollReveal({
   children,
   className,
   delay = 0,
-  duration = 0.9,
-  distance = 30,
+  duration = 1.25,
+  distance = 40,
   y: yProp,
   direction = 'up',
   blur = false,
@@ -80,8 +74,7 @@ export function ScrollReveal({
 }
 
 /* ─────────────────────────────────────────────────────────
-   2. BlurReveal — blur-to-sharp text/heading reveal
-      Animate text from blurry+offset to perfectly sharp.
+   2. BlurReveal — text slides upward with blur-to-sharp dissolve
 ───────────────────────────────────────────────────────── */
 type BlurRevealProps = {
   children: ReactNode;
@@ -95,16 +88,16 @@ export function BlurReveal({
   children,
   className,
   delay = 0,
-  duration = 0.95,
+  duration = 1.35,
   direction = 'up',
 }: BlurRevealProps) {
   const shouldReduceMotion = useReducedMotion();
   const x = shouldReduceMotion || direction === 'none'
     ? 0
-    : direction === 'left' ? 20 : direction === 'right' ? -20 : 0;
+    : direction === 'left' ? 28 : direction === 'right' ? -28 : 0;
   const y = shouldReduceMotion || direction === 'none'
     ? 0
-    : direction === 'up' ? 18 : direction === 'down' ? -18 : 0;
+    : direction === 'up' ? 32 : direction === 'down' ? -32 : 0;
 
   return (
     <motion.div
@@ -113,7 +106,7 @@ export function BlurReveal({
         opacity: 0,
         x,
         y,
-        filter: shouldReduceMotion ? 'none' : 'blur(8px)',
+        filter: shouldReduceMotion ? 'none' : 'blur(10px)',
       }}
       whileInView={{
         opacity: 1,
@@ -135,7 +128,7 @@ export function BlurReveal({
 
 /* ─────────────────────────────────────────────────────────
    3. TextRevealGroup — staggered heading + body text
-      Children animate in sequence with blur-to-sharp.
+      All text slides upward smoothly from below
 ───────────────────────────────────────────────────────── */
 type TextRevealGroupProps = {
   children: ReactNode;
@@ -148,7 +141,7 @@ export function TextRevealGroup({
   children,
   className,
   baseDelay = 0,
-  stagger = 0.16,
+  stagger = 0.18,
 }: TextRevealGroupProps) {
   const shouldReduceMotion = useReducedMotion();
 
@@ -173,7 +166,7 @@ export function TextRevealGroup({
   );
 }
 
-/** Use inside TextRevealGroup as a stagger child */
+/** Stagger item: slides up with blur dissolution */
 export function TextRevealItem({
   children,
   className,
@@ -191,15 +184,15 @@ export function TextRevealItem({
       variants={{
         hidden: {
           opacity: 0,
-          y: shouldReduceMotion ? 0 : 16,
-          filter: blur && !shouldReduceMotion ? 'blur(6px)' : 'none',
+          y: shouldReduceMotion ? 0 : 36,
+          filter: blur && !shouldReduceMotion ? 'blur(8px)' : 'none',
         },
         visible: {
           opacity: 1,
           y: 0,
           filter: 'none',
           transition: {
-            duration: shouldReduceMotion ? 0.2 : 0.85,
+            duration: shouldReduceMotion ? 0.2 : 1.25,
             ease: EASE_SMOOTH,
           },
         },
@@ -211,20 +204,18 @@ export function TextRevealItem({
 }
 
 /* ─────────────────────────────────────────────────────────
-   4. ImageReveal — directional image reveal with
-      overflow-hidden clip, blur-to-sharp, and
-      optional parallax shift on scroll.
+   4. ImageReveal — prominent sliding from screen edge/corner
+      into place with overflow-hidden and soft blur-to-sharp
 ───────────────────────────────────────────────────────── */
 type ImageRevealProps = {
   src: string;
   alt: string;
   className?: string;
-  /** Wrapper div className (controls border-radius, size, etc.) */
   wrapperClassName?: string;
   delay?: number;
-  /** Direction the image slides in FROM */
+  duration?: number;
+  distance?: number;
   from?: Direction;
-  /** Enable subtle scroll parallax on the image */
   parallax?: boolean;
   objectFit?: 'cover' | 'contain' | 'fill';
 };
@@ -235,7 +226,9 @@ export function ImageReveal({
   className = 'w-full h-full object-cover',
   wrapperClassName = '',
   delay = 0,
-  from = 'left',
+  duration = 1.55,
+  distance = 220,
+  from = 'corner-left',
   parallax = false,
   objectFit = 'cover',
 }: ImageRevealProps) {
@@ -245,57 +238,79 @@ export function ImageReveal({
     target: ref,
     offset: ['start end', 'end start'],
   });
-  const parallaxY = useTransform(scrollYProgress, [0, 1], ['6%', '-6%']);
+  const parallaxY = useTransform(scrollYProgress, [0, 1], ['5%', '-5%']);
 
-  const xInit = shouldReduceMotion || from === 'none'
-    ? 0
-    : from === 'left' ? -40 : from === 'right' ? 40 : 0;
-  const yInit = shouldReduceMotion || from === 'none'
-    ? 0
-    : from === 'up' ? -40 : from === 'down' ? 40 : 0;
+  // Prominent slide offsets from screen edges or corners
+  let xInit = 0;
+  let yInit = 0;
+
+  if (!shouldReduceMotion && from !== 'none') {
+    switch (from) {
+      case 'left':
+        xInit = -distance;
+        break;
+      case 'right':
+        xInit = distance;
+        break;
+      case 'corner-left':
+        xInit = -distance;
+        yInit = Math.round(distance * 0.38);
+        break;
+      case 'corner-right':
+        xInit = distance;
+        yInit = Math.round(distance * 0.38);
+        break;
+      case 'up':
+        yInit = -distance;
+        break;
+      case 'down':
+        yInit = distance;
+        break;
+    }
+  }
 
   return (
-    <div ref={ref} className={`overflow-hidden ${wrapperClassName}`}>
-      <motion.div
-        className="w-full h-full will-change-transform"
-        initial={{
-          opacity: 0,
-          x: xInit,
-          y: yInit,
-          scale: shouldReduceMotion ? 1 : 1.04,
-          filter: shouldReduceMotion ? 'none' : 'blur(8px)',
+    <motion.div
+      ref={ref}
+      className={`overflow-hidden will-change-transform ${wrapperClassName}`}
+      initial={{
+        opacity: 0,
+        x: xInit,
+        y: yInit,
+        scale: shouldReduceMotion ? 1 : 0.94,
+        filter: shouldReduceMotion ? 'none' : 'blur(8px)',
+      }}
+      whileInView={{
+        opacity: 1,
+        x: 0,
+        y: 0,
+        scale: 1,
+        filter: 'none',
+      }}
+      viewport={{ once: true, margin: '-6% 0px -4% 0px' }}
+      transition={{
+        duration: shouldReduceMotion ? 0.25 : duration,
+        delay: shouldReduceMotion ? 0 : delay,
+        ease: EASE_OUT_EXPO,
+      }}
+    >
+      <motion.img
+        src={src}
+        alt={alt}
+        className={className}
+        style={{
+          objectFit,
+          ...(parallax && !shouldReduceMotion ? { y: parallaxY } : {}),
         }}
-        whileInView={{
-          opacity: 1,
-          x: 0,
-          y: 0,
-          scale: 1,
-          filter: 'none',
-        }}
-        viewport={{ once: true, margin: '-6% 0px -6% 0px' }}
-        transition={{
-          duration: shouldReduceMotion ? 0.25 : 1.15,
-          delay: shouldReduceMotion ? 0 : delay,
-          ease: EASE_OUT_EXPO,
-        }}
-        style={parallax && !shouldReduceMotion ? { y: parallaxY } : undefined}
-      >
-        <img
-          src={src}
-          alt={alt}
-          className={className}
-          style={{ objectFit }}
-          loading="lazy"
-          decoding="async"
-        />
-      </motion.div>
-    </div>
+        loading="lazy"
+        decoding="async"
+      />
+    </motion.div>
   );
 }
 
 /* ─────────────────────────────────────────────────────────
-   5. SectionTransition — wraps an entire section for
-      cinematic entrance (slight y + opacity, no blur).
+   5. SectionTransition — cinematic entrance
 ───────────────────────────────────────────────────────── */
 export function SectionTransition({
   children,
@@ -311,11 +326,11 @@ export function SectionTransition({
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 36 }}
+      initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 45 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-5% 0px -5% 0px' }}
       transition={{
-        duration: shouldReduceMotion ? 0.2 : 1.0,
+        duration: shouldReduceMotion ? 0.2 : 1.25,
         delay: shouldReduceMotion ? 0 : delay,
         ease: EASE_OUT_EXPO,
       }}
@@ -324,3 +339,4 @@ export function SectionTransition({
     </motion.div>
   );
 }
+

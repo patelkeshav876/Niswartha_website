@@ -27,6 +27,9 @@ import {
   Lightbulb,
   ChevronLeft,
   ChevronRight,
+  Palette,
+  Music,
+  CheckCircle2,
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { mockAshrams } from '../data/mock';
@@ -39,6 +42,7 @@ import {
   SectionTransition,
 } from '../components/ScrollReveal';
 import { PremiumHeroBackdrop } from '../components/home/PremiumHeroBackdrop';
+import { SchoolDoodleArt } from '../components/SchoolDoodleArt';
 import { AdBanner } from '../components/AdBanner';
 import { api } from '../lib/api';
 import { motion, AnimatePresence } from 'motion/react';
@@ -87,7 +91,7 @@ function RotatingMemberCard({
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2 flex-wrap">
-              <h3 className="font-serif font-bold text-base text-zinc-900 leading-snug">{label}</h3>
+              <h3 className="font-poppins font-bold text-base text-zinc-900 leading-snug">{label}</h3>
               <Badge className="bg-primary/10 text-primary border-none font-bold text-[10px] px-2 py-0.5">
                 {members.length} Members
               </Badge>
@@ -115,7 +119,7 @@ function RotatingMemberCard({
                     className="h-12 w-12 rounded-xl object-cover border border-primary/20 shrink-0 shadow-xs"
                   />
                 ) : (
-                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 border border-primary/25 text-primary flex items-center justify-center font-bold text-sm font-serif shrink-0 shadow-xs">
+                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 border border-primary/25 text-primary flex items-center justify-center font-bold text-sm font-poppins shrink-0 shadow-xs">
                     {current.name?.charAt(0)?.toUpperCase() || 'T'}
                   </div>
                 )}
@@ -211,28 +215,11 @@ export function About() {
   const awardImage = config?.aboutAwardImgUrl || 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?auto=format&fit=crop&w=1200&q=80';
   const principalImage = config?.aboutPrincipalImgUrl || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80';
 
-  const corePillars = [
-    {
-      title: 'Inclusive Education',
-      description: 'We provide an inclusive learning environment where every hearing-impaired student is valued, supported, and given equal opportunities to succeed.',
-      icon: Users,
-    },
-    {
-      title: 'Student-Centered Approach',
-      description: 'Our teaching methods focus on the individual needs, abilities, and overall development of each student.',
-      icon: UserCheck,
-    },
-    {
-      title: 'Respect and Dignity',
-      description: 'We foster a culture of respect, empathy, and dignity for all students, parents, and staff members.',
-      icon: Heart,
-    },
-    {
-      title: 'Skill and Independence',
-      description: 'We emphasize communication skills, vocational readiness, and life skills that help students become confident and independent.',
-      icon: Rocket,
-    },
-  ];
+  // Alternating Education Section Images (Matching Screenshot 3)
+  const sportsImage = config?.aboutSportsImgUrl || 'https://images.unsplash.com/photo-1576618148400-f54bed99fcfd?auto=format&fit=crop&w=1000&q=80';
+  const culturalImage = config?.aboutCulturalImgUrl || 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1000&q=80';
+  const artImage = config?.aboutArtImgUrl || 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=1000&q=80';
+  const digitalImage = config?.aboutDigitalImgUrl || 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1000&q=80';
 
   const facilities = [
     {
@@ -328,12 +315,12 @@ export function About() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background font-sans">
       {/* ════════════ Hero Section ════════════ */}
       <PremiumHeroBackdrop pageKey="about">
         <div className="section-container relative py-20 lg:py-28 text-left max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            {/* Left: staggered text reveal */}
+            {/* Left: staggered text reveal sliding upward */}
             <TextRevealGroup className="lg:col-span-6 space-y-4" baseDelay={0.1} stagger={0.15}>
               <TextRevealItem>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-bold uppercase tracking-widest text-emerald-300 border border-white/15">
@@ -341,7 +328,7 @@ export function About() {
                 </span>
               </TextRevealItem>
               <TextRevealItem>
-                <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
+                <h1 className="font-poppins text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
                   A safe and joyful place for your lovely children
                 </h1>
               </TextRevealItem>
@@ -362,12 +349,12 @@ export function About() {
               </TextRevealItem>
             </TextRevealGroup>
 
-            {/* Right: Wide, Clean Hero Image (Matching Screenshot 2 layout) */}
+            {/* Right: Corner-Sliding Hero Image */}
             <div className="lg:col-span-6">
               <ImageReveal
                 src={heroImage}
                 alt="Deaf and Dumb Industrial Institute Nagpur"
-                from="right"
+                from="corner-right"
                 delay={0.25}
                 parallax={true}
                 wrapperClassName="w-full aspect-[16/10] sm:aspect-[4/3] rounded-3xl shadow-2xl overflow-hidden"
@@ -378,126 +365,340 @@ export function About() {
         </div>
       </PremiumHeroBackdrop>
 
-      <main className="flex-1 space-y-20 py-12">
-        {/* ──── Why Families Choose Us (Clean 2-Column Like Screenshot 2) ──── */}
+      <main className="flex-1 space-y-24 py-12">
+        {/* ════════════ Screenshot 2: "About Our School" with Doodle Art ════════════ */}
         <SectionTransition>
           <section className="section-container">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-              {/* Left Column: Heading, Rich Content, and Stat Counters */}
-              <div className="lg:col-span-6 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+              {/* Left Column: Title & 4 Quick Facts with cute colored badges */}
+              <div className="lg:col-span-6 space-y-8">
                 <TextRevealGroup baseDelay={0} stagger={0.14}>
                   <TextRevealItem>
-                    <span className="text-xs font-bold uppercase tracking-widest text-primary">Why Families Choose Us</span>
-                  </TextRevealItem>
-                  <TextRevealItem>
-                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-zinc-900 leading-tight">
-                      Empowering hearing-impaired students with quality education and skills for an independent future
+                    <h2 className="font-poppins text-3xl sm:text-4xl lg:text-5xl font-bold text-zinc-900 tracking-tight">
+                      About Our School
                     </h2>
-                  </TextRevealItem>
-                  <TextRevealItem blur={false}>
-                    <p className="text-sm sm:text-base text-zinc-600 leading-relaxed">
-                      The Deaf and Dumb Industrial Institute, Nagpur, provides a structured and inclusive educational environment designed specifically for hearing-impaired students. Our experienced and specially trained teachers ensure that every child receives personalized attention and the opportunity to develop academic, communication, and life skills.
-                    </p>
                   </TextRevealItem>
                 </TextRevealGroup>
 
-                {/* Stat counters */}
-                <ScrollReveal delay={0.2} direction="up">
-                  <div className="grid grid-cols-3 gap-3 pt-4 border-t border-zinc-100">
-                    {[
-                      { val: '100%', label: 'Board Results' },
-                      { val: '78+', label: 'Years Legacy' },
-                      { val: '1 - 12', label: 'Grades Taught' },
-                    ].map((s, i) => (
-                      <motion.div
-                        key={i}
-                        className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/70 text-center"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6, delay: 0.2 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                      >
-                        <p className="font-serif font-bold text-2xl sm:text-3xl text-primary">{s.val}</p>
-                        <p className="text-[11px] font-semibold text-zinc-600 mt-0.5">{s.label}</p>
-                      </motion.div>
-                    ))}
+                {/* 4 School Highlights List (Matching Screenshot 2 layout) */}
+                <div className="relative pl-2 space-y-7">
+                  {/* Subtle connecting vertical line */}
+                  <div className="absolute left-[29px] top-4 bottom-6 w-0.5 bg-zinc-200" />
+
+                  {[
+                    {
+                      label: 'Establishment',
+                      val: '1st September 1946 (78+ Years Legacy)',
+                      icon: Home,
+                      iconBg: 'bg-amber-100 text-amber-700 border-amber-200',
+                    },
+                    {
+                      label: 'Manage by',
+                      val: 'The Deaf and Dumb Industrial Institute, Nagpur',
+                      icon: Users,
+                      iconBg: 'bg-blue-100 text-blue-700 border-blue-200',
+                    },
+                    {
+                      label: 'No. of Students',
+                      val: '150+ Hearing-Impaired Students (Grades 1 to 12)',
+                      icon: GraduationCap,
+                      iconBg: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                    },
+                    {
+                      label: 'Teachers & Staff',
+                      val: '18 specially trained Teachers, Special Educators, Physical Trainers & Support Staff',
+                      icon: Heart,
+                      iconBg: 'bg-rose-100 text-rose-700 border-rose-200',
+                    },
+                  ].map((item, i) => (
+                    <ScrollReveal key={i} delay={i * 0.12} direction="up" blur>
+                      <div className="relative flex items-start gap-4 group">
+                        <div className={cn(
+                          'h-11 w-11 rounded-2xl border flex items-center justify-center shrink-0 z-10 transition-transform duration-300 group-hover:scale-110 shadow-xs',
+                          item.iconBg
+                        )}>
+                          <item.icon className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 pt-0.5">
+                          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">{item.label}</p>
+                          <p className="font-poppins font-medium text-sm sm:text-base text-zinc-900 mt-0.5 leading-snug">
+                            {item.val}
+                          </p>
+                        </div>
+                      </div>
+                    </ScrollReveal>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right Column: Doodle Art (Students studying at desk with window, books & plant) */}
+              <div className="lg:col-span-6 flex justify-center">
+                <ScrollReveal delay={0.2} direction="corner-right">
+                  <div className="w-full max-w-lg p-6 sm:p-8 rounded-3xl bg-zinc-50/70 border border-zinc-200/70 shadow-xs hover:shadow-md transition-shadow">
+                    <SchoolDoodleArt className="w-full h-auto max-w-md mx-auto" />
                   </div>
                 </ScrollReveal>
               </div>
+            </div>
+          </section>
+        </SectionTransition>
 
-              {/* Right Column: Wide, Clean Assembly Image (No boxed borders, normal & simple like Screenshot 2) */}
+        {/* ════════════ Screenshot 3: Alternating Visual Education Modules ════════════ */}
+        {/* Module 1: Sports Education (Soft Mint Tint) */}
+        <section className="bg-[#f0fbf7] py-16 border-y border-emerald-900/5 overflow-hidden">
+          <div className="section-container">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+              {/* Image sliding from bottom-left corner */}
+              <div className="lg:col-span-6 order-2 lg:order-1">
+                <ImageReveal
+                  src={sportsImage}
+                  alt="Sports Education & Playground"
+                  from="corner-left"
+                  delay={0.1}
+                  parallax={true}
+                  wrapperClassName="w-full aspect-[16/10] sm:aspect-[4/3] rounded-3xl shadow-xl overflow-hidden"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Text sliding upward */}
+              <div className="lg:col-span-6 order-1 lg:order-2 space-y-4">
+                <TextRevealGroup baseDelay={0.1} stagger={0.16}>
+                  <TextRevealItem>
+                    <span className="text-xs font-bold uppercase tracking-widest text-emerald-700">Fitness & Teamwork</span>
+                  </TextRevealItem>
+                  <TextRevealItem>
+                    <h3 className="font-poppins text-2xl sm:text-3xl lg:text-4xl font-bold text-zinc-900 leading-tight">
+                      Sports Education
+                    </h3>
+                  </TextRevealItem>
+                  <TextRevealItem blur={false}>
+                    <p className="text-sm sm:text-base text-zinc-600 leading-relaxed">
+                      Physical & sports education are an essential part of teaching our children.
+                    </p>
+                  </TextRevealItem>
+                  <TextRevealItem blur={false}>
+                    <p className="text-sm sm:text-base text-zinc-600 leading-relaxed">
+                      Children are taught yoga, pranayam, and various indoor & outdoor games, which helps them maintain their physical health, develop athletic discipline, and build strong camaraderie.
+                    </p>
+                  </TextRevealItem>
+                </TextRevealGroup>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Module 2: Cultural Education (Pure Clean White) */}
+        <section className="bg-white py-16 overflow-hidden">
+          <div className="section-container">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+              {/* Text sliding upward */}
+              <div className="lg:col-span-6 space-y-4">
+                <TextRevealGroup baseDelay={0.1} stagger={0.16}>
+                  <TextRevealItem>
+                    <span className="text-xs font-bold uppercase tracking-widest text-primary">Creative Expression</span>
+                  </TextRevealItem>
+                  <TextRevealItem>
+                    <h3 className="font-poppins text-2xl sm:text-3xl lg:text-4xl font-bold text-zinc-900 leading-tight">
+                      Cultural Education
+                    </h3>
+                  </TextRevealItem>
+                  <TextRevealItem blur={false}>
+                    <p className="text-sm sm:text-base text-zinc-600 leading-relaxed">
+                      Children are taught various cultural programmes like dance, drama, and mimicry to increase their self-confidence & knowledge about various cultures.
+                    </p>
+                  </TextRevealItem>
+                  <TextRevealItem blur={false}>
+                    <p className="text-sm sm:text-base text-zinc-600 leading-relaxed">
+                      Annual cultural gatherings and stage performances give every hearing-impaired child a voice, encouraging stage presence, joyful rhythm, and pride in our rich cultural heritage.
+                    </p>
+                  </TextRevealItem>
+                </TextRevealGroup>
+              </div>
+
+              {/* Image sliding from bottom-right corner */}
               <div className="lg:col-span-6">
                 <ImageReveal
-                  src={assemblyImage}
-                  alt="School Assembly and Ground Activities"
-                  from="right"
-                  delay={0.2}
+                  src={culturalImage}
+                  alt="Cultural Education & Dance"
+                  from="corner-right"
+                  delay={0.1}
                   parallax={true}
                   wrapperClassName="w-full aspect-[16/10] sm:aspect-[4/3] rounded-3xl shadow-xl overflow-hidden"
                   className="w-full h-full object-cover"
                 />
               </div>
             </div>
-          </section>
-        </SectionTransition>
-
-        {/* ──── Key Academic Highlights ──── */}
-        <section className="section-container">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                title: 'Specialized Special Educators',
-                description: 'Qualified and specially trained teachers who provide sign-language and speech-therapy personalized development.',
-                icon: GraduationCap,
-                tag: 'Academics',
-              },
-              {
-                title: 'Free Uniforms, Textbooks & Hostels',
-                description: 'Full residential accommodation for hearing-impaired boys and girls with free school resources and bus transport.',
-                icon: ShieldCheck,
-                tag: 'Campus Care',
-              },
-              {
-                title: 'Digital Classrooms & Speech Labs',
-                description: 'State-of-the-art speech therapy rooms, audio testing equipment, and digital interactive visual displays.',
-                icon: Volume2,
-                tag: 'Facilities',
-              },
-            ].map((feat, i) => (
-              <ScrollReveal key={i} delay={i * 0.12} direction="up" blur>
-                <div className="p-6 rounded-3xl bg-white border border-zinc-200/80 hover:border-primary/40 shadow-xs hover:shadow-md transition-all duration-300 flex items-start gap-4 group h-full">
-                  <div className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                    <feat.icon className="h-6 w-6" />
-                  </div>
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-serif font-bold text-base text-zinc-900 group-hover:text-primary transition-colors">
-                        {feat.title}
-                      </h4>
-                      <Badge className="bg-primary/10 text-primary border-none text-[9px] uppercase font-bold px-2 py-0.5">
-                        {feat.tag}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
-                      {feat.description}
-                    </p>
-                  </div>
-                </div>
-              </ScrollReveal>
-            ))}
           </div>
         </section>
 
-        {/* ──── National Award Recognition (Wide & Clean, No Boxed Borders) ──── */}
+        {/* Module 3: Art & Craft Education (Soft Lavender Tint) */}
+        <section className="bg-[#f5f3ff] py-16 border-y border-indigo-900/5 overflow-hidden">
+          <div className="section-container">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+              {/* Image sliding from bottom-left corner */}
+              <div className="lg:col-span-6 order-2 lg:order-1">
+                <ImageReveal
+                  src={artImage}
+                  alt="Art & Craft Education"
+                  from="corner-left"
+                  delay={0.1}
+                  parallax={true}
+                  wrapperClassName="w-full aspect-[16/10] sm:aspect-[4/3] rounded-3xl shadow-xl overflow-hidden"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Text sliding upward */}
+              <div className="lg:col-span-6 order-1 lg:order-2 space-y-4">
+                <TextRevealGroup baseDelay={0.1} stagger={0.16}>
+                  <TextRevealItem>
+                    <span className="text-xs font-bold uppercase tracking-widest text-indigo-700">Vocational Skills</span>
+                  </TextRevealItem>
+                  <TextRevealItem>
+                    <h3 className="font-poppins text-2xl sm:text-3xl lg:text-4xl font-bold text-zinc-900 leading-tight">
+                      Art & Craft Education
+                    </h3>
+                  </TextRevealItem>
+                  <TextRevealItem blur={false}>
+                    <p className="text-sm sm:text-base text-zinc-600 leading-relaxed">
+                      Children are taught various art & craft items like greetings, paintings, candles, files, ceramic items, and bead work to improve their creativity.
+                    </p>
+                  </TextRevealItem>
+                  <TextRevealItem blur={false}>
+                    <p className="text-sm sm:text-base text-zinc-600 leading-relaxed">
+                      Handmade items created by our students are proudly showcased during school exhibitions, fostering practical craftsmanship that helps them become self-independent.
+                    </p>
+                  </TextRevealItem>
+                </TextRevealGroup>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Module 4: Speech Therapy & Digital Classrooms (Clean Off-White) */}
+        <section className="bg-white py-16 overflow-hidden">
+          <div className="section-container">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+              {/* Text sliding upward */}
+              <div className="lg:col-span-6 space-y-4">
+                <TextRevealGroup baseDelay={0.1} stagger={0.16}>
+                  <TextRevealItem>
+                    <span className="text-xs font-bold uppercase tracking-widest text-primary">Modern Learning</span>
+                  </TextRevealItem>
+                  <TextRevealItem>
+                    <h3 className="font-poppins text-2xl sm:text-3xl lg:text-4xl font-bold text-zinc-900 leading-tight">
+                      Speech & Digital Education
+                    </h3>
+                  </TextRevealItem>
+                  <TextRevealItem blur={false}>
+                    <p className="text-sm sm:text-base text-zinc-600 leading-relaxed">
+                      Our updated speech therapy rooms and specialized audiometric trainers help children develop lip-reading, articulation, and residual hearing abilities.
+                    </p>
+                  </TextRevealItem>
+                  <TextRevealItem blur={false}>
+                    <p className="text-sm sm:text-base text-zinc-600 leading-relaxed">
+                      Interactive digital projectors and computer labs provide visual learning experiences, enabling students to master digital literacy and modern technology tools.
+                    </p>
+                  </TextRevealItem>
+                </TextRevealGroup>
+              </div>
+
+              {/* Image sliding from bottom-right corner */}
+              <div className="lg:col-span-6">
+                <ImageReveal
+                  src={digitalImage}
+                  alt="Speech Therapy & Digital Classrooms"
+                  from="corner-right"
+                  delay={0.1}
+                  parallax={true}
+                  wrapperClassName="w-full aspect-[16/10] sm:aspect-[4/3] rounded-3xl shadow-xl overflow-hidden"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ════════════ Screenshot 1: Principal Intro & Inspiring Quote ════════════ */}
+        <section className="bg-[#0b110e] text-white py-20 lg:py-28 overflow-hidden relative">
+          {/* Ambient subtle light glows */}
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-10 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="section-container relative z-10 space-y-16 max-w-6xl mx-auto">
+            {/* Top Full-Width Underlined Quote (Matching Screenshot 1 exactly) */}
+            <TextRevealGroup baseDelay={0.05} stagger={0.15}>
+              <TextRevealItem>
+                <div className="max-w-4xl mx-auto text-left sm:text-center">
+                  <h2 className="font-poppins font-medium text-xl sm:text-2xl lg:text-3xl text-white leading-relaxed tracking-tight underline decoration-white/20 underline-offset-8">
+                    We not only teach our students the knowledge that they need, but also to provide them with a sense of socialization. We have teachers who are skilled in sign language and have experience working with the deaf community.
+                  </h2>
+                </div>
+              </TextRevealItem>
+            </TextRevealGroup>
+
+            {/* Principal Card & Bio Layout (Matching Screenshot 1) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+              {/* Left Column: Offset peach/terracotta backdrop card with rectangular photo */}
+              <div className="lg:col-span-5 flex justify-center lg:justify-start">
+                <div className="relative w-full max-w-sm sm:max-w-md">
+                  {/* Offset Warm Terracotta Backdrop Card */}
+                  <div className="absolute -top-4 -left-4 w-full h-full rounded-3xl bg-[#F8C1AA] shadow-lg transform -rotate-1" />
+                  
+                  {/* Photo of Principal sliding in from corner-left */}
+                  <ImageReveal
+                    src={principalImage}
+                    alt="Dr. Meenal Sudhir Sangole"
+                    from="corner-left"
+                    delay={0.15}
+                    wrapperClassName="relative rounded-3xl shadow-2xl overflow-hidden aspect-[4/3] sm:aspect-[1/1] z-10"
+                    className="w-full h-full object-cover object-top"
+                  />
+                </div>
+              </div>
+
+              {/* Right Column: Clean Headings & Concise Paragraphs */}
+              <div className="lg:col-span-7 space-y-6 text-left">
+                <TextRevealGroup baseDelay={0.15} stagger={0.15}>
+                  <TextRevealItem>
+                    <div>
+                      <h3 className="font-poppins font-bold text-2xl sm:text-3xl lg:text-4xl text-white tracking-tight">
+                        Dr. Meenal Sudhir Sangole
+                      </h3>
+                      <p className="text-sm sm:text-base text-emerald-400 font-medium mt-1">
+                        Principal (Deaf and Dumb Industrial Institute, Nagpur)
+                      </p>
+                    </div>
+                  </TextRevealItem>
+
+                  <TextRevealItem blur={false}>
+                    <p className="text-sm sm:text-base text-white/80 leading-relaxed">
+                      The Deaf and Dumb Industrial Institute, Nagpur, was established in 1946 by selfless, sincere, and philanthropic individuals from different walks of life who thought it worthwhile to serve the community by starting specialized education for hearing-impaired children.
+                    </p>
+                  </TextRevealItem>
+
+                  <TextRevealItem blur={false}>
+                    <p className="text-sm sm:text-base text-white/80 leading-relaxed">
+                      Serving as Principal since 1993, Dr. Sangole has led the institution with immense dedication, maintaining a consistent 100% board examination record and empowering every student with self-reliance, academic excellence, and joyful socialization.
+                    </p>
+                  </TextRevealItem>
+                </TextRevealGroup>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ════════════ National Award Recognition ════════════ */}
         <SectionTransition delay={0.05}>
           <section className="section-container">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-              {/* Award Image Reveal (Left, Wide Aspect Ratio, Normal & Simple) */}
+              {/* Award Image Reveal (Left, Corner Sliding) */}
               <div className="lg:col-span-6">
                 <ImageReveal
                   src={awardImage}
                   alt="National Award Certificate"
-                  from="left"
+                  from="corner-left"
                   delay={0.1}
                   parallax={true}
                   wrapperClassName="w-full aspect-[16/10] sm:aspect-[4/3] rounded-3xl shadow-xl overflow-hidden"
@@ -513,7 +714,7 @@ export function About() {
                   </Badge>
                 </TextRevealItem>
                 <TextRevealItem>
-                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-zinc-900 leading-tight">
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-poppins font-bold text-zinc-900 leading-tight">
                     National Award for Welfare of Persons with Disabilities
                   </h2>
                 </TextRevealItem>
@@ -527,46 +728,7 @@ export function About() {
           </section>
         </SectionTransition>
 
-        {/* ──── Principal's Message ──── */}
-        <SectionTransition delay={0.05}>
-          <section className="section-container">
-            <div className="rounded-3xl p-8 sm:p-12 bg-gradient-to-br from-zinc-50 via-secondary/20 to-zinc-50 border border-zinc-200/80 shadow-xs">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                {/* Principal Photo */}
-                <div className="lg:col-span-4 flex justify-center">
-                  <ImageReveal
-                    src={principalImage}
-                    alt="Dr. Meenal Sudhir Sangole"
-                    from="down"
-                    delay={0.1}
-                    wrapperClassName="relative h-44 w-44 sm:h-56 sm:w-56 rounded-full border-4 border-primary shadow-xl mx-auto overflow-hidden"
-                    className="w-full h-full object-cover object-top"
-                  />
-                </div>
-
-                {/* Quote Stagger */}
-                <TextRevealGroup className="lg:col-span-8 space-y-4 text-center lg:text-left" baseDelay={0.2} stagger={0.15}>
-                  <TextRevealItem>
-                    <span className="text-4xl font-serif text-primary">"</span>
-                  </TextRevealItem>
-                  <TextRevealItem blur={false}>
-                    <blockquote className="text-base sm:text-lg font-serif italic text-zinc-800 leading-relaxed">
-                      At the Deaf and Dumb Industrial Institute, our mission is to provide every hearing-impaired student with quality education, confidence, and the skills needed for an independent future. We are committed to creating a supportive and inclusive environment where each student is encouraged to achieve their fullest potential.
-                    </blockquote>
-                  </TextRevealItem>
-                  <TextRevealItem>
-                    <div>
-                      <h4 className="font-bold text-lg text-zinc-900">Dr. Meenal Sudhir Sangole (Principal - Since 1993)</h4>
-                      <p className="text-xs text-primary font-bold uppercase tracking-wider mt-0.5">School Principal and Academic Lead</p>
-                    </div>
-                  </TextRevealItem>
-                </TextRevealGroup>
-              </div>
-            </div>
-          </section>
-        </SectionTransition>
-
-        {/* ──── Dedicated Team Section (Compact One-by-One Showcase) ──── */}
+        {/* ════════════ Dedicated Team Section (Compact One-by-One Showcase) ════════════ */}
         <section className="bg-gradient-to-b from-white via-secondary/20 to-zinc-50/80 py-16 border-y border-primary/10 overflow-hidden">
           <div className="space-y-10">
             <TextRevealGroup className="section-container text-center max-w-3xl mx-auto space-y-3" stagger={0.14}>
@@ -578,7 +740,7 @@ export function About() {
                 </div>
               </TextRevealItem>
               <TextRevealItem>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-zinc-900">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-poppins font-bold text-zinc-900">
                   Meet the Staff Guiding Our Children
                 </h2>
               </TextRevealItem>
@@ -608,7 +770,7 @@ export function About() {
                           className="h-10 w-10 rounded-full object-cover border border-primary/40 shrink-0"
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded-full bg-primary/10 border border-primary/30 text-primary flex items-center justify-center font-bold text-xs font-serif shrink-0">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 border border-primary/30 text-primary flex items-center justify-center font-bold text-xs font-poppins shrink-0">
                           {m.name?.charAt(0)?.toUpperCase() || 'T'}
                         </div>
                       )}
@@ -646,151 +808,12 @@ export function About() {
           </div>
         </section>
 
-        {/* ──── Core Pillars ──── */}
-        <section className="bg-zinc-50 py-16">
-          <div className="section-container space-y-10">
-            <TextRevealGroup className="text-center max-w-3xl mx-auto space-y-3" stagger={0.14}>
-              <TextRevealItem>
-                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-zinc-900">
-                  We Are Committed to Empowering Hearing-Impaired Students
-                </h2>
-              </TextRevealItem>
-              <TextRevealItem>
-                <p className="text-sm font-bold text-primary">
-                  Every student deserves the right support during their most important learning years.
-                </p>
-              </TextRevealItem>
-              <TextRevealItem blur={false}>
-                <p className="text-xs text-zinc-600 leading-relaxed">
-                  The Deaf and Dumb Industrial Institute, Nagpur, is dedicated to providing inclusive and specialized education for hearing-impaired students from Grades 1 to 12. With a legacy dating back to 1946, the Institute focuses on academic excellence, communication development, and skill-based learning in a safe and supportive environment.
-                </p>
-              </TextRevealItem>
-            </TextRevealGroup>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {corePillars.map((pillar, idx) => (
-                <ScrollReveal key={idx} delay={idx * 0.1} direction="up" blur>
-                  <Card className="border border-zinc-200/80 shadow-sm hover:shadow-md transition-shadow h-full rounded-2xl bg-white">
-                    <CardContent className="p-6 space-y-3">
-                      <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                        <pillar.icon className="h-5 w-5" />
-                      </div>
-                      <h4 className="font-bold text-sm text-zinc-900">{pillar.title}</h4>
-                      <p className="text-xs text-zinc-500 leading-relaxed">{pillar.description}</p>
-                    </CardContent>
-                  </Card>
-                </ScrollReveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ──── Vision and Mission ──── */}
-        <section className="section-container">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <ScrollReveal direction="left" blur delay={0}>
-              <Card className="border border-primary/20 shadow-md bg-gradient-to-br from-white to-secondary/40 rounded-3xl p-8">
-                <CardContent className="p-0 space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-xl shadow-lg shadow-primary/20">
-                      V
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-primary uppercase tracking-widest">Vision Statement</p>
-                      <h3 className="text-lg font-serif font-bold text-zinc-900">Our Vision</h3>
-                    </div>
-                  </div>
-                  <p className="text-sm sm:text-base text-zinc-700 font-serif leading-relaxed">
-                    To empower hearing-impaired students through quality education and holistic development, enabling them to lead confident and independent lives.
-                  </p>
-                </CardContent>
-              </Card>
-            </ScrollReveal>
-
-            <ScrollReveal direction="right" blur delay={0.1}>
-              <Card className="border border-primary/20 shadow-md bg-gradient-to-br from-white to-secondary/40 rounded-3xl p-8">
-                <CardContent className="p-0 space-y-4 min-h-[167px]">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-xl shadow-lg shadow-primary/20">
-                      M
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-primary uppercase tracking-widest">Mission Statement</p>
-                      <h3 className="text-lg font-serif font-bold text-zinc-900">Our Mission</h3>
-                    </div>
-                  </div>
-                  <p className="text-sm sm:text-base text-zinc-700 font-serif leading-relaxed">
-                    To deliver accessible, student-centered education and skill development that empowers hearing-impaired learners to reach their full potential.
-                  </p>
-                </CardContent>
-              </Card>
-            </ScrollReveal>
-          </div>
-        </section>
-
-        {/* ──── Admission 1-2-3 ──── */}
-        <SectionTransition delay={0.05}>
-          <section className="section-container">
-            <div className="rounded-3xl p-8 sm:p-12 bg-white border border-zinc-200/80 shadow-xs space-y-8">
-              <TextRevealGroup className="text-center max-w-2xl mx-auto space-y-2" stagger={0.14}>
-                <TextRevealItem>
-                  <span className="text-xs font-bold uppercase tracking-widest text-primary">Admission & Community</span>
-                </TextRevealItem>
-                <TextRevealItem>
-                  <h2 className="text-2xl sm:text-3xl font-serif font-bold text-zinc-900">
-                    Connecting with Our Institute as Easy as 1-2-3
-                  </h2>
-                </TextRevealItem>
-                <TextRevealItem blur={false}>
-                  <p className="text-xs sm:text-sm text-zinc-500 leading-relaxed">
-                    We welcome parents, donors, and volunteers to participate in the growth and empowerment of our hearing-impaired students.
-                  </p>
-                </TextRevealItem>
-              </TextRevealGroup>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[
-                  {
-                    step: '01',
-                    title: 'Schedule Visit or Inquire',
-                    description: 'Book an ashram visit online or call our team to learn about admissions and our educational curriculum.',
-                  },
-                  {
-                    step: '02',
-                    title: 'Campus Tour & Child Evaluation',
-                    description: 'Meet our experienced educators and speech therapists for a tailored assessment of the child\'s learning needs.',
-                  },
-                  {
-                    step: '03',
-                    title: 'Empowerment & Growth',
-                    description: 'Students join an uplifting, inclusive family environment with free lodging, books, and career guidance.',
-                  },
-                ].map((item, idx) => (
-                  <ScrollReveal key={idx} delay={idx * 0.1} direction="up" blur>
-                    <div className="p-6 rounded-2xl bg-zinc-50/70 border border-zinc-200/70 relative space-y-3 hover:bg-white hover:border-primary/30 transition-all shadow-xs">
-                      <span className="font-serif font-bold text-3xl text-primary/40 block">
-                        {item.step}
-                      </span>
-                      <h3 className="font-serif font-bold text-base text-zinc-900">
-                        {item.title}
-                      </h3>
-                      <p className="text-xs text-zinc-500 leading-relaxed">
-                        {item.description}
-                      </p>
-                    </div>
-                  </ScrollReveal>
-                ))}
-              </div>
-            </div>
-          </section>
-        </SectionTransition>
-
-        {/* ──── Key Facilities and Student Support (With in-place hover popup) ──── */}
+        {/* ════════════ Key Facilities and Student Support (With in-place hover popup) ════════════ */}
         <section className="bg-zinc-50 py-16 border-y border-zinc-200/80 overflow-hidden">
           <div className="space-y-8">
             <TextRevealGroup className="section-container text-center space-y-2" stagger={0.14}>
               <TextRevealItem>
-                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-zinc-900">
+                <h2 className="text-2xl sm:text-3xl font-poppins font-bold text-zinc-900">
                   Key Facilities and Student Support
                 </h2>
               </TextRevealItem>
@@ -912,6 +935,63 @@ export function About() {
             </p>
           </div>
         </section>
+
+        {/* ════════════ Admission 1-2-3 ════════════ */}
+        <SectionTransition delay={0.05}>
+          <section className="section-container">
+            <div className="rounded-3xl p-8 sm:p-12 bg-white border border-zinc-200/80 shadow-xs space-y-8">
+              <TextRevealGroup className="text-center max-w-2xl mx-auto space-y-2" stagger={0.14}>
+                <TextRevealItem>
+                  <span className="text-xs font-bold uppercase tracking-widest text-primary">Admission & Community</span>
+                </TextRevealItem>
+                <TextRevealItem>
+                  <h2 className="text-2xl sm:text-3xl font-poppins font-bold text-zinc-900">
+                    Connecting with Our Institute as Easy as 1-2-3
+                  </h2>
+                </TextRevealItem>
+                <TextRevealItem blur={false}>
+                  <p className="text-xs sm:text-sm text-zinc-500 leading-relaxed">
+                    We welcome parents, donors, and volunteers to participate in the growth and empowerment of our hearing-impaired students.
+                  </p>
+                </TextRevealItem>
+              </TextRevealGroup>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                  {
+                    step: '01',
+                    title: 'Schedule Visit or Inquire',
+                    description: 'Book an ashram visit online or call our team to learn about admissions and our educational curriculum.',
+                  },
+                  {
+                    step: '02',
+                    title: 'Campus Tour & Child Evaluation',
+                    description: 'Meet our experienced educators and speech therapists for a tailored assessment of the child\'s learning needs.',
+                  },
+                  {
+                    step: '03',
+                    title: 'Empowerment & Growth',
+                    description: 'Students join an uplifting, inclusive family environment with free lodging, books, and career guidance.',
+                  },
+                ].map((item, idx) => (
+                  <ScrollReveal key={idx} delay={idx * 0.1} direction="up" blur>
+                    <div className="p-6 rounded-2xl bg-zinc-50/70 border border-zinc-200/70 relative space-y-3 hover:bg-white hover:border-primary/30 transition-all shadow-xs">
+                      <span className="font-poppins font-bold text-3xl text-primary/40 block">
+                        {item.step}
+                      </span>
+                      <h3 className="font-poppins font-bold text-base text-zinc-900">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs text-zinc-500 leading-relaxed">
+                        {item.description}
+                      </p>
+                    </div>
+                  </ScrollReveal>
+                ))}
+              </div>
+            </div>
+          </section>
+        </SectionTransition>
 
         <div className="section-container">
           <AdBanner placement="about_bottom" />
