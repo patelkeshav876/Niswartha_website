@@ -41,9 +41,9 @@ export default defineConfig(({ mode }) => {
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Split Lottie into its own chunk — it pulls in heavy WASM
-          if (id.includes('@lottiefiles/dotlottie-react') || id.includes('dotlottie')) {
-            return 'vendor-lottie';
+          // React core chunk for long-term browser cache
+          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/react-router/')) {
+            return 'vendor-react';
           }
           // Split animation/motion library separately
           if (id.includes('motion') || id.includes('framer-motion')) {

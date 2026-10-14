@@ -7,7 +7,6 @@ import { Toaster } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import { WhatsAppButton } from './components/WhatsAppButton';
 import { api, applyThemeColor } from './lib/api';
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { AdPopupModal } from './components/AdPopupModal';
 import { ShieldAlert } from 'lucide-react';
 
@@ -54,12 +53,15 @@ export function Layout() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="w-36 h-36 flex items-center justify-center">
-            <DotLottieReact
-              src="https://lottie.host/f1920018-4203-4927-a43e-aa0bff45eb09/I8cwfrA9rp.json"
-              loop
-              autoplay
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="relative flex h-16 w-16 items-center justify-center">
+            <div className="absolute inset-0 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+            <img
+              src="/logo.png"
+              alt="Niswartha"
+              width={36}
+              height={36}
+              className="h-9 w-9 object-contain"
             />
           </div>
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest animate-pulse">Loading Niswartha...</p>

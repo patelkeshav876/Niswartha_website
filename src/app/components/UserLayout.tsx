@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate, useLocation, Outlet } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useUser } from '../context/UserContext';
 import { Button } from './ui/button';
 import { UserAvatar } from './UserAvatar';

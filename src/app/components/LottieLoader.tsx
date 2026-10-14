@@ -1,5 +1,4 @@
 import React from 'react';
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 interface LottieLoaderProps {
   src?: string;
@@ -7,21 +6,23 @@ interface LottieLoaderProps {
 }
 
 export function LottieLoader({
-  src = 'https://lottie.host/81a91c10-0988-42fa-986c-0e78fbcf19d4/6uVNm3L66h.lottie',
   message = 'Loading Niswartha...',
 }: LottieLoaderProps) {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-40 h-40 flex items-center justify-center">
-          <DotLottieReact
-            src={src}
-            loop
-            autoplay
+        <div className="relative flex h-20 w-20 items-center justify-center">
+          <div className="absolute inset-0 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+          <img
+            src="/logo.png"
+            alt="Niswartha"
+            width={44}
+            height={44}
+            className="h-11 w-11 object-contain"
           />
         </div>
         {message && (
-          <p className="text-sm font-semibold text-[#1E3A8A] animate-pulse">
+          <p className="text-sm font-semibold text-primary animate-pulse">
             {message}
           </p>
         )}
@@ -29,3 +30,4 @@ export function LottieLoader({
     </div>
   );
 }
+
