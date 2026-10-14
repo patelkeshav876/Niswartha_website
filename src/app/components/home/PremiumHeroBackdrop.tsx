@@ -141,14 +141,27 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
       {/* ──── Image Fill ──── */}
       {bgType === 'image' && bgUrl && (
         <div
-          className="absolute inset-0 w-full h-[120%] pointer-events-none"
+          className="absolute inset-0 w-full h-[120%] pointer-events-none overflow-hidden"
           style={{
             transform: `translateY(${parallaxShift}px) translateZ(0)`,
             filter: blurIntensity > 0 ? `blur(${blurIntensity}px)` : undefined,
             transition: 'transform 0.1s ease-out',
           }}
         >
-          <img src={bgUrl} className={cn('w-full h-full object-center', fitClass)} alt="" loading="eager" />
+          <motion.img
+            src={bgUrl}
+            className={cn('w-full h-full object-center will-change-transform', fitClass)}
+            alt=""
+            loading="eager"
+            initial={{ scale: 1 }}
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              repeatType: 'reverse',
+              ease: 'easeInOut',
+            }}
+          />
         </div>
       )}
 
@@ -185,12 +198,24 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
           {/* Optional Fallback image overlay when video is loading or fallback image set */}
           {mobileFallbackUrl && (
             <div
-              className="absolute inset-0 w-full h-full pointer-events-none opacity-20 transition-opacity"
+              className="absolute inset-0 w-full h-full pointer-events-none opacity-25 transition-opacity overflow-hidden"
               style={{
                 filter: blurIntensity > 0 ? `blur(${blurIntensity}px)` : undefined,
               }}
             >
-              <img src={mobileFallbackUrl} className={cn('w-full h-full', fitClass)} alt="" />
+              <motion.img
+                src={mobileFallbackUrl}
+                className={cn('w-full h-full will-change-transform', fitClass)}
+                alt=""
+                initial={{ scale: 1 }}
+                animate={{ scale: [1, 1.08, 1] }}
+                transition={{
+                  duration: 20,
+                  repeat: Infinity,
+                  repeatType: 'reverse',
+                  ease: 'easeInOut',
+                }}
+              />
             </div>
           )}
         </>

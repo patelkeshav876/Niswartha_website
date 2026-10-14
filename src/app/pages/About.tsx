@@ -8,7 +8,6 @@ import {
   Users,
   Award,
   BookOpen,
-  Briefcase,
   Sparkles,
   ShieldCheck,
   GraduationCap,
@@ -26,8 +25,8 @@ import {
   UserCheck,
   Rocket,
   Lightbulb,
-  ChevronDown,
-  ChevronUp,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { mockAshrams } from '../data/mock';
@@ -42,17 +41,150 @@ import {
 import { PremiumHeroBackdrop } from '../components/home/PremiumHeroBackdrop';
 import { AdBanner } from '../components/AdBanner';
 import { api } from '../lib/api';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { cn } from '../lib/utils';
 
 const DEFAULT_STAFF: any[] = [];
+
+/**
+ * Compact Single-Spot Member Showcase:
+ * Displays staff members one by one in the same place
+ * with smooth auto-cycle and manual prev/next navigation.
+ */
+function RotatingMemberCard({
+  label,
+  desc,
+  members,
+}: {
+  label: string;
+  desc: string;
+  members: any[];
+}) {
+  const [index, setIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    if (members.length <= 1 || isPaused) return;
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % members.length);
+    }, 3200);
+    return () => clearInterval(timer);
+  }, [members.length, isPaused]);
+
+  const current = members.length > 0 ? members[index % members.length] : null;
+
+  return (
+    <div
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      className="border border-zinc-200/90 rounded-3xl bg-white p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
+    >
+      <div>
+        {/* Category Header */}
+        <div className="flex items-start gap-3.5 mb-5 pb-4 border-b border-zinc-100">
+          <div className="h-11 w-11 rounded-2xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold shrink-0">
+            <Users className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <h3 className="font-serif font-bold text-base text-zinc-900 leading-snug">{label}</h3>
+              <Badge className="bg-primary/10 text-primary border-none font-bold text-[10px] px-2 py-0.5">
+                {members.length} Members
+              </Badge>
+            </div>
+            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">{desc}</p>
+          </div>
+        </div>
+
+        {/* Member Spot (Cycles in the exact same place) */}
+        <div className="relative min-h-[92px] flex items-center">
+          <AnimatePresence mode="wait">
+            {current ? (
+              <motion.div
+                key={current.id || index}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full p-3.5 rounded-2xl bg-zinc-50/80 border border-zinc-200/70 flex items-center gap-3.5"
+              >
+                {current.imageUrl ? (
+                  <img
+                    src={current.imageUrl}
+                    alt={current.name}
+                    className="h-12 w-12 rounded-xl object-cover border border-primary/20 shrink-0 shadow-xs"
+                  />
+                ) : (
+                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 border border-primary/25 text-primary flex items-center justify-center font-bold text-sm font-serif shrink-0 shadow-xs">
+                    {current.name?.charAt(0)?.toUpperCase() || 'T'}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-bold text-sm text-zinc-900 truncate">{current.name}</h4>
+                    {current.since && (
+                      <span className="text-[10px] font-mono text-zinc-500 bg-zinc-200/60 px-1.5 py-0.5 rounded-md shrink-0">
+                        {current.since}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-primary font-semibold truncate mt-0.5">{current.role}</p>
+                </div>
+              </motion.div>
+            ) : (
+              <div className="text-xs text-zinc-400 italic p-4 text-center w-full">
+                No members registered yet
+              </div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Navigation & Indicator Bar */}
+      {members.length > 1 && (
+        <div className="flex items-center justify-between pt-4 mt-2 border-t border-zinc-100 text-xs text-zinc-500">
+          <span className="text-[11px] font-medium text-zinc-400">
+            {index + 1} of {members.length}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setIndex((prev) => (prev - 1 + members.length) % members.length)}
+              className="h-7 w-7 rounded-lg hover:bg-zinc-100 flex items-center justify-center text-zinc-600 transition-colors"
+              title="Previous Member"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <div className="flex gap-1">
+              {members.slice(0, 6).map((_, i) => (
+                <span
+                  key={i}
+                  onClick={() => setIndex(i)}
+                  className={cn(
+                    'h-1.5 rounded-full transition-all cursor-pointer',
+                    index === i ? 'w-4 bg-primary' : 'w-1.5 bg-zinc-200 hover:bg-zinc-300'
+                  )}
+                />
+              ))}
+            </div>
+            <button
+              onClick={() => setIndex((prev) => (prev + 1) % members.length)}
+              className="h-7 w-7 rounded-lg hover:bg-zinc-100 flex items-center justify-center text-zinc-600 transition-colors"
+              title="Next Member"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function About() {
   const navigate = useNavigate();
   const ashram = mockAshrams[0];
   const [team, setTeam] = useState<any[]>(DEFAULT_STAFF);
   const [config, setConfig] = useState<any>(null);
-  const [activeCategory, setActiveCategory] = useState<string>('All');
-  const [openCategories, setOpenCategories] = useState<string[]>(['Management', 'Faculty', 'Staff']);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,10 +206,10 @@ export function About() {
     fetchData();
   }, []);
 
-  const heroImage = config?.aboutHeroImgUrl || 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80';
-  const assemblyImage = config?.aboutAssemblyImgUrl || 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=80';
-  const awardImage = config?.aboutAwardImgUrl || 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?auto=format&fit=crop&w=800&q=80';
-  const principalImage = config?.aboutPrincipalImgUrl || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80';
+  const heroImage = config?.aboutHeroImgUrl || 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=80';
+  const assemblyImage = config?.aboutAssemblyImgUrl || 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=80';
+  const awardImage = config?.aboutAwardImgUrl || 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?auto=format&fit=crop&w=1200&q=80';
+  const principalImage = config?.aboutPrincipalImgUrl || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80';
 
   const corePillars = [
     {
@@ -195,19 +327,14 @@ export function About() {
     },
   ];
 
-  const filteredTeam = team.filter((member) => {
-    if (activeCategory === 'All') return true;
-    return member.category === activeCategory;
-  });
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* ════════════ Hero Section ════════════ */}
       <PremiumHeroBackdrop pageKey="about">
         <div className="section-container relative py-20 lg:py-28 text-left max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             {/* Left: staggered text reveal */}
-            <TextRevealGroup className="lg:col-span-7 space-y-4" baseDelay={0.1} stagger={0.13}>
+            <TextRevealGroup className="lg:col-span-6 space-y-4" baseDelay={0.1} stagger={0.15}>
               <TextRevealItem>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-bold uppercase tracking-widest text-emerald-300 border border-white/15">
                   Play. Educate. Inspire. Empower
@@ -235,38 +362,30 @@ export function About() {
               </TextRevealItem>
             </TextRevealGroup>
 
-            {/* Right: image reveal from right */}
-            <div className="lg:col-span-5">
+            {/* Right: Wide, Clean Hero Image (Matching Screenshot 2 layout) */}
+            <div className="lg:col-span-6">
               <ImageReveal
                 src={heroImage}
                 alt="Deaf and Dumb Industrial Institute Nagpur"
                 from="right"
                 delay={0.25}
                 parallax={true}
-                wrapperClassName="relative rounded-3xl shadow-2xl border border-white/20 group"
-                className="w-full h-72 sm:h-80 object-cover transition-transform duration-700 group-hover:scale-105"
+                wrapperClassName="w-full aspect-[16/10] sm:aspect-[4/3] rounded-3xl shadow-2xl overflow-hidden"
+                className="w-full h-full object-cover"
               />
-              {/* Caption overlay (not inside ImageReveal to preserve z-index) */}
-              <BlurReveal delay={0.45} className="-mt-16 relative z-10 px-4 pb-4">
-                <div className="text-white">
-                  <p className="text-xs font-bold uppercase tracking-wider text-emerald-300">Established 1946</p>
-                  <p className="text-sm font-serif font-bold">मूक आणि बधिर विद्यालय, शंकरनगर, नागपूर</p>
-                </div>
-              </BlurReveal>
             </div>
           </div>
         </div>
       </PremiumHeroBackdrop>
 
-      <main className="flex-1 space-y-16 py-12">
-        {/* ──── Why Families Choose Us ──── */}
+      <main className="flex-1 space-y-20 py-12">
+        {/* ──── Why Families Choose Us (Clean 2-Column Like Screenshot 2) ──── */}
         <SectionTransition>
           <section className="section-container">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-
-              {/* Left column */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+              {/* Left Column: Heading, Rich Content, and Stat Counters */}
               <div className="lg:col-span-6 space-y-6">
-                <TextRevealGroup baseDelay={0} stagger={0.11}>
+                <TextRevealGroup baseDelay={0} stagger={0.14}>
                   <TextRevealItem>
                     <span className="text-xs font-bold uppercase tracking-widest text-primary">Why Families Choose Us</span>
                   </TextRevealItem>
@@ -276,15 +395,15 @@ export function About() {
                     </h2>
                   </TextRevealItem>
                   <TextRevealItem blur={false}>
-                    <p className="text-sm text-zinc-600 leading-relaxed">
+                    <p className="text-sm sm:text-base text-zinc-600 leading-relaxed">
                       The Deaf and Dumb Industrial Institute, Nagpur, provides a structured and inclusive educational environment designed specifically for hearing-impaired students. Our experienced and specially trained teachers ensure that every child receives personalized attention and the opportunity to develop academic, communication, and life skills.
                     </p>
                   </TextRevealItem>
                 </TextRevealGroup>
 
                 {/* Stat counters */}
-                <ScrollReveal delay={0.15} direction="up">
-                  <div className="grid grid-cols-3 gap-3 pt-2 border-t border-zinc-100">
+                <ScrollReveal delay={0.2} direction="up">
+                  <div className="grid grid-cols-3 gap-3 pt-4 border-t border-zinc-100">
                     {[
                       { val: '100%', label: 'Board Results' },
                       { val: '78+', label: 'Years Legacy' },
@@ -293,10 +412,10 @@ export function About() {
                       <motion.div
                         key={i}
                         className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/70 text-center"
-                        initial={{ opacity: 0, scale: 0.88 }}
+                        initial={{ opacity: 0, scale: 0.9 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 0.5, delay: 0.18 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                        transition={{ duration: 0.6, delay: 0.2 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
                       >
                         <p className="font-serif font-bold text-2xl sm:text-3xl text-primary">{s.val}</p>
                         <p className="text-[11px] font-semibold text-zinc-600 mt-0.5">{s.label}</p>
@@ -304,111 +423,106 @@ export function About() {
                     ))}
                   </div>
                 </ScrollReveal>
-
-                {/* Assembly image with parallax reveal from bottom */}
-                <ScrollReveal delay={0.1} direction="up">
-                  <div className="relative rounded-2xl overflow-hidden shadow-md border border-emerald-100 bg-white p-2">
-                    <ImageReveal
-                      src={assemblyImage}
-                      alt="School Assembly and Ground Activities"
-                      from="down"
-                      delay={0.2}
-                      parallax={true}
-                      wrapperClassName="rounded-xl"
-                      className="w-full h-48 sm:h-56 object-cover rounded-xl"
-                    />
-                    <div className="p-2 text-center">
-                      <p className="text-xs font-bold text-zinc-700">Holistic Campus Life & School Assembly</p>
-                    </div>
-                  </div>
-                </ScrollReveal>
               </div>
 
-              {/* Right column: feature cards staggered from right */}
-              <div className="lg:col-span-6 space-y-4">
-                {[
-                  {
-                    title: 'Specialized Special Educators',
-                    description: 'Qualified and specially trained teachers who provide sign-language and speech-therapy personalized development.',
-                    icon: GraduationCap,
-                    tag: 'Academics',
-                  },
-                  {
-                    title: 'Free Uniforms, Textbooks & Hostels',
-                    description: 'Full residential accommodation for hearing-impaired boys and girls with free school resources and bus transport.',
-                    icon: ShieldCheck,
-                    tag: 'Campus Care',
-                  },
-                  {
-                    title: 'Digital Classrooms & Speech Therapy Labs',
-                    description: 'State-of-the-art speech therapy rooms, audio testing equipment, and digital interactive visual displays.',
-                    icon: Volume2,
-                    tag: 'Facilities',
-                  },
-                ].map((feat, i) => (
-                  <ScrollReveal key={i} delay={i * 0.1} direction="right" blur>
-                    <div className="p-5 rounded-3xl bg-white border border-zinc-200/80 hover:border-primary/40 shadow-xs hover:shadow-md transition-all duration-300 flex items-start gap-4 group">
-                      <div className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                        <feat.icon className="h-6 w-6" />
-                      </div>
-                      <div className="space-y-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-serif font-bold text-base text-zinc-900 group-hover:text-primary transition-colors">
-                            {feat.title}
-                          </h4>
-                          <Badge className="bg-primary/10 text-primary border-none text-[9px] uppercase font-bold px-2 py-0.5">
-                            {feat.tag}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-zinc-500 leading-relaxed">
-                          {feat.description}
-                        </p>
-                      </div>
-                    </div>
-                  </ScrollReveal>
-                ))}
+              {/* Right Column: Wide, Clean Assembly Image (No boxed borders, normal & simple like Screenshot 2) */}
+              <div className="lg:col-span-6">
+                <ImageReveal
+                  src={assemblyImage}
+                  alt="School Assembly and Ground Activities"
+                  from="right"
+                  delay={0.2}
+                  parallax={true}
+                  wrapperClassName="w-full aspect-[16/10] sm:aspect-[4/3] rounded-3xl shadow-xl overflow-hidden"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
           </section>
         </SectionTransition>
 
-        {/* ──── National Award Recognition ──── */}
+        {/* ──── Key Academic Highlights ──── */}
+        <section className="section-container">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                title: 'Specialized Special Educators',
+                description: 'Qualified and specially trained teachers who provide sign-language and speech-therapy personalized development.',
+                icon: GraduationCap,
+                tag: 'Academics',
+              },
+              {
+                title: 'Free Uniforms, Textbooks & Hostels',
+                description: 'Full residential accommodation for hearing-impaired boys and girls with free school resources and bus transport.',
+                icon: ShieldCheck,
+                tag: 'Campus Care',
+              },
+              {
+                title: 'Digital Classrooms & Speech Labs',
+                description: 'State-of-the-art speech therapy rooms, audio testing equipment, and digital interactive visual displays.',
+                icon: Volume2,
+                tag: 'Facilities',
+              },
+            ].map((feat, i) => (
+              <ScrollReveal key={i} delay={i * 0.12} direction="up" blur>
+                <div className="p-6 rounded-3xl bg-white border border-zinc-200/80 hover:border-primary/40 shadow-xs hover:shadow-md transition-all duration-300 flex items-start gap-4 group h-full">
+                  <div className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <feat.icon className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-serif font-bold text-base text-zinc-900 group-hover:text-primary transition-colors">
+                        {feat.title}
+                      </h4>
+                      <Badge className="bg-primary/10 text-primary border-none text-[9px] uppercase font-bold px-2 py-0.5">
+                        {feat.tag}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-zinc-500 leading-relaxed">
+                      {feat.description}
+                    </p>
+                  </div>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </section>
+
+        {/* ──── National Award Recognition (Wide & Clean, No Boxed Borders) ──── */}
         <SectionTransition delay={0.05}>
           <section className="section-container">
-            <div className="rounded-3xl p-6 sm:p-12 bg-gradient-to-br from-primary/5 via-secondary/60 to-white text-zinc-900 border border-primary/20 shadow-sm">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                {/* Award image reveal from left */}
-                <div className="lg:col-span-5">
-                  <ImageReveal
-                    src={awardImage}
-                    alt="National Award Certificate"
-                    from="left"
-                    delay={0.1}
-                    parallax={true}
-                    wrapperClassName="relative w-[90%] sm:w-full max-w-sm sm:max-w-none mx-auto rounded-2xl border-2 border-primary/30 bg-white p-2.5 shadow-md"
-                    className="w-full h-full object-cover rounded-xl"
-                  />
-                </div>
-
-                {/* Text stagger from right */}
-                <TextRevealGroup className="lg:col-span-7 space-y-4" baseDelay={0.15} stagger={0.13}>
-                  <TextRevealItem>
-                    <Badge className="bg-primary text-primary-foreground border-none uppercase font-bold text-xs tracking-wider px-3.5 py-1 shadow-sm">
-                      Government Recognition
-                    </Badge>
-                  </TextRevealItem>
-                  <TextRevealItem>
-                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-zinc-900 leading-tight">
-                      National Award for Welfare of Persons with Disabilities
-                    </h2>
-                  </TextRevealItem>
-                  <TextRevealItem blur={false}>
-                    <p className="text-sm text-zinc-600 leading-relaxed">
-                      The Deaf and Dumb Industrial Institute has been honored with the prestigious National Award by the Government of India, Ministry of Welfare, in recognition of its dedicated service and outstanding contribution towards the education and empowerment of hearing-impaired students.
-                    </p>
-                  </TextRevealItem>
-                </TextRevealGroup>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+              {/* Award Image Reveal (Left, Wide Aspect Ratio, Normal & Simple) */}
+              <div className="lg:col-span-6">
+                <ImageReveal
+                  src={awardImage}
+                  alt="National Award Certificate"
+                  from="left"
+                  delay={0.1}
+                  parallax={true}
+                  wrapperClassName="w-full aspect-[16/10] sm:aspect-[4/3] rounded-3xl shadow-xl overflow-hidden"
+                  className="w-full h-full object-cover"
+                />
               </div>
+
+              {/* Text Stagger (Right) */}
+              <TextRevealGroup className="lg:col-span-6 space-y-5" baseDelay={0.15} stagger={0.14}>
+                <TextRevealItem>
+                  <Badge className="bg-primary text-primary-foreground border-none uppercase font-bold text-xs tracking-wider px-3.5 py-1 shadow-sm">
+                    Government Recognition
+                  </Badge>
+                </TextRevealItem>
+                <TextRevealItem>
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-zinc-900 leading-tight">
+                    National Award for Welfare of Persons with Disabilities
+                  </h2>
+                </TextRevealItem>
+                <TextRevealItem blur={false}>
+                  <p className="text-sm sm:text-base text-zinc-600 leading-relaxed">
+                    The Deaf and Dumb Industrial Institute has been honored with the prestigious National Award by the Government of India, Ministry of Welfare, in recognition of its dedicated service and outstanding contribution towards the education and empowerment of hearing-impaired students.
+                  </p>
+                </TextRevealItem>
+              </TextRevealGroup>
             </div>
           </section>
         </SectionTransition>
@@ -416,48 +530,46 @@ export function About() {
         {/* ──── Principal's Message ──── */}
         <SectionTransition delay={0.05}>
           <section className="section-container">
-            <Card className="border border-primary/20 shadow-lg shadow-primary/5 bg-gradient-to-br from-white via-secondary/30 to-white text-zinc-900 rounded-3xl overflow-hidden">
-              <CardContent className="p-6 sm:p-12">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                  {/* Principal photo reveal from bottom */}
-                  <div className="lg:col-span-4 flex justify-center">
-                    <ImageReveal
-                      src={principalImage}
-                      alt="Dr. Meenal Sudhir Sangole"
-                      from="down"
-                      delay={0.1}
-                      wrapperClassName="relative h-44 w-44 sm:h-56 sm:w-56 rounded-full border-4 border-primary shadow-xl mx-auto"
-                      className="w-full h-full object-cover object-top"
-                    />
-                  </div>
-
-                  {/* Quote stagger from right */}
-                  <TextRevealGroup className="lg:col-span-8 space-y-4 text-center lg:text-left" baseDelay={0.2} stagger={0.14}>
-                    <TextRevealItem>
-                      <span className="text-4xl font-serif text-primary">"</span>
-                    </TextRevealItem>
-                    <TextRevealItem blur={false}>
-                      <blockquote className="text-base sm:text-lg font-serif italic text-zinc-800 leading-relaxed">
-                        At the Deaf and Dumb Industrial Institute, our mission is to provide every hearing-impaired student with quality education, confidence, and the skills needed for an independent future. We are committed to creating a supportive and inclusive environment where each student is encouraged to achieve their fullest potential.
-                      </blockquote>
-                    </TextRevealItem>
-                    <TextRevealItem>
-                      <div>
-                        <h4 className="font-bold text-lg text-zinc-900">Dr. Meenal Sudhir Sangole (Principal - Since 1993)</h4>
-                        <p className="text-xs text-primary font-bold uppercase tracking-wider">School Principal and Academic Lead</p>
-                      </div>
-                    </TextRevealItem>
-                  </TextRevealGroup>
+            <div className="rounded-3xl p-8 sm:p-12 bg-gradient-to-br from-zinc-50 via-secondary/20 to-zinc-50 border border-zinc-200/80 shadow-xs">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                {/* Principal Photo */}
+                <div className="lg:col-span-4 flex justify-center">
+                  <ImageReveal
+                    src={principalImage}
+                    alt="Dr. Meenal Sudhir Sangole"
+                    from="down"
+                    delay={0.1}
+                    wrapperClassName="relative h-44 w-44 sm:h-56 sm:w-56 rounded-full border-4 border-primary shadow-xl mx-auto overflow-hidden"
+                    className="w-full h-full object-cover object-top"
+                  />
                 </div>
-              </CardContent>
-            </Card>
+
+                {/* Quote Stagger */}
+                <TextRevealGroup className="lg:col-span-8 space-y-4 text-center lg:text-left" baseDelay={0.2} stagger={0.15}>
+                  <TextRevealItem>
+                    <span className="text-4xl font-serif text-primary">"</span>
+                  </TextRevealItem>
+                  <TextRevealItem blur={false}>
+                    <blockquote className="text-base sm:text-lg font-serif italic text-zinc-800 leading-relaxed">
+                      At the Deaf and Dumb Industrial Institute, our mission is to provide every hearing-impaired student with quality education, confidence, and the skills needed for an independent future. We are committed to creating a supportive and inclusive environment where each student is encouraged to achieve their fullest potential.
+                    </blockquote>
+                  </TextRevealItem>
+                  <TextRevealItem>
+                    <div>
+                      <h4 className="font-bold text-lg text-zinc-900">Dr. Meenal Sudhir Sangole (Principal - Since 1993)</h4>
+                      <p className="text-xs text-primary font-bold uppercase tracking-wider mt-0.5">School Principal and Academic Lead</p>
+                    </div>
+                  </TextRevealItem>
+                </TextRevealGroup>
+              </div>
+            </div>
           </section>
         </SectionTransition>
 
-        {/* ──── Team Section ──── */}
+        {/* ──── Dedicated Team Section (Compact One-by-One Showcase) ──── */}
         <section className="bg-gradient-to-b from-white via-secondary/20 to-zinc-50/80 py-16 border-y border-primary/10 overflow-hidden">
           <div className="space-y-10">
-            <TextRevealGroup className="section-container text-center max-w-3xl mx-auto space-y-3" stagger={0.12}>
+            <TextRevealGroup className="section-container text-center max-w-3xl mx-auto space-y-3" stagger={0.14}>
               <TextRevealItem>
                 <div className="flex items-center justify-center">
                   <Badge className="bg-primary/10 text-primary border border-primary/20 uppercase font-bold text-xs tracking-wider px-3.5 py-1">
@@ -510,62 +622,22 @@ export function About() {
               </div>
             </ScrollReveal>
 
-            {/* Team category cards — staggered from bottom */}
+            {/* Team Category Cards — Rotating One by One in the Same Place */}
             <div className="section-container max-w-7xl mx-auto">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
                   { key: 'Management', label: 'Management & Leadership', desc: 'School Principal & Academic Leads' },
-                  { key: 'Faculty', label: 'Special Educators & Art Instructors', desc: 'Qualified Special Teachers & Art Faculty' },
-                  { key: 'Staff', label: 'Support Staff, Caretakers & Accountants', desc: 'Hostel Superintendents, Caretakers & Admin Staff' },
+                  { key: 'Faculty', label: 'Special Educators & Faculty', desc: 'Qualified Special Teachers & Art Instructors' },
+                  { key: 'Staff', label: 'Support Staff & Caretakers', desc: 'Hostel Superintendents & Administrative Staff' },
                 ].map((cat, ci) => {
                   const members = team.filter((m) => m.category === cat.key);
                   return (
                     <ScrollReveal key={cat.key} delay={ci * 0.12} direction="up" blur>
-                      <div className="border border-zinc-200/90 rounded-3xl bg-white p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
-                        <div>
-                          <div className="flex items-start gap-3.5 mb-5 pb-4 border-b border-zinc-100">
-                            <div className="h-11 w-11 rounded-2xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold shrink-0">
-                              <Users className="h-5.5 w-5.5" />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h3 className="font-serif font-bold text-base text-zinc-900 leading-snug">{cat.label}</h3>
-                                <Badge className="bg-primary/10 text-primary border-none font-bold text-[10px] px-2 py-0.5">
-                                  {members.length} Members
-                                </Badge>
-                              </div>
-                              <p className="text-xs text-zinc-500 mt-1 leading-relaxed">{cat.desc}</p>
-                            </div>
-                          </div>
-                          <div className="space-y-3">
-                            {members.map((member) => (
-                              <div
-                                key={member.id}
-                                className="p-3 rounded-2xl bg-zinc-50/70 border border-zinc-200/70 flex items-center gap-3 hover:bg-white hover:border-primary/40 transition-all"
-                              >
-                                {member.imageUrl ? (
-                                  <img
-                                    src={member.imageUrl}
-                                    alt={member.name}
-                                    className="h-10 w-10 rounded-xl object-cover border border-primary/20 shrink-0"
-                                  />
-                                ) : (
-                                  <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-xs font-serif shrink-0">
-                                    {member.name?.charAt(0)?.toUpperCase() || 'T'}
-                                  </div>
-                                )}
-                                <div className="min-w-0 flex-1">
-                                  <h4 className="font-bold text-xs text-zinc-900 truncate">{member.name}</h4>
-                                  <p className="text-[10px] text-primary font-semibold truncate mt-0.5">{member.role}</p>
-                                  {member.since && (
-                                    <p className="text-[9px] text-zinc-400 font-mono mt-0.5">{member.since}</p>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
+                      <RotatingMemberCard
+                        label={cat.label}
+                        desc={cat.desc}
+                        members={members}
+                      />
                     </ScrollReveal>
                   );
                 })}
@@ -577,7 +649,7 @@ export function About() {
         {/* ──── Core Pillars ──── */}
         <section className="bg-zinc-50 py-16">
           <div className="section-container space-y-10">
-            <TextRevealGroup className="text-center max-w-3xl mx-auto space-y-3" stagger={0.12}>
+            <TextRevealGroup className="text-center max-w-3xl mx-auto space-y-3" stagger={0.14}>
               <TextRevealItem>
                 <h2 className="text-2xl sm:text-3xl font-serif font-bold text-zinc-900">
                   We Are Committed to Empowering Hearing-Impaired Students
@@ -590,7 +662,7 @@ export function About() {
               </TextRevealItem>
               <TextRevealItem blur={false}>
                 <p className="text-xs text-zinc-600 leading-relaxed">
-                  The Deaf and Dumb Industrial Institute, Nagpur, is dedicated to providing inclusive and specialized education for hearing-impaired students from Grades 1 to 12. With a legacy dating back to 1946, the Institute focuses on academic excellence, communication development, and skill-based learning in a safe and supportive environment. Our experienced special educators, modern digital classrooms, speech therapy support, and well-equipped campus ensure that every student receives the attention and resources needed to succeed.
+                  The Deaf and Dumb Industrial Institute, Nagpur, is dedicated to providing inclusive and specialized education for hearing-impaired students from Grades 1 to 12. With a legacy dating back to 1946, the Institute focuses on academic excellence, communication development, and skill-based learning in a safe and supportive environment.
                 </p>
               </TextRevealItem>
             </TextRevealGroup>
@@ -660,7 +732,7 @@ export function About() {
         <SectionTransition delay={0.05}>
           <section className="section-container">
             <div className="rounded-3xl p-8 sm:p-12 bg-white border border-zinc-200/80 shadow-xs space-y-8">
-              <TextRevealGroup className="text-center max-w-2xl mx-auto space-y-2" stagger={0.12}>
+              <TextRevealGroup className="text-center max-w-2xl mx-auto space-y-2" stagger={0.14}>
                 <TextRevealItem>
                   <span className="text-xs font-bold uppercase tracking-widest text-primary">Admission & Community</span>
                 </TextRevealItem>
@@ -686,7 +758,7 @@ export function About() {
                   {
                     step: '02',
                     title: 'Campus Tour & Child Evaluation',
-                     description: "Meet our experienced educators and speech therapists for a tailored assessment of the child's learning needs.",
+                    description: 'Meet our experienced educators and speech therapists for a tailored assessment of the child\'s learning needs.',
                   },
                   {
                     step: '03',
@@ -713,17 +785,17 @@ export function About() {
           </section>
         </SectionTransition>
 
-        {/* ──── Facilities Marquee ──── */}
+        {/* ──── Key Facilities and Student Support (With in-place hover popup) ──── */}
         <section className="bg-zinc-50 py-16 border-y border-zinc-200/80 overflow-hidden">
           <div className="space-y-8">
-            <TextRevealGroup className="section-container text-center space-y-2" stagger={0.12}>
+            <TextRevealGroup className="section-container text-center space-y-2" stagger={0.14}>
               <TextRevealItem>
                 <h2 className="text-2xl sm:text-3xl font-serif font-bold text-zinc-900">
                   Key Facilities and Student Support
                 </h2>
               </TextRevealItem>
               <TextRevealItem blur={false}>
-                <p className="text-xs text-zinc-500">Comprehensive resources empowering hearing-impaired learners</p>
+                <p className="text-xs text-zinc-500">Comprehensive resources empowering hearing-impaired learners • Hover to read complete details</p>
               </TextRevealItem>
             </TextRevealGroup>
 
@@ -741,7 +813,7 @@ export function About() {
                   {[...facilities.slice(0, 6), ...facilities.slice(0, 6), ...facilities.slice(0, 6), ...facilities.slice(0, 6)].map((fac, idx) => (
                     <div
                       key={`row1-${idx}`}
-                      className="inline-flex items-start gap-3 bg-white border border-zinc-200/80 hover:border-primary/40 p-4 rounded-2xl min-w-[280px] max-w-[340px] sm:min-w-[320px] shadow-xs hover:shadow-md transition-all duration-300 group/card shrink-0"
+                      className="inline-flex items-start gap-3 bg-white border border-zinc-200/80 hover:border-primary/40 p-4 rounded-2xl min-w-[280px] max-w-[340px] sm:min-w-[320px] shadow-xs hover:shadow-md transition-all duration-300 group/card shrink-0 relative"
                     >
                       <div className="h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 group-hover/card:bg-primary group-hover/card:text-primary-foreground transition-colors mt-0.5">
                         <fac.icon className="h-4 w-4" />
@@ -749,6 +821,17 @@ export function About() {
                       <div className="min-w-0 flex-1 text-left">
                         <h4 className="font-bold text-xs text-zinc-900 group-hover/card:text-primary transition-colors leading-snug">{fac.title}</h4>
                         <p className="text-[11px] text-zinc-500 leading-relaxed mt-1 line-clamp-2">{fac.description}</p>
+                      </div>
+
+                      {/* Hover pop-up in same place displaying complete text */}
+                      <div className="absolute inset-0 bg-white border-2 border-primary/80 p-3.5 rounded-2xl shadow-xl z-20 opacity-0 pointer-events-none group-hover/card:opacity-100 group-hover/card:pointer-events-auto transition-all duration-200 flex items-start gap-3 whitespace-normal">
+                        <div className="h-8 w-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                          <fac.icon className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0 flex-1 text-left overflow-y-auto max-h-[85px] scrollbar-hide">
+                          <h4 className="font-bold text-xs text-primary leading-tight">{fac.title}</h4>
+                          <p className="text-[11px] text-zinc-700 leading-snug mt-1 font-medium">{fac.description}</p>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -764,7 +847,7 @@ export function About() {
                   {[...facilities.slice(6, 12), ...facilities.slice(6, 12), ...facilities.slice(6, 12), ...facilities.slice(6, 12)].map((fac, idx) => (
                     <div
                       key={`row2-${idx}`}
-                      className="inline-flex items-start gap-3 bg-white border border-zinc-200/80 hover:border-primary/40 p-4 rounded-2xl min-w-[280px] max-w-[340px] sm:min-w-[320px] shadow-xs hover:shadow-md transition-all duration-300 group/card shrink-0"
+                      className="inline-flex items-start gap-3 bg-white border border-zinc-200/80 hover:border-primary/40 p-4 rounded-2xl min-w-[280px] max-w-[340px] sm:min-w-[320px] shadow-xs hover:shadow-md transition-all duration-300 group/card shrink-0 relative"
                     >
                       <div className="h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 group-hover/card:bg-primary group-hover/card:text-primary-foreground transition-colors mt-0.5">
                         <fac.icon className="h-4 w-4" />
@@ -772,6 +855,17 @@ export function About() {
                       <div className="min-w-0 flex-1 text-left">
                         <h4 className="font-bold text-xs text-zinc-900 group-hover/card:text-primary transition-colors leading-snug">{fac.title}</h4>
                         <p className="text-[11px] text-zinc-500 leading-relaxed mt-1 line-clamp-2">{fac.description}</p>
+                      </div>
+
+                      {/* Hover pop-up in same place displaying complete text */}
+                      <div className="absolute inset-0 bg-white border-2 border-primary/80 p-3.5 rounded-2xl shadow-xl z-20 opacity-0 pointer-events-none group-hover/card:opacity-100 group-hover/card:pointer-events-auto transition-all duration-200 flex items-start gap-3 whitespace-normal">
+                        <div className="h-8 w-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                          <fac.icon className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0 flex-1 text-left overflow-y-auto max-h-[85px] scrollbar-hide">
+                          <h4 className="font-bold text-xs text-primary leading-tight">{fac.title}</h4>
+                          <p className="text-[11px] text-zinc-700 leading-snug mt-1 font-medium">{fac.description}</p>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -787,7 +881,7 @@ export function About() {
                   {[...facilities.slice(12, 18), ...facilities.slice(12, 18), ...facilities.slice(12, 18), ...facilities.slice(12, 18)].map((fac, idx) => (
                     <div
                       key={`row3-${idx}`}
-                      className="inline-flex items-start gap-3 bg-white border border-zinc-200/80 hover:border-primary/40 p-4 rounded-2xl min-w-[280px] max-w-[340px] sm:min-w-[320px] shadow-xs hover:shadow-md transition-all duration-300 group/card shrink-0"
+                      className="inline-flex items-start gap-3 bg-white border border-zinc-200/80 hover:border-primary/40 p-4 rounded-2xl min-w-[280px] max-w-[340px] sm:min-w-[320px] shadow-xs hover:shadow-md transition-all duration-300 group/card shrink-0 relative"
                     >
                       <div className="h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 group-hover/card:bg-primary group-hover/card:text-primary-foreground transition-colors mt-0.5">
                         <fac.icon className="h-4 w-4" />
@@ -795,6 +889,17 @@ export function About() {
                       <div className="min-w-0 flex-1 text-left">
                         <h4 className="font-bold text-xs text-zinc-900 group-hover/card:text-primary transition-colors leading-snug">{fac.title}</h4>
                         <p className="text-[11px] text-zinc-500 leading-relaxed mt-1 line-clamp-2">{fac.description}</p>
+                      </div>
+
+                      {/* Hover pop-up in same place displaying complete text */}
+                      <div className="absolute inset-0 bg-white border-2 border-primary/80 p-3.5 rounded-2xl shadow-xl z-20 opacity-0 pointer-events-none group-hover/card:opacity-100 group-hover/card:pointer-events-auto transition-all duration-200 flex items-start gap-3 whitespace-normal">
+                        <div className="h-8 w-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                          <fac.icon className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0 flex-1 text-left overflow-y-auto max-h-[85px] scrollbar-hide">
+                          <h4 className="font-bold text-xs text-primary leading-tight">{fac.title}</h4>
+                          <p className="text-[11px] text-zinc-700 leading-snug mt-1 font-medium">{fac.description}</p>
+                        </div>
                       </div>
                     </div>
                   ))}

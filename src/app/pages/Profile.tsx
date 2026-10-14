@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useUser } from '../context/UserContext';
+import { UserAvatar } from '../components/UserAvatar';
 import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -135,25 +136,16 @@ export function Profile() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-zinc-100 pb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-12 sm:-mt-16">
               <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-full border-4 border-white shadow-md bg-zinc-100 overflow-hidden shrink-0 relative z-10 flex items-center justify-center font-serif text-3xl font-bold text-zinc-700">
-                {currentUser.avatarUrl ? (
-                  <img src={currentUser.avatarUrl} alt={currentUser.name} className="h-full w-full object-cover" />
-                ) : (
-                  <DotLottieReact
-                    src={
-                      String((currentUser as any)?.gender || '').toLowerCase() === 'female'
-                        ? 'https://lottie.host/eab28687-876c-4b0d-aab1-50a270e33b26/ExpSYjKsB3.lottie'
-                        : 'https://lottie.host/746f208e-aac4-4f77-a70f-c14d50d4eae3/VXWluFleHq.lottie'
-                    }
-                    loop
-                    autoplay
-                    className="h-full w-full object-cover scale-110"
-                  />
-                )}
+                <UserAvatar
+                  src={currentUser.avatarUrl}
+                  name={currentUser.name}
+                  sizeClassName="h-full w-full text-4xl"
+                />
               </div>
 
               <div className="space-y-1 sm:mb-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">{currentUser.name}</h1>
+                  <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight">{currentUser.name}</h1>
                   <Badge className="bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">
                     {currentUser.role === 'super_admin' ? 'Super Admin' : currentUser.role === 'admin' ? 'Ashram Admin' : 'Supporter'}
                   </Badge>

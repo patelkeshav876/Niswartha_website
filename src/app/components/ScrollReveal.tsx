@@ -35,7 +35,7 @@ export function ScrollReveal({
   children,
   className,
   delay = 0,
-  duration = 0.65,
+  duration = 0.9,
   distance = 30,
   y: yProp,
   direction = 'up',
@@ -95,7 +95,7 @@ export function BlurReveal({
   children,
   className,
   delay = 0,
-  duration = 0.7,
+  duration = 0.95,
   direction = 'up',
 }: BlurRevealProps) {
   const shouldReduceMotion = useReducedMotion();
@@ -148,7 +148,7 @@ export function TextRevealGroup({
   children,
   className,
   baseDelay = 0,
-  stagger = 0.12,
+  stagger = 0.16,
 }: TextRevealGroupProps) {
   const shouldReduceMotion = useReducedMotion();
 
@@ -199,7 +199,7 @@ export function TextRevealItem({
           y: 0,
           filter: 'none',
           transition: {
-            duration: shouldReduceMotion ? 0.2 : 0.65,
+            duration: shouldReduceMotion ? 0.2 : 0.85,
             ease: EASE_SMOOTH,
           },
         },
@@ -274,7 +274,7 @@ export function ImageReveal({
         }}
         viewport={{ once: true, margin: '-6% 0px -6% 0px' }}
         transition={{
-          duration: shouldReduceMotion ? 0.25 : 0.85,
+          duration: shouldReduceMotion ? 0.25 : 1.15,
           delay: shouldReduceMotion ? 0 : delay,
           ease: EASE_OUT_EXPO,
         }}
@@ -315,7 +315,7 @@ export function SectionTransition({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-5% 0px -5% 0px' }}
       transition={{
-        duration: shouldReduceMotion ? 0.2 : 0.8,
+        duration: shouldReduceMotion ? 0.2 : 1.0,
         delay: shouldReduceMotion ? 0 : delay,
         ease: EASE_OUT_EXPO,
       }}

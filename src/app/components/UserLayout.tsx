@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useUser } from '../context/UserContext';
 import { Button } from './ui/button';
+import { UserAvatar } from './UserAvatar';
 import {
   Heart,
   User,
@@ -111,10 +112,10 @@ export function UserLayout() {
         <div className="px-6 py-6 border-b border-zinc-200/30 border-dashed">
           <div className="flex items-center gap-3 bg-white/50 border border-white p-3 rounded-2xl shadow-sm">
             <div className="relative">
-              <img
-                src={currentUser?.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(currentUser?.name || 'User')}`}
-                alt={currentUser?.name}
-                className="h-11 w-11 rounded-full object-cover border-2 border-primary/20 shadow-inner bg-zinc-200"
+              <UserAvatar
+                src={currentUser?.avatarUrl}
+                name={currentUser?.name}
+                sizeClassName="h-11 w-11"
               />
             </div>
             <div className="min-w-0 flex-1">
@@ -127,10 +128,10 @@ export function UserLayout() {
 
       {collapsed && (
         <div className="flex justify-center py-6 border-b border-zinc-200/30 border-dashed">
-          <img
-            src={currentUser?.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(currentUser?.name || 'User')}`}
-            alt={currentUser?.name}
-            className="h-9 w-9 rounded-full object-cover border-2 border-primary/20 shadow-sm bg-zinc-200"
+          <UserAvatar
+            src={currentUser?.avatarUrl}
+            name={currentUser?.name}
+            sizeClassName="h-9 w-9"
           />
         </div>
       )}
@@ -243,29 +244,19 @@ export function UserLayout() {
               <Menu className="h-5 w-5 text-zinc-700" />
             </Button>
             <div className="flex items-center gap-3">
-              {(() => {
-                const isFemale = String((currentUser as any)?.gender || '').toLowerCase() === 'female';
-                const animationSrc = isFemale
-                  ? 'https://lottie.host/eab28687-876c-4b0d-aab1-50a270e33b26/ExpSYjKsB3.lottie'
-                  : 'https://lottie.host/746f208e-aac4-4f77-a70f-c14d50d4eae3/VXWluFleHq.lottie';
-                return (
-                  <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.4 }}
-                    className="relative hidden sm:flex items-center justify-center h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 shadow-xs overflow-hidden shrink-0"
-                  >
-                    {lottieReady && (
-                      <DotLottieReact
-                        src={animationSrc}
-                        loop
-                        autoplay
-                        className="h-full w-full object-cover scale-110"
-                      />
-                    )}
-                  </motion.div>
-                );
-              })()}
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.4 }}
+                className="relative hidden sm:flex items-center justify-center shrink-0"
+              >
+                <UserAvatar
+                  src={currentUser?.avatarUrl}
+                  name={currentUser?.name}
+                  shape="rounded"
+                  sizeClassName="h-12 w-12 text-lg shadow-sm"
+                />
+              </motion.div>
 
               <div>
                 <div className="flex items-center gap-2">
