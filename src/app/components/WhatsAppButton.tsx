@@ -20,7 +20,7 @@ export function WhatsAppButton() {
         // Fallback default config
         if (active) {
           setConfig({
-            whatsappNumber: '+919876543210',
+            whatsappNumber: '+91 91312 01107',
             whatsappWelcomeMessage: 'Hello! I would like to learn more about support options for the Niswartha Ashram.'
           });
         }
@@ -33,9 +33,10 @@ export function WhatsAppButton() {
 
   if (!config?.whatsappNumber) return null;
 
-  const numberString = String(config.whatsappNumber).replace(/[^\d+]/g, '');
+  const rawDigits = String(config.whatsappNumber).replace(/[^\d]/g, '');
+  const cleanNumber = rawDigits.length === 10 ? `91${rawDigits}` : rawDigits;
   const welcomeMessage = encodeURIComponent(config.whatsappWelcomeMessage || '');
-  const url = `https://wa.me/${numberString}?text=${welcomeMessage}`;
+  const url = `https://wa.me/${cleanNumber}?text=${welcomeMessage}`;
 
   return (
     <a

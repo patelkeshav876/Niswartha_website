@@ -91,18 +91,21 @@ export function Donation() {
   const navigate = useNavigate();
 
   const [ashram, setAshram] = useState<Ashram | null>(null);
+  const [config, setConfig] = useState<any>(null);
   const [loadingAshram, setLoadingAshram] = useState(true);
 
   useEffect(() => {
-    if (!ashramId) {
-      setLoadingAshram(false);
-      return;
-    }
     let cancelled = false;
     (async () => {
       try {
-        const a = await api.getAshram(ashramId);
-        if (!cancelled) setAshram(a as Ashram);
+        const [a, c] = await Promise.all([
+          ashramId ? api.getAshram(ashramId).catch(() => mockAshrams.find((x) => x.id === ashramId) || null) : null,
+          api.getConfig().catch(() => null),
+        ]);
+        if (!cancelled) {
+          setAshram(a as Ashram);
+          if (c) setConfig(c);
+        }
       } catch {
         const m = mockAshrams.find((x) => x.id === ashramId);
         if (!cancelled) setAshram(m || null);
@@ -131,11 +134,14 @@ export function Donation() {
     );
   }
 
-  const whatsappNumber = '919823011223';
+  const rawWhatsapp = String(config?.whatsappNumber || '9131201107').replace(/[^\d]/g, '');
+  const cleanWhatsapp = rawWhatsapp.length === 10 ? `91${rawWhatsapp}` : rawWhatsapp;
   const whatsappMessage = encodeURIComponent(
     `Hello Niswartha Ashram Team, I would like to support ${ashram.name}. Please guide me with direct item contributions or ashram support.`
   );
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
+  const whatsappUrl = `https://wa.me/${cleanWhatsapp}?text=${whatsappMessage}`;
+  const displayPhone = config?.ashramPhone || ashram.phone || config?.contactPhone || '+91 91312 01107';
+  const telPhone = displayPhone.replace(/[^\d+]/g, '');
 
   return (
     <div className="min-h-screen bg-background flex flex-col pt-20 lg:pt-24 pb-16">
@@ -187,7 +193,7 @@ export function Donation() {
             </a>
 
             <a
-              href={`tel:${ashram.phone || '9823011223'}`}
+              href={`tel:${telPhone}`}
               className="flex items-center justify-center gap-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm p-4 rounded-2xl shadow-md transition-all transform hover:-translate-y-0.5"
             >
               <Phone className="h-5 w-5" />

@@ -26,6 +26,7 @@ import {
   X,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { UserAvatar } from './UserAvatar';
 
 const ADMIN_LINKS = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -64,15 +65,8 @@ export function AdminLayout() {
       {/* Brand Header */}
       <div className="flex h-16 items-center justify-between px-6 border-b border-zinc-200/30">
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-md shadow-primary/10 group-hover:scale-105 transition-transform bg-primary/10 border border-primary/20 shrink-0">
-            {lottieReady && (
-              <DotLottieReact
-                src="https://lottie.host/19e39cee-61a1-4b9e-bba9-81154eb140a2/XacFcVJLzd.json"
-                loop
-                autoplay
-                className="h-full w-full object-contain"
-              />
-            )}
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-md shadow-primary/10 group-hover:scale-105 transition-transform bg-white border border-primary/20 shrink-0 p-1">
+            <img src="/logo.png" alt="Niswartha Logo" className="h-full w-full object-contain" />
           </div>
           {!collapsed && (
             <span className="text-lg font-bold tracking-tight font-serif text-zinc-950">Niswartha</span>
@@ -88,33 +82,31 @@ export function AdminLayout() {
       {/* Admin Profile Details */}
       {!collapsed && (
         <div className="px-6 py-6 border-b border-zinc-200/30">
-          <div className="flex items-center gap-3 bg-white/50 border border-white p-3 rounded-2xl shadow-sm">
-            {currentUser?.avatarUrl ? (
-              <img
-                src={currentUser.avatarUrl}
-                alt={currentUser?.name}
-                className="h-11 w-11 rounded-full object-cover border-2 border-primary/20 shadow-inner"
-              />
-            ) : (
-              <div className="h-11 w-11 rounded-full bg-primary text-white flex items-center justify-center font-bold text-base font-serif shadow-sm">
-                {currentUser?.name?.charAt(0)?.toUpperCase() || 'A'}
-              </div>
-            )}
+          <Link to="/settings" className="flex items-center gap-3 bg-white/50 border border-white p-3 rounded-2xl shadow-sm hover:bg-white/80 transition-all cursor-pointer group">
+            <UserAvatar
+              src={currentUser?.avatarUrl}
+              name={currentUser?.name || 'Admin'}
+              sizeClassName="h-11 w-11 shadow-inner group-hover:scale-105 transition-transform"
+            />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold truncate text-zinc-900">{currentUser?.name}</p>
-              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Super Admin</p>
+              <p className="text-sm font-semibold truncate text-zinc-900 group-hover:text-primary transition-colors">{currentUser?.name}</p>
+              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                {currentUser?.role === 'super_admin' ? 'Super Admin' : 'Ashram Admin'}
+              </p>
             </div>
-          </div>
+          </Link>
         </div>
       )}
 
       {collapsed && (
         <div className="flex justify-center py-6 border-b border-zinc-200/30">
-          <img
-            src={currentUser?.avatarUrl || `https://i.pravatar.cc/150?u=${currentUser?.id}`}
-            alt={currentUser?.name}
-            className="h-9 w-9 rounded-full object-cover border-2 border-primary/20 shadow-sm"
-          />
+          <Link to="/settings" title="Account Settings">
+            <UserAvatar
+              src={currentUser?.avatarUrl}
+              name={currentUser?.name || 'Admin'}
+              sizeClassName="h-9 w-9 shadow-sm hover:scale-105 transition-transform"
+            />
+          </Link>
         </div>
       )}
 
@@ -217,29 +209,21 @@ export function AdminLayout() {
               <Menu className="h-5 w-5 text-zinc-700" />
             </Button>
             <div className="flex items-center gap-3">
-              {(() => {
-                const isFemale = String((currentUser as any)?.gender || '').toLowerCase() === 'female';
-                const animationSrc = isFemale
-                  ? 'https://lottie.host/eab28687-876c-4b0d-aab1-50a270e33b26/ExpSYjKsB3.lottie'
-                  : 'https://lottie.host/746f208e-aac4-4f77-a70f-c14d50d4eae3/VXWluFleHq.lottie';
-                return (
-                  <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.4 }}
-                    className="relative hidden sm:flex items-center justify-center h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 shadow-xs overflow-hidden shrink-0"
-                  >
-                    {lottieReady && (
-                      <DotLottieReact
-                        src={animationSrc}
-                        loop
-                        autoplay
-                        className="h-full w-full object-cover scale-110"
-                      />
-                    )}
-                  </motion.div>
-                );
-              })()}
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.4 }}
+                className="relative hidden sm:flex items-center justify-center shrink-0"
+              >
+                <Link to="/settings" title="Click to view or edit profile">
+                  <UserAvatar
+                    src={currentUser?.avatarUrl}
+                    name={currentUser?.name || 'Admin'}
+                    shape="rounded"
+                    sizeClassName="h-12 w-12 text-lg shadow-sm hover:ring-2 hover:ring-primary/40 hover:scale-105 transition-all cursor-pointer"
+                  />
+                </Link>
+              </motion.div>
 
               <div>
                 <div className="flex items-center gap-2">

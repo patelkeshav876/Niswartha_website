@@ -1773,11 +1773,12 @@ app.get('/api/config', async (req, res) => {
     if (!conf) {
       conf = {
         id: 'global-config',
-        whatsappNumber: '+919876543210',
+        whatsappNumber: '+91 91312 01107',
         whatsappWelcomeMessage: 'Hello! I would like to learn more about support options for the Niswartha Ashram.',
         ashramLocation: 'North Ambazari Road, Shankar Nagar, Nagpur, Maharashtra 440010',
         ashramLocationMapUrl: 'https://maps.google.com/maps?q=Deaf%20and%20Dumb%20Industrial%20Institute%2C%20Shankar%20Nagar%2C%20Nagpur&t=&z=15&ie=UTF8&iwloc=&output=embed',
-        ashramPhone: '+91 98765 43210',
+        ashramPhone: '+91 91312 01107',
+        contactPhone: '+91 91312 01107',
         ashramEmail: 'contact@deafdumbinstitute.org',
         ashramWebsite: 'www.deafdumbinstitute.org',
         donationWording: 'Support Our Mission',
@@ -1789,6 +1790,20 @@ app.get('/api/config', async (req, res) => {
         globalAnnouncement: ''
       };
       await Config.create(conf);
+    } else {
+      let needsSave = false;
+      if (!conf.whatsappNumber || conf.whatsappNumber.includes('9823011223') || conf.whatsappNumber.includes('9876543210')) {
+        conf.whatsappNumber = '+91 91312 01107';
+        needsSave = true;
+      }
+      if (!conf.ashramPhone || conf.ashramPhone.includes('9823011223') || conf.ashramPhone.includes('98765 43210') || conf.ashramPhone.includes('712 253 2468')) {
+        conf.ashramPhone = '+91 91312 01107';
+        conf.contactPhone = '+91 91312 01107';
+        needsSave = true;
+      }
+      if (needsSave) {
+        await Config.updateOne({ id: 'global-config' }, { $set: conf });
+      }
     }
     res.json(conf);
   } catch (e) {
@@ -1796,16 +1811,21 @@ app.get('/api/config', async (req, res) => {
   }
 });
 
-app.put('/api/config', requireSuperAdmin, async (req, res) => {
+app.put('/api/config', requireAdmin, async (req, res) => {
   try {
     const updated = { ...req.body, id: 'global-config' };
+    if (updated.ashramPhone && !updated.contactPhone) {
+      updated.contactPhone = updated.ashramPhone;
+    } else if (updated.contactPhone && !updated.ashramPhone) {
+      updated.ashramPhone = updated.contactPhone;
+    }
     await Config.findOneAndUpdate({ id: 'global-config' }, updated, { upsert: true, new: true }).lean();
     
     await AuditLog.create({
       id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      userId: req.user.id,
+      userId: req.user?.id || 'admin',
       action: 'update_global_config',
-      details: 'Updated global site settings',
+      details: 'Updated global site settings & contact numbers',
       createdAt: new Date().toISOString()
     });
 

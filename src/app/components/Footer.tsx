@@ -1,11 +1,22 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { MapPin, Phone, Mail, Facebook, ArrowRight } from 'lucide-react';
 import { mockAshrams } from '../data/mock';
 import { HandSupportIcon } from './HandSupportIcon';
+import { api } from '../lib/api';
 
 export function Footer() {
   const ashram = mockAshrams[0];
   const currentYear = new Date().getFullYear();
+  const [config, setConfig] = useState<any>(null);
+
+  useEffect(() => {
+    let active = true;
+    api.getConfig().then((c) => {
+      if (active && c) setConfig(c);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   return (
     <footer className="relative bg-[#0b110e] text-white overflow-hidden">
@@ -105,14 +116,14 @@ export function Footer() {
                 </li>
                 <li className="flex items-center gap-3">
                   <Phone className="h-4 w-4 shrink-0 text-primary" />
-                  <a href={`tel:${ashram.contact.phone}`} className="text-sm text-white/50 hover:text-primary transition-colors">
-                    {ashram.contact.phone}
+                  <a href={`tel:${(config?.ashramPhone || ashram.contact.phone).replace(/[^\d+]/g, '')}`} className="text-sm text-white/50 hover:text-primary transition-colors">
+                    {config?.ashramPhone || ashram.contact.phone}
                   </a>
                 </li>
                 <li className="flex items-center gap-3">
                   <Mail className="h-4 w-4 shrink-0 text-primary" />
-                  <a href={`mailto:${ashram.contact.email}`} className="text-sm text-white/50 hover:text-primary transition-colors">
-                    {ashram.contact.email}
+                  <a href={`mailto:${config?.ashramEmail || ashram.contact.email}`} className="text-sm text-white/50 hover:text-primary transition-colors">
+                    {config?.ashramEmail || ashram.contact.email}
                   </a>
                 </li>
               </ul>

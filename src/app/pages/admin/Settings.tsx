@@ -17,6 +17,10 @@ import {
   Trash2,
   Briefcase,
   CheckCircle2,
+  Phone,
+  MessageCircle,
+  Mail,
+  MapPin,
 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { mockAlumni } from '../../data/mock';
@@ -25,6 +29,12 @@ import { toast } from 'sonner';
 
 export function Settings() {
   const [config, setConfig] = useState<any>({
+    ashramPhone: '+91 91312 01107',
+    contactPhone: '+91 91312 01107',
+    whatsappNumber: '+91 91312 01107',
+    ashramEmail: 'contact@deafdumbinstitute.org',
+    ashramLocation: 'North Ambazari Road, Shankar Nagar, Nagpur, Maharashtra 440010',
+    whatsappWelcomeMessage: 'Hello! I would like to learn more about support options for the Niswartha Ashram.',
     aboutHeroImgUrl: '',
     aboutAssemblyImgUrl: '',
     aboutAwardImgUrl: '',
@@ -92,7 +102,7 @@ export function Settings() {
     setLoading(true);
     try {
       await api.updateConfig(config);
-      toast.success('About page images updated successfully!');
+      toast.success('Settings and contact numbers updated successfully!');
     } catch {
       toast.error('Failed to save settings');
     } finally {
@@ -147,17 +157,115 @@ export function Settings() {
             </Link>
             <div>
               <h1 className="text-lg font-bold font-poppins text-zinc-900 leading-tight">Admin Settings</h1>
-              <p className="text-xs text-zinc-500">Manage About Us images and Alumni showcase</p>
+              <p className="text-xs text-zinc-500">Manage support phone numbers, About Us pictures, and Alumni showcase</p>
             </div>
           </div>
           <Button onClick={handleSaveConfig} disabled={loading} size="sm" className="rounded-full gap-1.5 shadow">
-            <Save className="h-4 w-4" /> Save Images
+            <Save className="h-4 w-4" /> Save All Settings
           </Button>
         </div>
       </div>
 
       <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-10 w-full">
-        {/* ════════════ 1. All 8 About Us Page Pictures Management ════════════ */}
+        {/* ════════════ 1. Support & Contact Information Management ════════════ */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <Phone className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-bold font-poppins text-zinc-900">Support & Contact Information</h2>
+            </div>
+            <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full font-semibold">
+              Syncs with Support Page, WhatsApp button, Donation & Footer
+            </span>
+          </div>
+
+          <Card className="border border-zinc-200 shadow-sm rounded-3xl bg-white overflow-hidden p-6 space-y-6">
+            <p className="text-xs text-zinc-500 leading-relaxed">
+              Configure the primary phone numbers and contact channels used across the platform. Updating and saving the number below automatically updates the <strong>Help / Support page</strong>, <strong>floating WhatsApp button</strong>, <strong>Donation pages</strong>, and the <strong>website footer</strong>.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Support / Ashram Phone Number */}
+              <div className="space-y-2 p-4 rounded-2xl bg-zinc-50/80 border border-zinc-200/80">
+                <Label className="text-xs font-bold text-zinc-800 uppercase flex items-center justify-between">
+                  <span className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5 text-primary" /> Phone Support Number</span>
+                  <span className="text-[10px] text-zinc-400 font-normal">Support Page & Footer</span>
+                </Label>
+                <Input
+                  value={config.ashramPhone || config.contactPhone || ''}
+                  onChange={(e) => setConfig({ ...config, ashramPhone: e.target.value, contactPhone: e.target.value })}
+                  placeholder="e.g. +91 91312 01107"
+                  className="rounded-xl text-xs bg-white"
+                />
+                <p className="text-[10px] text-zinc-400">Default: +91 91312 01107. Clicking "Call" on any page dials this number.</p>
+              </div>
+
+              {/* WhatsApp Support Number */}
+              <div className="space-y-2 p-4 rounded-2xl bg-zinc-50/80 border border-zinc-200/80">
+                <Label className="text-xs font-bold text-zinc-800 uppercase flex items-center justify-between">
+                  <span className="flex items-center gap-1.5"><MessageCircle className="h-3.5 w-3.5 text-emerald-600" /> WhatsApp Number</span>
+                  <span className="text-[10px] text-zinc-400 font-normal">Floating Button & Chat</span>
+                </Label>
+                <Input
+                  value={config.whatsappNumber || ''}
+                  onChange={(e) => setConfig({ ...config, whatsappNumber: e.target.value })}
+                  placeholder="e.g. +91 91312 01107"
+                  className="rounded-xl text-xs bg-white"
+                />
+                <p className="text-[10px] text-zinc-400">Default: +91 91312 01107. Opens WhatsApp chat with donors and supporters.</p>
+              </div>
+
+              {/* Support Email */}
+              <div className="space-y-2 p-4 rounded-2xl bg-zinc-50/80 border border-zinc-200/80">
+                <Label className="text-xs font-bold text-zinc-800 uppercase flex items-center justify-between">
+                  <span className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5 text-primary" /> Support Email Address</span>
+                  <span className="text-[10px] text-zinc-400 font-normal">Support & Footer</span>
+                </Label>
+                <Input
+                  value={config.ashramEmail || ''}
+                  onChange={(e) => setConfig({ ...config, ashramEmail: e.target.value })}
+                  placeholder="contact@deafdumbinstitute.org or ddingp1@gmail.com"
+                  className="rounded-xl text-xs bg-white"
+                />
+              </div>
+
+              {/* Physical Address */}
+              <div className="space-y-2 p-4 rounded-2xl bg-zinc-50/80 border border-zinc-200/80">
+                <Label className="text-xs font-bold text-zinc-800 uppercase flex items-center justify-between">
+                  <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-primary" /> Ashram Location Address</span>
+                  <span className="text-[10px] text-zinc-400 font-normal">Footer & Map</span>
+                </Label>
+                <Input
+                  value={config.ashramLocation || ''}
+                  onChange={(e) => setConfig({ ...config, ashramLocation: e.target.value })}
+                  placeholder="North Ambazari Road, Shankar Nagar, Nagpur"
+                  className="rounded-xl text-xs bg-white"
+                />
+              </div>
+            </div>
+
+            {/* WhatsApp Pre-filled Welcome Message */}
+            <div className="space-y-2 p-4 rounded-2xl bg-zinc-50/80 border border-zinc-200/80">
+              <Label className="text-xs font-bold text-zinc-800 uppercase">
+                WhatsApp Default Welcome Message
+              </Label>
+              <Input
+                value={config.whatsappWelcomeMessage || ''}
+                onChange={(e) => setConfig({ ...config, whatsappWelcomeMessage: e.target.value })}
+                placeholder="Hello! I would like to learn more about support options for the Niswartha Ashram."
+                className="rounded-xl text-xs bg-white"
+              />
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button onClick={handleSaveConfig} disabled={loading} className="rounded-xl bg-primary text-white font-bold text-xs gap-1.5 shadow-sm px-6 h-10">
+                <Save className="h-4 w-4" /> Save Contact Numbers
+              </Button>
+            </div>
+          </Card>
+        </section>
+
+        {/* ════════════ 2. All 8 About Us Page Pictures Management ════════════ */}
         <section className="space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">

@@ -134,6 +134,7 @@ export function DonationFlow() {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [ashram, setAshram] = useState<Ashram | null>(null);
   const [need, setNeed] = useState<Need | null>(null);
+  const [config, setConfig] = useState<any>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
@@ -161,9 +162,10 @@ export function DonationFlow() {
     let cancelled = false;
     (async () => {
       try {
-        const [a, n] = await Promise.all([
+        const [a, n, c] = await Promise.all([
           api.getAshram(ashramId),
           api.getNeed(needId),
+          api.getConfig().catch(() => null),
         ]);
         if (cancelled) return;
         if (n.ashramId !== ashramId) {
@@ -172,6 +174,7 @@ export function DonationFlow() {
         }
         setAshram(a as Ashram);
         setNeed(n as Need);
+        if (c) setConfig(c);
         setLoadError(null);
       } catch {
         const mA = mockAshrams.find((x) => x.id === ashramId);
@@ -457,23 +460,33 @@ export function DonationFlow() {
                     Speak directly with the ashram team regarding item delivery, custom requirements, or inquiries.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-2">
-                    <a
-                      href={`https://wa.me/919823011223?text=${encodeURIComponent(
-                        `Hello Niswartha Team, I want to inquire/support your ashram for need: ${need.title}`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1"
-                    >
-                      <Button className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
-                        Chat on WhatsApp
-                      </Button>
-                    </a>
-                    <a href={`tel:${ashram.contact.phone}`} className="flex-1">
-                      <Button variant="outline" className="w-full rounded-xl font-bold border-zinc-200">
-                        Call Ashram ({ashram.contact.phone})
-                      </Button>
-                    </a>
+                    {(() => {
+                      const rawNum = String(config?.whatsappNumber || '9131201107').replace(/[^\d]/g, '');
+                      const cleanWa = rawNum.length === 10 ? `91${rawNum}` : rawNum;
+                      const callPhone = config?.ashramPhone || ashram.contact.phone || '+91 91312 01107';
+                      const telNumber = callPhone.replace(/[^\d+]/g, '');
+                      return (
+                        <>
+                          <a
+                            href={`https://wa.me/${cleanWa}?text=${encodeURIComponent(
+                              `Hello Niswartha Team, I want to inquire/support your ashram for need: ${need.title}`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1"
+                          >
+                            <Button className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+                              Chat on WhatsApp
+                            </Button>
+                          </a>
+                          <a href={`tel:${telNumber}`} className="flex-1">
+                            <Button variant="outline" className="w-full rounded-xl font-bold border-zinc-200">
+                              Call Ashram ({callPhone})
+                            </Button>
+                          </a>
+                        </>
+                      );
+                    })()}
                   </div>
                 </AccordionContent>
               </AccordionItem>

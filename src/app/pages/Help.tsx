@@ -44,6 +44,15 @@ export function Help() {
   const [complaintMessage, setComplaintMessage] = useState('');
   const [isSubmittingComplaint, setIsSubmittingComplaint] = useState(false);
   const [complaintSubmitted, setComplaintSubmitted] = useState(false);
+  const [config, setConfig] = useState<any>(null);
+
+  useEffect(() => {
+    let active = true;
+    api.getConfig().then((c) => {
+      if (active && c) setConfig(c);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     if (currentUser) {
@@ -127,23 +136,39 @@ export function Help() {
     },
   ];
 
+  const ashramPhone = config?.ashramPhone || '+91 91312 01107';
+  const cleanPhone = ashramPhone.replace(/[^\d+]/g, '');
+  const rawWa = String(config?.whatsappNumber || '9131201107').replace(/[^\d]/g, '');
+  const cleanWa = rawWa.length === 10 ? `91${rawWa}` : rawWa;
+  const ashramEmail = config?.ashramEmail || 'ddingp1@gmail.com';
+
   const contactOptions = [
-    {
-      icon: Mail,
-      title: 'Email Support',
-      description: 'ddingp1@gmail.com',
-      subtext: 'Response within 24 hours',
-      action: () => (window.location.href = 'mailto:ddingp1@gmail.com'),
-    },
     {
       icon: Phone,
       title: 'Phone Support',
-      description: '+91 712 253 2468',
+      description: ashramPhone,
       subtext: 'Mon - Sat, 9 AM - 6 PM IST',
-      action: () => (window.location.href = 'tel:+917122532468'),
+      action: () => (window.location.href = `tel:${cleanPhone}`),
     },
     {
       icon: MessageCircle,
+      title: 'WhatsApp Support',
+      description: config?.whatsappNumber || '+91 91312 01107',
+      subtext: 'Instant message support',
+      action: () => {
+        const msg = encodeURIComponent(config?.whatsappWelcomeMessage || 'Hello Niswartha Team, I need assistance.');
+        window.open(`https://wa.me/${cleanWa}?text=${msg}`, '_blank');
+      },
+    },
+    {
+      icon: Mail,
+      title: 'Email Support',
+      description: ashramEmail,
+      subtext: 'Response within 24 hours',
+      action: () => (window.location.href = `mailto:${ashramEmail}`),
+    },
+    {
+      icon: Heart,
       title: 'Visit Address',
       description: 'Shankar Nagar, Nagpur',
       subtext: 'Deaf and Dumb Institute',
@@ -172,11 +197,11 @@ export function Help() {
         {/* Direct Support Channels Cards */}
         <section className="section-container">
           <ScrollReveal>
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-5xl mx-auto">
               <div className="text-center mb-6">
                 <h2 className="text-sm font-bold uppercase tracking-widest text-[#1E3A8A]">Direct Support Channels</h2>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {contactOptions.map((opt) => (
                   <Card
                     key={opt.title}

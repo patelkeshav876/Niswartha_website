@@ -55,7 +55,8 @@ const DEFAULT_SUPERADMIN_CONFIG = {
   siteName: 'Niswartha — Selfless Service',
   siteTagline: 'Empowering Deaf & Dumb Children',
   contactEmail: 'contact@niswartha.org',
-  contactPhone: '+91 9876543210',
+  contactPhone: '+91 91312 01107',
+  ashramPhone: '+91 91312 01107',
   maintenanceMode: false,
   allowNewRegistrations: true,
   enableNotifications: true,
@@ -65,7 +66,7 @@ const DEFAULT_SUPERADMIN_CONFIG = {
   supportCauseSubtitle: 'Your generous contribution helps us provide better care, education, and opportunities to our children.',
   supportCauseBgUrl: '',
   donationWording: 'Support Our Mission',
-  whatsappNumber: '+91 98230 11223',
+  whatsappNumber: '+91 91312 01107',
   whatsappWelcomeMessage: 'Hello Niswartha Team, I would like to support your noble mission.',
   heroBgType: 'gradient',
   heroOverlayOpacity: 0.55,
@@ -872,21 +873,31 @@ export function SuperAdminDashboard() {
                   </div>
                 </div>
 
-                {/* WhatsApp configuration */}
+                {/* Contact & Support Phone and WhatsApp configuration */}
                 <div className="space-y-4">
-                  <h3 className="font-serif font-bold text-zinc-850 text-sm">WhatsApp Live chat</h3>
+                  <h3 className="font-serif font-bold text-zinc-850 text-sm">Direct Phone & WhatsApp Support Settings</h3>
                   <div className="space-y-3">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">WhatsApp Number (e.g. +91XXXXXXXXXX)</label>
+                      <label className="text-xs font-bold text-zinc-700 uppercase">Support / Ashram Phone Number (Used in Support page, Footer & Direct Calls)</label>
+                      <Input
+                        value={config.ashramPhone || config.contactPhone || ''}
+                        onChange={(e) => setConfig({ ...config, ashramPhone: e.target.value, contactPhone: e.target.value })}
+                        placeholder="e.g. +91 91312 01107"
+                        className="rounded-xl text-xs"
+                      />
+                      <p className="text-[10px] text-zinc-400">Updates the phone number on Help/Support page, Footer, and Donation call buttons.</p>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-zinc-700 uppercase">WhatsApp Number (Used in Floating Button & Support Chat)</label>
                       <Input
                         value={config.whatsappNumber || ''}
                         onChange={(e) => setConfig({ ...config, whatsappNumber: e.target.value })}
-                        placeholder="e.g. +91 98765 43210"
+                        placeholder="e.g. +91 91312 01107"
                         className="rounded-xl text-xs"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">Pre-filled Message</label>
+                      <label className="text-xs font-bold text-zinc-700 uppercase">WhatsApp Pre-filled Message</label>
                       <Textarea
                         value={config.whatsappWelcomeMessage || ''}
                         onChange={(e) => setConfig({ ...config, whatsappWelcomeMessage: e.target.value })}

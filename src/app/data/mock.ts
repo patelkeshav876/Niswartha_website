@@ -38,7 +38,7 @@ export const mockAshrams: Ashram[] = [
       'https://images.unsplash.com/photo-1497486751825-1233686d5d80?auto=format&fit=crop&q=80',
     ],
     contact: {
-      phone: '+91 98765 43210',
+      phone: '+91 91312 01107',
       email: 'contact@deafdumbinstitute.org',
       website: 'www.deafdumbinstitute.org',
     },
@@ -347,7 +347,7 @@ export const mockChildren = [
     gender: 'Male',
     grade: '5th Standard',
     admissionDate: '2021-06-15',
-    guardianContact: '+91 98230 11223',
+    guardianContact: '+91 91312 01107',
     healthStatus: 'Good — Regular checkups completed',
   },
   {

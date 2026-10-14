@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { api } from '../lib/api';
+import { UserAvatar } from './UserAvatar';
 
 const SIDEBAR_ITEMS = [
   { to: '/super-admin', label: 'System Health', icon: Activity, end: true },
@@ -83,15 +84,8 @@ export function SuperAdminLayout() {
       <aside className="hidden lg:flex flex-col w-64 border-r border-zinc-200 bg-white shrink-0">
         <div className="flex h-20 items-center gap-3 px-6 border-b border-zinc-100">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-md shadow-primary/10 group-hover:scale-105 transition-transform bg-primary/10 border border-primary/20 shrink-0">
-              {lottieReady && (
-                <DotLottieReact
-                  src="https://lottie.host/19e39cee-61a1-4b9e-bba9-81154eb140a2/XacFcVJLzd.json"
-                  loop
-                  autoplay
-                  className="h-full w-full object-contain"
-                />
-              )}
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-md shadow-primary/10 group-hover:scale-105 transition-transform bg-white border border-primary/20 shrink-0 p-1">
+              <img src="/logo.png" alt="Niswartha Logo" className="h-full w-full object-contain" />
             </div>
             <div>
               <p className="text-lg font-bold tracking-tight text-zinc-950 font-serif">Niswartha</p>
@@ -129,15 +123,17 @@ export function SuperAdminLayout() {
 
         {/* Sidebar footer */}
         <div className="p-4 border-t bg-zinc-50/50">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-600 font-bold text-xs">
-              {currentUser?.name?.charAt(0)?.toUpperCase() || 'S'}
-            </div>
+          <Link to="/settings" className="flex items-center gap-3 mb-4 group cursor-pointer">
+            <UserAvatar
+              src={currentUser?.avatarUrl}
+              name={currentUser?.name || 'Super Admin'}
+              sizeClassName="h-9 w-9 shadow-sm group-hover:scale-105 transition-transform"
+            />
             <div className="min-w-0">
-              <p className="text-xs font-bold text-zinc-900 truncate">{currentUser?.name}</p>
+              <p className="text-xs font-bold text-zinc-900 truncate group-hover:text-primary transition-colors">{currentUser?.name}</p>
               <p className="text-[9px] text-zinc-500 truncate">{currentUser?.email}</p>
             </div>
-          </div>
+          </Link>
           <div className="space-y-1.5">
             <Button
               variant="outline"
