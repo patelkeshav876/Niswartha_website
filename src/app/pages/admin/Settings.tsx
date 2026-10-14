@@ -4,8 +4,23 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-import { ArrowLeft, User, Bell, Shield, LogOut, Image as ImageIcon, Save, Upload } from 'lucide-react';
+import {
+  ArrowLeft,
+  User,
+  Bell,
+  Shield,
+  Image as ImageIcon,
+  Save,
+  Upload,
+  GraduationCap,
+  Plus,
+  Trash2,
+  Briefcase,
+  CheckCircle2,
+} from 'lucide-react';
 import { api } from '../../lib/api';
+import { mockAlumni } from '../../data/mock';
+import type { Alumni } from '../../types';
 import { toast } from 'sonner';
 
 export function Settings() {
@@ -14,8 +29,22 @@ export function Settings() {
     aboutAssemblyImgUrl: '',
     aboutAwardImgUrl: '',
     aboutPrincipalImgUrl: '',
+    aboutSportsImgUrl: '',
+    aboutCulturalImgUrl: '',
+    aboutArtImgUrl: '',
+    aboutDigitalImgUrl: '',
   });
   const [loading, setLoading] = useState(false);
+
+  // Alumni state
+  const [alumniList, setAlumniList] = useState<Alumni[]>([]);
+  const [newAlumni, setNewAlumni] = useState({
+    name: '',
+    work: '',
+    batch: '',
+    imageUrl: '',
+  });
+  const [addingAlumni, setAddingAlumni] = useState(false);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
     const file = e.target.files?.[0];
@@ -28,13 +57,33 @@ export function Settings() {
     reader.readAsDataURL(file);
   };
 
+  const handleAlumniPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const res = ev.target?.result as string;
+      if (res) setNewAlumni((prev) => ({ ...prev, imageUrl: res }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   useEffect(() => {
     (async () => {
       try {
-        const c = await api.getConfig();
+        const [c, a] = await Promise.all([
+          api.getConfig().catch(() => null),
+          api.getAlumni().catch(() => []),
+        ]);
         if (c) setConfig(c);
+        if (a && a.length > 0) {
+          setAlumniList(a);
+        } else {
+          setAlumniList(mockAlumni);
+        }
       } catch {
         // use fallback
+        setAlumniList(mockAlumni);
       }
     })();
   }, []);
@@ -51,47 +100,93 @@ export function Settings() {
     }
   };
 
+  const handleAddAlumni = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAlumni.name.trim() || !newAlumni.work.trim()) {
+      toast.error('Please enter name and work details');
+      return;
+    }
+    setAddingAlumni(true);
+    try {
+      const created = await api.createAlumni({
+        name: newAlumni.name.trim(),
+        work: newAlumni.work.trim(),
+        batch: newAlumni.batch.trim() || 'Graduate',
+        imageUrl: newAlumni.imageUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=75&fm=webp',
+      });
+      setAlumniList((prev) => [created, ...prev]);
+      setNewAlumni({ name: '', work: '', batch: '', imageUrl: '' });
+      toast.success('Alumni added successfully!');
+    } catch {
+      toast.error('Failed to add alumni');
+    } finally {
+      setAddingAlumni(false);
+    }
+  };
+
+  const handleDeleteAlumni = async (id: string, name: string) => {
+    try {
+      await api.deleteAlumni(id);
+      setAlumniList((prev) => prev.filter((a) => a.id !== id));
+      toast.success(`Removed ${name} from alumni`);
+    } catch {
+      toast.error('Failed to delete alumni');
+    }
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-background pb-12">
-      <div className="bg-background sticky top-0 z-10 border-b p-4">
-        <div className="flex items-center justify-between">
+    <div className="flex flex-col min-h-screen bg-background pb-16 font-sans">
+      {/* Sticky Header */}
+      <div className="bg-background sticky top-0 z-20 border-b p-4 backdrop-blur-md bg-white/90">
+        <div className="flex items-center justify-between max-w-5xl mx-auto w-full">
           <div className="flex items-center gap-3">
             <Link to="/admin">
               <Button variant="ghost" size="icon" className="-ml-2">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             </Link>
-            <h1 className="text-lg font-bold font-serif text-zinc-900">Admin Settings</h1>
+            <div>
+              <h1 className="text-lg font-bold font-poppins text-zinc-900 leading-tight">Admin Settings</h1>
+              <p className="text-xs text-zinc-500">Manage About Us images and Alumni showcase</p>
+            </div>
           </div>
           <Button onClick={handleSaveConfig} disabled={loading} size="sm" className="rounded-full gap-1.5 shadow">
-            <Save className="h-4 w-4" /> Save Changes
+            <Save className="h-4 w-4" /> Save Images
           </Button>
         </div>
       </div>
 
-      <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6 w-full">
-        {/* About Page Pictures Management */}
-        <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <ImageIcon className="h-5 w-5 text-primary" />
-            <h2 className="text-base font-bold font-serif text-zinc-900">About Us Page Custom Pictures</h2>
+      <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-10 w-full">
+        {/* ════════════ 1. All 8 About Us Page Pictures Management ════════════ */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <ImageIcon className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-bold font-poppins text-zinc-900">About Us Page Images (All 8 Sections)</h2>
+            </div>
+            <span className="text-xs text-zinc-500">Upload from device or paste image URLs</span>
           </div>
-          <Card className="border border-zinc-200 shadow-sm rounded-2xl bg-white overflow-hidden p-5">
-            <p className="text-xs text-zinc-500 mb-4 leading-relaxed">
-              Customize the images displayed on the public About Us page. Upload photos from your device or set custom image URLs.
+
+          <Card className="border border-zinc-200 shadow-sm rounded-3xl bg-white overflow-hidden p-6">
+            <p className="text-xs text-zinc-500 mb-6 leading-relaxed">
+              Every image across the About Us page can be customized below. Updates take effect immediately when saved.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-zinc-700 uppercase">1. Hero Campus Building Photo</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* 1. Hero Campus Photo */}
+              <div className="space-y-2 p-4 rounded-2xl bg-zinc-50/80 border border-zinc-200/80">
+                <Label className="text-xs font-bold text-zinc-800 uppercase flex items-center justify-between">
+                  <span>1. Hero Campus Photo</span>
+                  <span className="text-[10px] text-zinc-400 font-normal">Top of About Page</span>
+                </Label>
                 <div className="flex gap-2">
                   <Input
                     value={config.aboutHeroImgUrl || ''}
                     onChange={(e) => setConfig({ ...config, aboutHeroImgUrl: e.target.value })}
-                    placeholder="Entrance building picture URL..."
+                    placeholder="https://images.unsplash.com/..."
                     className="rounded-xl text-xs bg-white flex-1"
                   />
-                  <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs whitespace-nowrap">
+                  <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-100 shadow-xs whitespace-nowrap">
                     <Upload className="h-3.5 w-3.5 mr-1" /> Upload
                     <input
                       type="file"
@@ -102,20 +197,24 @@ export function Settings() {
                   </label>
                 </div>
                 {config.aboutHeroImgUrl && (
-                  <img src={config.aboutHeroImgUrl} alt="" className="h-20 w-full object-cover rounded-xl border mt-2" />
+                  <img src={config.aboutHeroImgUrl} alt="Hero" className="h-24 w-full object-cover rounded-xl border mt-2" />
                 )}
               </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-zinc-700 uppercase">2. School Assembly Photo</Label>
+              {/* 2. School Assembly Photo */}
+              <div className="space-y-2 p-4 rounded-2xl bg-zinc-50/80 border border-zinc-200/80">
+                <Label className="text-xs font-bold text-zinc-800 uppercase flex items-center justify-between">
+                  <span>2. School Assembly Photo</span>
+                  <span className="text-[10px] text-zinc-400 font-normal">Why Families Choose Us</span>
+                </Label>
                 <div className="flex gap-2">
                   <Input
                     value={config.aboutAssemblyImgUrl || ''}
                     onChange={(e) => setConfig({ ...config, aboutAssemblyImgUrl: e.target.value })}
-                    placeholder="School ground assembly picture URL..."
+                    placeholder="Assembly photo URL..."
                     className="rounded-xl text-xs bg-white flex-1"
                   />
-                  <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs whitespace-nowrap">
+                  <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-100 shadow-xs whitespace-nowrap">
                     <Upload className="h-3.5 w-3.5 mr-1" /> Upload
                     <input
                       type="file"
@@ -126,20 +225,24 @@ export function Settings() {
                   </label>
                 </div>
                 {config.aboutAssemblyImgUrl && (
-                  <img src={config.aboutAssemblyImgUrl} alt="" className="h-20 w-full object-cover rounded-xl border mt-2" />
+                  <img src={config.aboutAssemblyImgUrl} alt="Assembly" className="h-24 w-full object-cover rounded-xl border mt-2" />
                 )}
               </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-zinc-700 uppercase">3. National Award Certificate Photo</Label>
+              {/* 3. National Award Certificate */}
+              <div className="space-y-2 p-4 rounded-2xl bg-zinc-50/80 border border-zinc-200/80">
+                <Label className="text-xs font-bold text-zinc-800 uppercase flex items-center justify-between">
+                  <span>3. National Award Certificate</span>
+                  <span className="text-[10px] text-zinc-400 font-normal">Award Section</span>
+                </Label>
                 <div className="flex gap-2">
                   <Input
                     value={config.aboutAwardImgUrl || ''}
                     onChange={(e) => setConfig({ ...config, aboutAwardImgUrl: e.target.value })}
-                    placeholder="Award certificate picture URL..."
+                    placeholder="Award certificate URL..."
                     className="rounded-xl text-xs bg-white flex-1"
                   />
-                  <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs whitespace-nowrap">
+                  <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-100 shadow-xs whitespace-nowrap">
                     <Upload className="h-3.5 w-3.5 mr-1" /> Upload
                     <input
                       type="file"
@@ -150,52 +253,299 @@ export function Settings() {
                   </label>
                 </div>
                 {config.aboutAwardImgUrl && (
-                  <img src={config.aboutAwardImgUrl} alt="" className="h-20 w-full object-cover rounded-xl border mt-2" />
+                  <img src={config.aboutAwardImgUrl} alt="Award" className="h-24 w-full object-cover rounded-xl border mt-2" />
                 )}
               </div>
 
-              <div className="space-y-1.5 sm:col-span-2 bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100">
-                <Label className="text-xs font-bold text-zinc-900 uppercase flex items-center gap-2">
-                  <User className="h-4 w-4 text-[#1E3A8A]" />
-                  4. School Principal Portrait Photo (About Us Page)
+              {/* 4. Principal Portrait Photo */}
+              <div className="space-y-2 p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80">
+                <Label className="text-xs font-bold text-zinc-900 uppercase flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <User className="h-3.5 w-3.5 text-primary" /> 4. Principal Portrait Photo
+                  </span>
+                  <span className="text-[10px] text-amber-700 font-semibold">Dr. Meenal Sangole</span>
                 </Label>
-                <p className="text-[11px] text-zinc-500 mb-2">
-                  This picture appears on the public About Us page next to the Principal's Message (Dr. Meenal Sudhir Sangole).
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 items-center">
-                  {config.aboutPrincipalImgUrl ? (
-                    <img src={config.aboutPrincipalImgUrl} alt="Principal" className="h-20 w-20 object-cover rounded-full border-2 border-[#1E3A8A] shadow-sm shrink-0" />
-                  ) : (
-                    <div className="h-20 w-20 rounded-full bg-[#1E3A8A]/10 border-2 border-[#1E3A8A]/20 text-[#1E3A8A] flex items-center justify-center font-bold text-xl shrink-0">
-                      P
-                    </div>
-                  )}
-                  <div className="flex-1 space-y-2 w-full">
-                    <Input
-                      value={config.aboutPrincipalImgUrl || ''}
-                      onChange={(e) => setConfig({ ...config, aboutPrincipalImgUrl: e.target.value })}
-                      placeholder="Paste Principal picture URL..."
-                      className="rounded-xl text-xs bg-white"
+                <div className="flex gap-2">
+                  <Input
+                    value={config.aboutPrincipalImgUrl || ''}
+                    onChange={(e) => setConfig({ ...config, aboutPrincipalImgUrl: e.target.value })}
+                    placeholder="Principal portrait URL..."
+                    className="rounded-xl text-xs bg-white flex-1"
+                  />
+                  <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-100 shadow-xs whitespace-nowrap">
+                    <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleUpload(e, 'aboutPrincipalImgUrl')}
                     />
-                    <div className="flex gap-2">
-                      <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs flex-1 justify-center">
-                        <Upload className="h-3.5 w-3.5 mr-1" /> Upload Photo from Device
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleUpload(e, 'aboutPrincipalImgUrl')}
-                        />
-                      </label>
-                    </div>
-                  </div>
+                  </label>
                 </div>
+                {config.aboutPrincipalImgUrl && (
+                  <img src={config.aboutPrincipalImgUrl} alt="Principal" className="h-24 w-full object-cover object-top rounded-xl border mt-2" />
+                )}
+              </div>
+
+              {/* 5. Sports Education Photo */}
+              <div className="space-y-2 p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200/80">
+                <Label className="text-xs font-bold text-emerald-950 uppercase flex items-center justify-between">
+                  <span>5. Sports Education Photo</span>
+                  <span className="text-[10px] text-emerald-700 font-semibold">Playground & Games</span>
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={config.aboutSportsImgUrl || ''}
+                    onChange={(e) => setConfig({ ...config, aboutSportsImgUrl: e.target.value })}
+                    placeholder="Sports playground URL..."
+                    className="rounded-xl text-xs bg-white flex-1"
+                  />
+                  <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-100 shadow-xs whitespace-nowrap">
+                    <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleUpload(e, 'aboutSportsImgUrl')}
+                    />
+                  </label>
+                </div>
+                {config.aboutSportsImgUrl && (
+                  <img src={config.aboutSportsImgUrl} alt="Sports" className="h-24 w-full object-cover rounded-xl border mt-2" />
+                )}
+              </div>
+
+              {/* 6. Cultural Education Photo */}
+              <div className="space-y-2 p-4 rounded-2xl bg-zinc-50/80 border border-zinc-200/80">
+                <Label className="text-xs font-bold text-zinc-800 uppercase flex items-center justify-between">
+                  <span>6. Cultural Education Photo</span>
+                  <span className="text-[10px] text-zinc-400 font-normal">Dance & Performances</span>
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={config.aboutCulturalImgUrl || ''}
+                    onChange={(e) => setConfig({ ...config, aboutCulturalImgUrl: e.target.value })}
+                    placeholder="Cultural performance URL..."
+                    className="rounded-xl text-xs bg-white flex-1"
+                  />
+                  <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-100 shadow-xs whitespace-nowrap">
+                    <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleUpload(e, 'aboutCulturalImgUrl')}
+                    />
+                  </label>
+                </div>
+                {config.aboutCulturalImgUrl && (
+                  <img src={config.aboutCulturalImgUrl} alt="Cultural" className="h-24 w-full object-cover rounded-xl border mt-2" />
+                )}
+              </div>
+
+              {/* 7. Art & Craft Education Photo */}
+              <div className="space-y-2 p-4 rounded-2xl bg-indigo-50/60 border border-indigo-200/80">
+                <Label className="text-xs font-bold text-indigo-950 uppercase flex items-center justify-between">
+                  <span>7. Art & Craft Education Photo</span>
+                  <span className="text-[10px] text-indigo-700 font-semibold">Handicrafts & Clay</span>
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={config.aboutArtImgUrl || ''}
+                    onChange={(e) => setConfig({ ...config, aboutArtImgUrl: e.target.value })}
+                    placeholder="Art & Craft photo URL..."
+                    className="rounded-xl text-xs bg-white flex-1"
+                  />
+                  <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-100 shadow-xs whitespace-nowrap">
+                    <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleUpload(e, 'aboutArtImgUrl')}
+                    />
+                  </label>
+                </div>
+                {config.aboutArtImgUrl && (
+                  <img src={config.aboutArtImgUrl} alt="Art & Craft" className="h-24 w-full object-cover rounded-xl border mt-2" />
+                )}
+              </div>
+
+              {/* 8. Speech Therapy & Digital Classrooms Photo */}
+              <div className="space-y-2 p-4 rounded-2xl bg-zinc-50/80 border border-zinc-200/80">
+                <Label className="text-xs font-bold text-zinc-800 uppercase flex items-center justify-between">
+                  <span>8. Speech & Digital Education Photo</span>
+                  <span className="text-[10px] text-zinc-400 font-normal">Digital Classrooms</span>
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={config.aboutDigitalImgUrl || ''}
+                    onChange={(e) => setConfig({ ...config, aboutDigitalImgUrl: e.target.value })}
+                    placeholder="Digital classroom photo URL..."
+                    className="rounded-xl text-xs bg-white flex-1"
+                  />
+                  <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-100 shadow-xs whitespace-nowrap">
+                    <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleUpload(e, 'aboutDigitalImgUrl')}
+                    />
+                  </label>
+                </div>
+                {config.aboutDigitalImgUrl && (
+                  <img src={config.aboutDigitalImgUrl} alt="Digital Classroom" className="h-24 w-full object-cover rounded-xl border mt-2" />
+                )}
               </div>
             </div>
           </Card>
         </section>
 
-        {/* Account & System Preferences */}
+        {/* ════════════ 2. Alumni & Works Management (Matching Screenshot) ════════════ */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <GraduationCap className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-bold font-poppins text-zinc-900">Alumni & Works Management</h2>
+            </div>
+            <span className="text-xs text-zinc-500">Showcased in the public Gallery section</span>
+          </div>
+
+          <Card className="border border-zinc-200 shadow-sm rounded-3xl bg-white overflow-hidden p-6 space-y-6">
+            <p className="text-xs text-zinc-500 leading-relaxed">
+              Add hearing-impaired alumni and their employment/business details to inspire visitors, parents, and community members.
+            </p>
+
+            {/* Add New Alumni Form */}
+            <form onSubmit={handleAddAlumni} className="bg-zinc-50 p-5 rounded-2xl border border-zinc-200 space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-800 flex items-center gap-1.5">
+                <Plus className="h-4 w-4 text-primary" /> Add New Alumni
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-zinc-700">Full Name *</Label>
+                  <Input
+                    placeholder="e.g. Sonu Raju Nakashe"
+                    value={newAlumni.name}
+                    onChange={(e) => setNewAlumni({ ...newAlumni, name: e.target.value })}
+                    className="bg-white rounded-xl text-xs"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-zinc-700">Current Work / Employment *</Label>
+                  <Input
+                    placeholder="e.g. Working as a salesman at Max Trillium mall, Nagpur"
+                    value={newAlumni.work}
+                    onChange={(e) => setNewAlumni({ ...newAlumni, work: e.target.value })}
+                    className="bg-white rounded-xl text-xs"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-zinc-700">Batch / Year</Label>
+                  <Input
+                    placeholder="e.g. Batch 2018"
+                    value={newAlumni.batch}
+                    onChange={(e) => setNewAlumni({ ...newAlumni, batch: e.target.value })}
+                    className="bg-white rounded-xl text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-zinc-700">Photo URL or Device Upload</Label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Paste image link or upload below..."
+                    value={newAlumni.imageUrl}
+                    onChange={(e) => setNewAlumni({ ...newAlumni, imageUrl: e.target.value })}
+                    className="bg-white rounded-xl text-xs flex-1"
+                  />
+                  <label className="inline-flex items-center px-3.5 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-100 shadow-xs whitespace-nowrap">
+                    <Upload className="h-3.5 w-3.5 mr-1" /> Upload Photo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAlumniPhotoUpload}
+                    />
+                  </label>
+                </div>
+                {newAlumni.imageUrl && (
+                  <div className="flex items-center gap-3 pt-2">
+                    <img src={newAlumni.imageUrl} alt="Preview" className="h-12 w-12 rounded-full object-cover border-2 border-primary/30" />
+                    <span className="text-xs text-emerald-700 flex items-center gap-1 font-medium">
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Photo loaded
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button type="submit" disabled={addingAlumni} size="sm" className="rounded-full gap-1.5">
+                  <Plus className="h-4 w-4" /> {addingAlumni ? 'Adding...' : 'Add Alumni'}
+                </Button>
+              </div>
+            </form>
+
+            {/* Existing Alumni List */}
+            <div className="space-y-3 pt-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700">
+                Current Alumni Directory ({alumniList.length})
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {alumniList.map((alum) => (
+                  <div
+                    key={alum.id}
+                    className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200/90 flex flex-col justify-between hover:border-primary/40 transition-colors"
+                  >
+                    <div className="flex items-start gap-3">
+                      {alum.imageUrl ? (
+                        <img
+                          src={alum.imageUrl}
+                          alt={alum.name}
+                          className="h-14 w-14 rounded-full object-cover border-2 border-primary/20 shrink-0 shadow-xs"
+                        />
+                      ) : (
+                        <div className="h-14 w-14 rounded-full bg-primary/10 border-2 border-primary/20 text-primary flex items-center justify-center font-bold text-lg font-poppins shrink-0">
+                          {alum.name?.charAt(0)?.toUpperCase() || 'A'}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-poppins font-bold text-sm text-zinc-900 truncate">{alum.name}</h4>
+                        <p className="text-xs text-zinc-600 mt-1 line-clamp-2 leading-relaxed">{alum.work}</p>
+                        {alum.batch && (
+                          <span className="inline-block mt-2 text-[10px] font-mono text-zinc-500 bg-zinc-200/60 px-2 py-0.5 rounded-md">
+                            {alum.batch}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-zinc-200/70 flex justify-end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteAlumni(alum.id, alum.name)}
+                        className="text-destructive hover:bg-destructive/10 text-xs h-8 px-2.5 rounded-lg"
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
+        </section>
+
+        {/* ════════════ 3. Account & System Preferences ════════════ */}
         <section className="space-y-3">
           <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">System Preferences</h2>
           <Card className="border border-zinc-200 shadow-sm rounded-2xl bg-white overflow-hidden">

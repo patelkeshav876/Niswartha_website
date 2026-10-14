@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { motion } from 'motion/react';
 import { cn } from '../../lib/utils';
 import { api } from '../../lib/api';
@@ -9,16 +9,6 @@ type Props = {
   className?: string;
   pageKey?: string;
 };
-
-function getYouTubeEmbedUrl(url: string): string | null {
-  if (!url) return null;
-  const regExp = /^.*(?:youtu\.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-  const match = url.match(regExp);
-  if (match && match[1] && match[1].length === 11) {
-    return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&loop=1&playlist=${match[1]}&controls=0&showinfo=0&autohide=1&modestbranding=1&enablejsapi=1&playsinline=1`;
-  }
-  return null;
-}
 
 /**
  * Instant cached config retriever so the background image exists at Frame 0 (0ms)
@@ -50,14 +40,14 @@ function getInitialConfig(pageKey: string) {
 }
 
 /**
- * Premium Dynamic Hero Backdrop supporting configurable page background images,
- * video backgrounds, mobile fallback images, backdrop blur, brightness adjustments,
- * overlay opacity, text alignment, and parallax scrolling.
+ * Premium Dynamic Hero Backdrop supporting configurable page background images
+ * and gradient fills, backdrop blur, brightness adjustments, overlay opacity,
+ * text alignment, and parallax scrolling.
+ * (Video backgrounds removed site-wide for instant performance).
  */
 export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: Props) {
   const [config, setConfig] = useState<any>(() => getInitialConfig(pageKey));
   const [scrollY, setScrollY] = useState(0);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -92,36 +82,18 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
     return () => window.removeEventListener('scroll', onScroll);
   }, [config]);
 
-  const DEFAULT_VIDEO = 'https://assets.mixkit.co/videos/preview/mixkit-children-playing-in-a-park-41544-large.mp4';
-  const bgType = config?.bgType || config?.heroBgType || (pageKey === 'about' ? 'gradient' : 'image');
+  // bgType is strictly 'gradient' or 'image'
+  const rawBgType = config?.bgType || config?.heroBgType;
+  const bgType = rawBgType === 'gradient' ? 'gradient' : (pageKey === 'about' ? 'gradient' : 'image');
   const rawBgUrl = config?.bgUrl || config?.heroBgUrl || (pageKey === 'about' ? '' : 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=75&fm=webp');
   const bgUrl = rawBgUrl ? optimizeUnsplashUrl(rawBgUrl, 1200, 800, 75) : '';
-  const rawVideo = config?.bgVideoUrl || (bgType === 'video' ? rawBgUrl : '');
-  const bgVideoUrl = rawVideo && !rawVideo.includes('[#1E3A8A]') ? rawVideo : (bgType === 'video' ? DEFAULT_VIDEO : '');
-  const mobileFallbackUrl = config?.mobileFallbackUrl || bgUrl || '';
   const overlayOpacity = config?.overlayOpacity !== undefined ? Number(config.overlayOpacity) : (config?.heroOverlayOpacity !== undefined ? Number(config.heroOverlayOpacity) : 0.55);
   const blurIntensity = config?.blurIntensity !== undefined ? Number(config.blurIntensity) : 0;
   const brightness = config?.brightness !== undefined ? Number(config.brightness) : 1.0;
   const textAlign = config?.textAlign || 'center';
-  const autoPlayVideo = config?.autoPlayVideo !== undefined ? Boolean(config.autoPlayVideo) : true;
-  const loopVideo = config?.loopVideo !== undefined ? Boolean(config.loopVideo) : true;
   
   const enableParallax = config?.parallax || config?.heroParallax;
   const parallaxShift = enableParallax ? scrollY * 0.35 : 0;
-
-
-  // Ensure HTML5 video plays reliably on mount and URL change
-  useEffect(() => {
-    if (videoRef.current && bgType === 'video' && bgVideoUrl) {
-      videoRef.current.muted = true;
-      const playPromise = videoRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.warn('Autoplay prevented or failed:', err);
-        });
-      }
-    }
-  }, [bgVideoUrl, bgType]);
 
   const textAlignClass = {
     left: 'text-left font-normal',
@@ -146,8 +118,6 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
     fill: 'object-fill',
   }[objectFit] || 'object-cover';
 
-  const ytEmbedUrl = bgVideoUrl ? getYouTubeEmbedUrl(bgVideoUrl) : null;
-
   return (
     <div
       className={cn(
@@ -160,7 +130,7 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
         minHeight: sizeMode === 'custom' && customHeight ? `${customHeight}px` : undefined,
       }}
     >
-      {/* ──── Gradient Fill ──── */}
+      {/* ──── Gradient Canvas Fill ──── */}
       {bgType === 'gradient' && (
         <>
           <div className="absolute inset-0 bg-gradient-to-b from-[#12151f] via-[#0e1118] to-[#080a10]" />
@@ -170,7 +140,7 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
         </>
       )}
 
-      {/* ──── Image Fill ──── */}
+      {/* ──── Image Fill (Optimized WebP, high fetch priority, instant load) ──── */}
       {bgType === 'image' && bgUrl && (
         <div
           className="absolute inset-0 w-full h-[120%] pointer-events-none overflow-hidden"
@@ -185,8 +155,11 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
             className={cn('w-full h-full object-center will-change-transform', fitClass)}
             alt=""
             loading="eager"
+            // @ts-ignore
+            fetchpriority="high"
+            decoding="async"
             initial={{ scale: 1 }}
-            animate={{ scale: [1, 1.1, 1] }}
+            animate={{ scale: [1, 1.08, 1] }}
             transition={{
               duration: 20,
               repeat: Infinity,
@@ -197,62 +170,6 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
         </div>
       )}
 
-      {/* ──── Video Fill (Supports YouTube links + Direct MP4/WebM URLs on Desktop & Mobile) ──── */}
-      {bgType === 'video' && bgVideoUrl && (
-        <>
-          {ytEmbedUrl ? (
-            <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
-              <iframe
-                src={ytEmbedUrl}
-                className="absolute top-1/2 left-1/2 w-[180%] h-[180%] -translate-x-1/2 -translate-y-1/2 object-cover border-0 pointer-events-none"
-                allow="autoplay; encrypted-media; picture-in-picture"
-                title="Hero Background Video"
-              />
-            </div>
-          ) : (
-            <video
-              ref={videoRef}
-              src={bgVideoUrl || DEFAULT_VIDEO}
-              autoPlay
-              loop={loopVideo}
-              muted
-              playsInline
-              preload="auto"
-              className={cn('absolute inset-0 w-full h-[120%] pointer-events-none', fitClass)}
-              style={{
-                transform: `translateY(${parallaxShift}px) translateZ(0)`,
-                filter: blurIntensity > 0 ? `blur(${blurIntensity}px)` : undefined,
-                transition: 'transform 0.1s ease-out',
-              }}
-            />
-          )}
-
-          {/* Optional Fallback image overlay when video is loading or fallback image set */}
-          {mobileFallbackUrl && (
-            <div
-              className="absolute inset-0 w-full h-full pointer-events-none opacity-25 transition-opacity overflow-hidden"
-              style={{
-                filter: blurIntensity > 0 ? `blur(${blurIntensity}px)` : undefined,
-              }}
-            >
-              <motion.img
-                src={mobileFallbackUrl}
-                className={cn('w-full h-full will-change-transform', fitClass)}
-                alt=""
-                initial={{ scale: 1 }}
-                animate={{ scale: [1, 1.08, 1] }}
-                transition={{
-                  duration: 20,
-                  repeat: Infinity,
-                  repeatType: 'reverse',
-                  ease: 'easeInOut',
-                }}
-              />
-            </div>
-          )}
-        </>
-      )}
-
       {/* Opacity Overlay */}
       {bgType !== 'gradient' && (
         <div
@@ -261,7 +178,7 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
         />
       )}
 
-      {/* Ambient Grid Shaders */}
+      {/* Ambient Grid Shaders & Depth Lighting */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_100%_60%_at_50%_-10%,rgba(255,255,255,0.06),transparent_55%)]" aria-hidden />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(14,17,24,0.3)_0%,transparent_50%,rgba(8,10,16,0.95)_100%)]" aria-hidden />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:24px_24px] opacity-40" aria-hidden />
@@ -279,4 +196,3 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
     </div>
   );
 }
-

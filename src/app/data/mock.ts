@@ -392,3 +392,48 @@ export const mockVisitBookings = [
     purpose: 'Volunteering & Book Donation',
   },
 ];
+
+export const mockAlumni = [
+  {
+    id: 'alumni-1',
+    name: 'Sonu Raju Nakashe',
+    work: 'Working as a salesman at Max Trillium mall, Nagpur',
+    imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=75&fm=webp',
+    batch: 'Batch 2018',
+  },
+  {
+    id: 'alumni-2',
+    name: 'Akshay Prakash Injowar',
+    work: 'Working as a Clerk at Central Bank of India, Nagpur',
+    imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=75&fm=webp',
+    batch: 'Batch 2017',
+  },
+  {
+    id: 'alumni-3',
+    name: 'Mrs. Vaishali Navneet Solanki',
+    work: 'Making handicraft items and running home enterprise.',
+    imageUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=75&fm=webp',
+    batch: 'Batch 2016',
+  },
+  {
+    id: 'alumni-4',
+    name: 'Navneet Solanki',
+    work: 'Working as a house keeper at centre point hotel, Nagpur',
+    imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=75&fm=webp',
+    batch: 'Batch 2016',
+  },
+  {
+    id: 'alumni-5',
+    name: 'Sahil Sanjay Mahant',
+    work: 'Working as a Helper cum loader at Agile, Airport, Nagpur',
+    imageUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=400&q=75&fm=webp',
+    batch: 'Batch 2019',
+  },
+  {
+    id: 'alumni-6',
+    name: 'Shubham Waman Pochat',
+    work: 'Working as an assistant at SUTC',
+    imageUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=75&fm=webp',
+    batch: 'Batch 2020',
+  },
+];

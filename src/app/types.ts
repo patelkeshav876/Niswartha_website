@@ -204,3 +204,13 @@ export interface TeamMember {
   category: 'Management' | 'Faculty' | 'Staff';
   createdAt: string;
 }
+
+export interface Alumni {
+  id: string;
+  name: string;
+  work: string;
+  imageUrl?: string;
+  batch?: string;
+  workplace?: string;
+  createdAt?: string;
+}

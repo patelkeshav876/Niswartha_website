@@ -2,14 +2,15 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { ChevronLeft, ChevronRight, X, Image as ImageIcon, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Image as ImageIcon, Calendar, GraduationCap } from 'lucide-react';
 import { api } from '../lib/api';
-import { mockAshrams } from '../data/mock';
-import type { Album } from '../types';
+import { mockAshrams, mockAlumni } from '../data/mock';
+import type { Album, Alumni } from '../types';
 import { PremiumHeroBackdrop } from '../components/home/PremiumHeroBackdrop';
 
 export function GalleryPage() {
   const [albums, setAlbums] = useState<Album[]>([]);
+  const [alumni, setAlumni] = useState<Alumni[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Lightbox state
@@ -17,11 +18,14 @@ export function GalleryPage() {
   const [photoIndex, setPhotoIndex] = useState<number>(0);
 
   useEffect(() => {
-    const fetchAlbums = async () => {
+    const fetchData = async () => {
       try {
-        const data = await api.getAlbums();
-        if (data.length > 0) {
-          setAlbums(data);
+        const [albumData, alumniData] = await Promise.all([
+          api.getAlbums().catch(() => []),
+          api.getAlumni().catch(() => []),
+        ]);
+        if (albumData && albumData.length > 0) {
+          setAlbums(albumData);
         } else {
           // Fallback mock albums
           const ashram = mockAshrams[0];
@@ -53,14 +57,22 @@ export function GalleryPage() {
           ];
           setAlbums(mockData);
         }
+
+        if (alumniData && alumniData.length > 0) {
+          setAlumni(alumniData);
+        } else {
+          setAlumni(mockAlumni);
+        }
       } catch {
         // use fallback
+        setAlumni(mockAlumni);
       } finally {
         setLoading(false);
       }
     };
-    void fetchAlbums();
+    void fetchData();
   }, []);
+
 
   const openLightbox = (album: Album, index: number) => {
     setActiveAlbum(album);
@@ -161,6 +173,60 @@ export function GalleryPage() {
                 </div>
               );
             })}
+
+            {/* ──── Alumni & Works Space (Matching Screenshot media_1791975483830_aca0358c.png) ──── */}
+            {alumni.length > 0 && (
+              <div className="space-y-6 pt-10 border-t border-zinc-200">
+                <div className="border-b pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 font-poppins">Alumni & Works</h2>
+                    <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
+                      Celebrating our hearing-impaired graduates who have achieved independent careers, sustainable livelihoods, and self-reliance.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs font-semibold text-primary bg-primary/10 px-3.5 py-1.5 rounded-full shrink-0 self-start sm:self-auto">
+                    <GraduationCap className="h-3.5 w-3.5" />
+                    {alumni.length} Alumni
+                  </div>
+                </div>
+
+                {/* Alumni Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {alumni.map((alum) => (
+                    <motion.div
+                      key={alum.id}
+                      whileHover={{ y: -4 }}
+                      className="rounded-3xl bg-white border border-zinc-200/90 p-6 shadow-xs hover:shadow-md transition-all text-center flex flex-col items-center justify-between h-full"
+                    >
+                      <div className="flex flex-col items-center w-full">
+                        {alum.imageUrl ? (
+                          <img
+                            src={alum.imageUrl}
+                            alt={alum.name}
+                            className="h-28 w-28 sm:h-32 sm:w-32 rounded-full object-cover border-2 border-primary/25 shadow-xs mb-4"
+                          />
+                        ) : (
+                          <div className="h-28 w-28 sm:h-32 sm:w-32 rounded-full bg-gradient-to-br from-primary/15 to-primary/5 border-2 border-primary/25 text-primary flex items-center justify-center font-bold text-2xl font-poppins mb-4 shadow-xs">
+                            {alum.name?.charAt(0)?.toUpperCase() || 'A'}
+                          </div>
+                        )}
+                        <h3 className="font-poppins font-bold text-base text-zinc-900 leading-snug">
+                          {alum.name}
+                        </h3>
+                        <p className="text-xs text-zinc-600 mt-2 leading-relaxed max-w-[240px]">
+                          {alum.work}
+                        </p>
+                      </div>
+                      {alum.batch && (
+                        <span className="mt-4 text-[10px] font-mono text-zinc-500 bg-zinc-100 px-2.5 py-0.5 rounded-md">
+                          {alum.batch}
+                        </span>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

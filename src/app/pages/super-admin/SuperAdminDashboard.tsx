@@ -956,7 +956,6 @@ export function SuperAdminDashboard() {
                         >
                           <option value="gradient">Default Gradient Canvas</option>
                           <option value="image">Parallax Cover Photo</option>
-                          <option value="video">Ambient loop Video</option>
                         </select>
                       </div>
                       <div className="space-y-1.5">
@@ -974,14 +973,15 @@ export function SuperAdminDashboard() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">Backdrop Media Link URL</label>
+                      <label className="text-xs font-bold text-zinc-700 uppercase">Backdrop Image URL</label>
                       <Input
                         value={config.heroBgUrl || ''}
                         onChange={(e) => setConfig({ ...config, heroBgUrl: e.target.value })}
-                        placeholder="Paste image or mp4 URL..."
+                        placeholder="Paste image URL (PNG, JPG, WebP)..."
                         className="rounded-xl text-xs"
                       />
                     </div>
+
 
                     <div className="flex items-center justify-between border p-2.5 rounded-xl bg-zinc-50/50">
                       <div>
@@ -1080,6 +1080,90 @@ export function SuperAdminDashboard() {
                             accept="image/*"
                             className="hidden"
                             onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, aboutPrincipalImgUrl: url }))}
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-zinc-700 uppercase">Sports Education Photo</label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={config.aboutSportsImgUrl || ''}
+                          onChange={(e) => setConfig({ ...config, aboutSportsImgUrl: e.target.value })}
+                          placeholder="Image URL or upload..."
+                          className="rounded-xl text-xs bg-white flex-1"
+                        />
+                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
+                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, aboutSportsImgUrl: url }))}
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-zinc-700 uppercase">Cultural Education Photo</label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={config.aboutCulturalImgUrl || ''}
+                          onChange={(e) => setConfig({ ...config, aboutCulturalImgUrl: e.target.value })}
+                          placeholder="Image URL or upload..."
+                          className="rounded-xl text-xs bg-white flex-1"
+                        />
+                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
+                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, aboutCulturalImgUrl: url }))}
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-zinc-700 uppercase">Art & Craft Photo</label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={config.aboutArtImgUrl || ''}
+                          onChange={(e) => setConfig({ ...config, aboutArtImgUrl: e.target.value })}
+                          placeholder="Image URL or upload..."
+                          className="rounded-xl text-xs bg-white flex-1"
+                        />
+                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
+                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, aboutArtImgUrl: url }))}
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-zinc-700 uppercase">Speech & Digital Photo</label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={config.aboutDigitalImgUrl || ''}
+                          onChange={(e) => setConfig({ ...config, aboutDigitalImgUrl: e.target.value })}
+                          placeholder="Image URL or upload..."
+                          className="rounded-xl text-xs bg-white flex-1"
+                        />
+                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
+                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, aboutDigitalImgUrl: url }))}
                           />
                         </label>
                       </div>

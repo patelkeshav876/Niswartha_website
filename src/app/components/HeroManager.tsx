@@ -149,23 +149,22 @@ export function HeroManager() {
                 <Sliders className="h-4 w-4 text-primary" /> Media and Visual Type
               </h3>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 {[
                   { type: 'gradient', label: 'Gradient Canvas', icon: Sparkles },
                   { type: 'image', label: 'Cover Image', icon: ImageIcon },
-                  { type: 'video', label: 'Ambient Video', icon: Video },
                 ].map((item) => (
                   <button
                     key={item.type}
                     type="button"
                     onClick={() => setForm({ ...form, bgType: item.type })}
-                    className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-bold transition-all ${
+                    className={`flex flex-col items-center justify-center p-3.5 rounded-xl border text-xs font-bold transition-all ${
                       form.bgType === item.type
                         ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary/30 shadow-sm'
                         : 'border-zinc-200 bg-zinc-50 text-zinc-600 hover:bg-zinc-100'
                     }`}
                   >
-                    <item.icon className="h-5 w-5 mb-1" />
+                    <item.icon className="h-5 w-5 mb-1.5" />
                     {item.label}
                   </button>
                 ))}
@@ -195,79 +194,10 @@ export function HeroManager() {
                   </div>
                 </div>
               )}
-
-              {/* Video URL Inputs */}
-              {form.bgType === 'video' && (
-                <div className="space-y-4 pt-2 border-t">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-zinc-700 uppercase">Background Video Link URL (.mp4 / WebM)</label>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Paste video URL or choose file..."
-                        value={form.bgVideoUrl}
-                        onChange={(e) => setForm({ ...form, bgVideoUrl: e.target.value })}
-                        className="text-xs rounded-xl flex-1"
-                      />
-                      <label className="cursor-pointer inline-flex items-center justify-center rounded-xl border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 text-xs font-medium whitespace-nowrap shadow-sm">
-                        <Upload className="h-3.5 w-3.5 mr-1" />
-                        Upload Video
-                        <input
-                          type="file"
-                          accept="video/*"
-                          className="hidden"
-                          onChange={(e) => handleFileUpload(e, 'bgVideoUrl')}
-                        />
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-zinc-700 uppercase">Mobile Fallback Image URL</label>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Image URL shown on small screens or when video fails..."
-                        value={form.mobileFallbackUrl}
-                        onChange={(e) => setForm({ ...form, mobileFallbackUrl: e.target.value })}
-                        className="text-xs rounded-xl flex-1"
-                      />
-                      <label className="cursor-pointer inline-flex items-center justify-center rounded-xl border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 text-xs font-medium whitespace-nowrap shadow-sm">
-                        <Upload className="h-3.5 w-3.5 mr-1" />
-                        Upload Image
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleFileUpload(e, 'mobileFallbackUrl')}
-                        />
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-6 pt-1">
-                    <label className="flex items-center gap-2 text-xs font-bold text-zinc-700 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={form.autoPlayVideo}
-                        onChange={(e) => setForm({ ...form, autoPlayVideo: e.target.checked })}
-                        className="rounded border-zinc-300 text-primary focus:ring-primary h-4 w-4"
-                      />
-                      Auto-Play Video
-                    </label>
-
-                    <label className="flex items-center gap-2 text-xs font-bold text-zinc-700 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={form.loopVideo}
-                        onChange={(e) => setForm({ ...form, loopVideo: e.target.checked })}
-                        className="rounded border-zinc-300 text-primary focus:ring-primary h-4 w-4"
-                      />
-                      Loop Video
-                    </label>
-                  </div>
-                </div>
-              )}
             </CardContent>
+
           </Card>
+
 
           {/* Hero Height & Dimension Sizing */}
           <Card className="border-none shadow-sm bg-white">
@@ -495,18 +425,6 @@ export function HeroManager() {
                     />
                   )}
 
-                  {/* Video Fill */}
-                  {form.bgType === 'video' && form.bgVideoUrl && (
-                    <video
-                      src={form.bgVideoUrl}
-                      autoPlay={form.autoPlayVideo}
-                      loop={form.loopVideo}
-                      muted
-                      playsInline
-                      className="absolute inset-0 w-full h-full object-cover"
-                      style={{ filter: form.blurIntensity > 0 ? `blur(${form.blurIntensity}px)` : undefined }}
-                    />
-                  )}
 
                   {/* Overlay */}
                   {form.bgType !== 'gradient' && (

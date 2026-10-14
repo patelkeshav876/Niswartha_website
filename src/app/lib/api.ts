@@ -9,7 +9,9 @@ import {
   mockTeamMembers,
   mockVisitBookings,
   mockNotifications,
+  mockAlumni,
 } from '../data/mock';
+
 
 function getApiBase(): string {
   const raw = import.meta.env.VITE_API_URL;
@@ -937,6 +939,49 @@ export const api = {
     fetchAPI<any>(`/super-admin/users/${id}/role`, { method: 'PUT', body: JSON.stringify({ role }) }),
   deleteSuperAdminUser: (id: string) =>
     fetchAPI<any>(`/super-admin/users/${id}`, { method: 'DELETE' }),
+
+  // --- Alumni API ---
+  getAlumni: async () => {
+    try {
+      return await fetchAPI<any[]>('/alumni');
+    } catch {
+      const saved = localStorage.getItem('niswartha_alumni');
+      if (saved) return JSON.parse(saved);
+      return mockAlumni || [];
+    }
+  },
+  createAlumni: async (data: Record<string, unknown>) => {
+    try {
+      return await fetchAPI<any>('/alumni', { method: 'POST', body: JSON.stringify(data) });
+    } catch {
+      const current = await api.getAlumni();
+      const newAlumni = { id: 'alumni_' + Date.now(), createdAt: new Date().toISOString(), ...data };
+      const updated = [newAlumni, ...current];
+      localStorage.setItem('niswartha_alumni', JSON.stringify(updated));
+      return newAlumni;
+    }
+  },
+  updateAlumni: async (id: string, data: Record<string, unknown>) => {
+    try {
+      return await fetchAPI<any>(`/alumni/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+    } catch {
+      const current = await api.getAlumni();
+      const updated = current.map((a: any) => (a.id === id ? { ...a, ...data } : a));
+      localStorage.setItem('niswartha_alumni', JSON.stringify(updated));
+      return { id, ...data };
+    }
+  },
+  deleteAlumni: async (id: string) => {
+    try {
+      return await fetchAPI<any>(`/alumni/${id}`, { method: 'DELETE' });
+    } catch {
+      const current = await api.getAlumni();
+      const updated = current.filter((a: any) => a.id !== id);
+      localStorage.setItem('niswartha_alumni', JSON.stringify(updated));
+      return { success: true };
+    }
+  },
+
   backupDatabase: async () => {
     try {
       return await fetchAPI<any>('/super-admin/backup');
@@ -1014,11 +1059,11 @@ export const api = {
       const saved = localStorage.getItem('hero_config_' + pageKey);
       if (saved) return JSON.parse(saved);
       return {
-        bgType: 'video',
-        bgVideoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-children-playing-in-a-park-41544-large.mp4',
-        mobileFallbackUrl: 'https://images.unsplash.com/photo-1542810634-71277d95dcbb?auto=format&fit=crop&q=80&w=1200',
+        bgType: 'image',
+        bgUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=75&fm=webp',
         overlayOpacity: 0.55,
       };
+
     }
   },
   updateHeroConfig: async (pageKey: string, data: Record<string, unknown>) => {

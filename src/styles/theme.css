@@ -289,8 +289,8 @@ textarea,
 }
 
 @theme inline {
-  --font-sans: 'Inter', sans-serif;
-  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'Poppins', sans-serif;
+  --font-serif: 'Poppins', sans-serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -340,7 +340,8 @@ textarea,
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Poppins', sans-serif;
+    @apply bg-background text-foreground antialiased;
   }
 
   h1,
@@ -349,7 +350,8 @@ textarea,
   h4,
   h5,
   h6 {
-    @apply font-serif font-medium;
+    font-family: 'Poppins', sans-serif;
+    @apply font-bold tracking-tight;
   }
 
   h1 {
