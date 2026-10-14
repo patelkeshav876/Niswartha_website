@@ -3,9 +3,9 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { Layout } from './layout';
 import { UserProvider, useUser } from './context/UserContext';
 import { PageSkeleton } from './components/PageSkeleton';
-import { Home } from './pages/Home';
 
-// Code-split dynamic page imports for optimal bundle performance (secondary pages)
+// Code-split dynamic page imports for optimal bundle performance
+const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
 const About = lazy(() => import('./pages/About').then((m) => ({ default: m.About })));
 const Events = lazy(() => import('./pages/Events').then((m) => ({ default: m.Events })));
 const Needs = lazy(() => import('./pages/Needs').then((m) => ({ default: m.Needs })));
@@ -101,7 +101,7 @@ export const router = createBrowserRouter([
     errorElement: <RouteErrorFallback />,
     children: [
       // Public pages
-      { index: true, path: '/', element: <Home /> },
+      { index: true, path: '/', element: <SuspenseWrap><Home /></SuspenseWrap> },
       { path: 'about', element: <SuspenseWrap><About /></SuspenseWrap> },
       { path: 'help', element: <SuspenseWrap><Help /></SuspenseWrap> },
       { path: 'events', element: <SuspenseWrap><Events /></SuspenseWrap> },
