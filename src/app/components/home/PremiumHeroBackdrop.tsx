@@ -167,8 +167,8 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
           ) : (
             <video
               ref={videoRef}
-              src={bgVideoUrl}
-              autoPlay={autoPlayVideo}
+              src={bgVideoUrl || DEFAULT_VIDEO}
+              autoPlay
               loop={loopVideo}
               muted
               playsInline
