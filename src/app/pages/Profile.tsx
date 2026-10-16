@@ -294,7 +294,7 @@ export function Profile() {
                         </div>
                         <p className="text-xs text-zinc-500 flex items-center gap-1.5 mt-1">
                           <Building2 className="h-3.5 w-3.5 text-[#1E3A8A]" />
-                          {ashram?.name || 'Niswartha Ashram Partner'} • Ref: <span className="font-mono text-zinc-700 font-bold">{item.referenceNumber || item.id}</span>
+                          {ashram?.name || 'Niswartha Ashram Partner'} • Ref: <span className="font-mono text-zinc-700 font-bold">{item.referenceNumber || item.reference || item.id}</span>
                         </p>
                       </div>
 

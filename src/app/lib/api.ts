@@ -887,17 +887,33 @@ export const api = {
 
   // --- Advertisements API ---
   getAdvertisements: async () => {
+    let remoteAds: any[] = [];
     try {
       const data = await fetchAPI<any[]>('/advertisements');
-      if (Array.isArray(data) && data.length > 0) {
-        localStorage.setItem('local_advertisements', JSON.stringify(data));
-        return data;
+      if (Array.isArray(data)) {
+        remoteAds = data;
       }
     } catch {
       // offline fallback
     }
     const saved = localStorage.getItem('local_advertisements');
-    return saved ? JSON.parse(saved) : [];
+    const localAds: any[] = saved ? JSON.parse(saved) : [];
+    
+    // Merge by ID: local ads take priority for recent edits, remote ads populate everything else
+    const map = new Map<string, any>();
+    remoteAds.forEach((ad: any) => {
+      const key = ad.id || ad._id;
+      if (key) map.set(key, ad);
+    });
+    localAds.forEach((ad: any) => {
+      const key = ad.id || ad._id;
+      if (key) map.set(key, ad);
+    });
+    const merged = Array.from(map.values());
+    if (merged.length > 0) {
+      localStorage.setItem('local_advertisements', JSON.stringify(merged));
+    }
+    return merged;
   },
   createAdvertisement: async (data: Record<string, unknown>) => {
     let res: any = null;
@@ -915,8 +931,9 @@ export const api = {
       createdAt: new Date().toISOString(),
       ...data,
     };
-    const updated = [newAd, ...list.filter((x: any) => x.id !== newAd.id)];
+    const updated = [newAd, ...list.filter((x: any) => x.id !== newAd.id && x._id !== newAd.id)];
     localStorage.setItem('local_advertisements', JSON.stringify(updated));
+    window.dispatchEvent(new Event('ad_campaign_updated'));
     return newAd;
   },
   updateAdvertisement: async (id: string, data: Record<string, unknown>) => {
@@ -930,6 +947,7 @@ export const api = {
     const list: any[] = saved ? JSON.parse(saved) : [];
     const updated = list.map((a: any) => (a.id === id || a._id === id ? { ...a, ...data, id } : a));
     localStorage.setItem('local_advertisements', JSON.stringify(updated));
+    window.dispatchEvent(new Event('ad_campaign_updated'));
     return res || { id, ...data };
   },
   deleteAdvertisement: async (id: string) => {
@@ -944,6 +962,7 @@ export const api = {
       const list = JSON.parse(saved);
       localStorage.setItem('local_advertisements', JSON.stringify(list.filter((a: any) => a.id !== id && a._id !== id)));
     }
+    window.dispatchEvent(new Event('ad_campaign_updated'));
     return res || { success: true };
   },
   trackAdView: (id: string) =>

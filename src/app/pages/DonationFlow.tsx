@@ -19,6 +19,10 @@ import {
   Check,
   Circle,
   Calendar as CalendarIcon,
+  Printer,
+  FileText,
+  Download,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
@@ -239,16 +243,24 @@ export function DonationFlow() {
     try {
       await api.createItemDonation({
         reference: ref,
+        referenceNumber: ref,
         userId: currentUser?.id || phone.trim(),
+        userEmail: currentUser?.email || '',
         ashramId: ashram.id,
         ashramName: ashram.name,
         needId: need.id,
         needTitle: need.title,
         category: need.category,
         fullName: fullName.trim(),
+        donorName: fullName.trim(),
         phone: phone.trim(),
+        donorPhone: phone.trim(),
+        quantity: 1,
         deliveryDate: dateStr,
+        expectedDeliveryDate: dateStr,
+        scheduledDate: dateStr,
         notes: notes.trim(),
+        courierName: notes.trim() ? notes.trim().slice(0, 50) : 'Courier / Direct Parcel',
         status: 'pending',
       });
       setStep(4);
@@ -623,16 +635,67 @@ export function DonationFlow() {
 
         {step === 4 && (
           <div className="space-y-5 animate-in fade-in duration-300">
-            <Card className="border-none shadow-md text-center">
-              <CardContent className="p-6 space-y-2">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                  <Check className="h-8 w-8" />
+            {/* Official Item Donation Receipt Proof Slip */}
+            <Card className="border-2 border-emerald-500/30 rounded-3xl bg-white shadow-lg overflow-hidden">
+              <div className="bg-gradient-to-r from-emerald-700 via-primary to-primary text-white p-5 text-center relative">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-[10px] font-bold uppercase tracking-widest mb-2">
+                  <ShieldCheck className="h-3.5 w-3.5" /> Official Shipment Receipt Proof
                 </div>
-                <h2 className="font-serif text-xl font-bold">Donation confirmed!</h2>
-                <p className="text-sm text-muted-foreground">{ashram.name}</p>
-                <p className="text-sm font-mono font-medium">
-                  Reference: {reference}
-                </p>
+                <h3 className="font-serif font-bold text-lg sm:text-xl">Niswartha Support Acknowledgment</h3>
+                <p className="text-[11px] text-white/90 font-mono mt-0.5">Ref No: {reference}</p>
+              </div>
+
+              <CardContent className="p-5 sm:p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-3 text-xs border-b border-zinc-100 pb-3">
+                  <div>
+                    <span className="text-zinc-400 block text-[10px] uppercase font-bold">Ashram Institution</span>
+                    <span className="font-bold text-zinc-900 text-xs sm:text-sm">{ashram.name}</span>
+                    <span className="text-[11px] text-zinc-500 block truncate">{ashram.location}</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-400 block text-[10px] uppercase font-bold">Donor Information</span>
+                    <span className="font-bold text-zinc-900 text-xs sm:text-sm">{fullName}</span>
+                    <span className="text-[11px] text-zinc-500 block">{phone}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs border-b border-zinc-100 pb-3">
+                  <div>
+                    <span className="text-zinc-400 block text-[10px] uppercase font-bold">Supported Need / Item</span>
+                    <span className="font-bold text-zinc-900">{need.title}</span>
+                    <span className="text-[11px] text-primary block font-medium">Category: {need.category}</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-400 block text-[10px] uppercase font-bold">Expected Arrival</span>
+                    <span className="font-bold text-zinc-900">
+                      {selectedDeliveryDate ? selectedDeliveryDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Scheduled'}
+                    </span>
+                    <span className="text-[11px] text-emerald-600 block font-bold">Status: Pledged & Verified ✓</span>
+                  </div>
+                </div>
+
+                {notes && (
+                  <div className="text-xs bg-zinc-50 p-2.5 rounded-xl border border-zinc-200/60">
+                    <span className="font-bold text-zinc-700">Courier / Package Note: </span>
+                    <span className="text-zinc-600">{notes}</span>
+                  </div>
+                )}
+
+                <div className="pt-2 flex flex-col sm:flex-row gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1 rounded-xl gap-2 text-xs font-bold border-zinc-300 hover:bg-zinc-50 h-11"
+                    onClick={() => window.print()}
+                  >
+                    <Printer className="h-4 w-4 text-zinc-600" /> Print / Save Receipt Proof
+                  </Button>
+                  <Button
+                    className="flex-1 rounded-xl gap-2 text-xs font-bold bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-white h-11 shadow-xs"
+                    onClick={() => navigate('/donation-history')}
+                  >
+                    <FileText className="h-4 w-4" /> View in Donation History
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
@@ -690,12 +753,6 @@ export function DonationFlow() {
               </p>
             </div>
 
-            <Button
-              className="h-12 w-full rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-md gap-2"
-              onClick={() => navigate('/donation-history')}
-            >
-              <Package className="h-5 w-5" /> View Receipt Proof & Shipment Status
-            </Button>
             <div className="flex gap-2">
               <Button
                 variant="outline"

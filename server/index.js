@@ -1912,9 +1912,10 @@ app.post('/api/advertisements', requireSuperAdmin, async (req, res) => {
     };
     await Advertisement.create(doc);
     
+    const superAdminUserId = req.user ? (req.user.id || String(req.user._id) || req.user.email) : 'super_admin';
     await AuditLog.create({
       id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      userId: req.user.id,
+      userId: superAdminUserId,
       action: 'create_advertisement',
       details: `Created ad: ${ad.title}`,
       createdAt: new Date().toISOString()
@@ -1940,9 +1941,10 @@ app.put('/api/advertisements/:id', requireSuperAdmin, async (req, res) => {
     delete updated._id;
     await Advertisement.findOneAndUpdate({ id: req.params.id }, updated, { upsert: true }).lean();
     
+    const superAdminUserId = req.user ? (req.user.id || String(req.user._id) || req.user.email) : 'super_admin';
     await AuditLog.create({
       id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      userId: req.user.id,
+      userId: superAdminUserId,
       action: 'update_advertisement',
       details: `Updated ad: ${updated.title}`,
       createdAt: new Date().toISOString()
@@ -1965,9 +1967,10 @@ app.delete('/api/advertisements/:id', requireSuperAdmin, async (req, res) => {
 
     await Advertisement.deleteMany(filter);
     
+    const superAdminUserId = req.user ? (req.user.id || String(req.user._id) || req.user.email) : 'super_admin';
     await AuditLog.create({
       id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      userId: req.user.id,
+      userId: superAdminUserId,
       action: 'delete_advertisement',
       details: `Deleted ad ID: ${targetId}`,
       createdAt: new Date().toISOString()

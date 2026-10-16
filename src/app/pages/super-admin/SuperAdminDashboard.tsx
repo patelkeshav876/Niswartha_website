@@ -332,10 +332,18 @@ export function SuperAdminDashboard() {
         await api.createAdvertisement(cleanData);
         toast.success('Ad campaign launched successfully!');
       }
+      Object.keys(sessionStorage).forEach((k) => {
+        if (k.startsWith('popup_ad_shown')) sessionStorage.removeItem(k);
+      });
+      window.dispatchEvent(new Event('ad_campaign_updated'));
       setIsAdModalOpen(false);
       void fetchAds();
     } catch (e: any) {
       console.error('Failed to save ad campaign:', e);
+      Object.keys(sessionStorage).forEach((k) => {
+        if (k.startsWith('popup_ad_shown')) sessionStorage.removeItem(k);
+      });
+      window.dispatchEvent(new Event('ad_campaign_updated'));
       setIsAdModalOpen(false);
       void fetchAds();
       toast.success('Ad campaign saved successfully.');

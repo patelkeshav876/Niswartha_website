@@ -229,10 +229,11 @@ export function Donation() {
 
           <Button
             onClick={() => {
-              if (needs && needs.length > 0) {
-                navigate(`/donate-flow/${ashram.id}/${needs[0].id}`);
+              const targetAshramId = ashram?.id || ashramId || 'ashram-1';
+              if (needs && needs.length > 0 && needs[0]?.id) {
+                navigate(`/donate-flow/${targetAshramId}/${needs[0].id}`);
               } else {
-                navigate(`/donate-flow/${ashram.id}`);
+                navigate(`/donate-flow/${targetAshramId}`);
               }
             }}
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs rounded-2xl h-12 gap-2 shadow-sm cursor-pointer"

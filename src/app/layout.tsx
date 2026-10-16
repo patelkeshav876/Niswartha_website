@@ -9,7 +9,7 @@ import { WhatsAppButton } from './components/WhatsAppButton';
 import { api, applyThemeColor } from './lib/api';
 import { AdPopupModal } from './components/AdPopupModal';
 import { ShieldAlert } from 'lucide-react';
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { TwoDotLoader } from './components/TwoDotLoader';
 
 export function Layout() {
   const location = useLocation();
@@ -54,16 +54,7 @@ export function Layout() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="w-36 h-36 flex items-center justify-center">
-            <DotLottieReact
-              src="https://lottie.host/f1920018-4203-4927-a43e-aa0bff45eb09/I8cwfrA9rp.json"
-              loop
-              autoplay
-            />
-          </div>
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest animate-pulse">Loading Niswartha...</p>
-        </div>
+        <TwoDotLoader size={60} message="Loading Niswartha..." />
       </div>
     );
   }

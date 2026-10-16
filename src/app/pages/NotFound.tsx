@@ -1,7 +1,7 @@
 import { useNavigate } from 'react';
 import { Button } from '../components/ui/button';
 import { Home, ArrowLeft } from 'lucide-react';
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { TwoDotLoader } from '../components/TwoDotLoader';
 
 export function NotFound() {
   const navigate = useNavigate();
@@ -9,12 +9,8 @@ export function NotFound() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-6 text-center">
       <div className="space-y-6 max-w-md mx-auto">
-        <div className="w-64 h-64 mx-auto flex items-center justify-center">
-          <DotLottieReact
-            src="https://lottie.host/4a01adbf-e915-4ec0-b5ac-463987a8425d/rykF3b26je.lottie"
-            loop
-            autoplay
-          />
+        <div className="py-8 flex items-center justify-center">
+          <TwoDotLoader size={64} />
         </div>
         
         <div className="space-y-2">

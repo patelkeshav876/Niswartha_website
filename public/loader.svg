@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
+  <style>
+    @keyframes orbit-spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes pulse-teal {
+      0%, 100% { transform: scale(0.9); opacity: 0.9; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+    @keyframes pulse-blue {
+      0%, 100% { transform: scale(1.15); opacity: 1; }
+      50% { transform: scale(0.9); opacity: 0.9; }
+    }
+    .orbit-group {
+      transform-origin: 50px 50px;
+      animation: orbit-spin 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+    }
+    .dot-teal {
+      transform-origin: 32px 50px;
+      animation: pulse-teal 1.2s ease-in-out infinite;
+    }
+    .dot-blue {
+      transform-origin: 68px 50px;
+      animation: pulse-blue 1.2s ease-in-out infinite;
+    }
+  </style>
+  <g class="orbit-group">
+    <circle class="dot-teal" cx="32" cy="50" r="12" fill="#00D492" />
+    <circle class="dot-blue" cx="68" cy="50" r="12" fill="#0088FF" />
+  </g>
+</svg>

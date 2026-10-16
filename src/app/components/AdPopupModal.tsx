@@ -24,56 +24,71 @@ export function AdPopupModal() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    // Session storage check so pop-up appears once per session per placement
-    const shownThisSession = sessionStorage.getItem('popup_ad_shown');
-    if (shownThisSession) return;
-
     let active = true;
-    (async () => {
+    let timer: NodeJS.Timeout | null = null;
+
+    const checkPopup = async () => {
       try {
         const list = await api.getAdvertisements();
         if (!active || !Array.isArray(list)) return;
 
-        const now = new Date();
+        const now = Date.now();
         const matches = list.filter((a: any) => {
-          if (!a.enabled) return false;
+          if (a.enabled === false) return false;
+          const p = String(a.placement || '').toLowerCase().trim();
           const isPopup =
-            a.placement === 'all' ||
-            a.placement === 'all_slots' ||
-            a.placement === 'popup' ||
-            a.placement === 'popup_center' ||
-            a.placement === 'popup_bottom_left' ||
-            a.placement === 'popup_bottom_right';
+            p === 'all' ||
+            p === 'all_slots' ||
+            p === 'popup' ||
+            p === 'popup_center' ||
+            p === 'popup_bottom_left' ||
+            p === 'popup_bottom_right';
           if (!isPopup) return false;
-          const start = a.startDate ? new Date(a.startDate) : new Date(0);
-          const end = a.endDate ? new Date(a.endDate) : new Date(Date.now() + 365 * 86400000);
-          return start <= now && end >= now;
+
+          // Safe day-boundary checking
+          if (a.startDate) {
+            const s = new Date(a.startDate).setHours(0, 0, 0, 0);
+            if (!isNaN(s) && s > now) return false;
+          }
+          if (a.endDate) {
+            const e = new Date(a.endDate).setHours(23, 59, 59, 999);
+            if (!isNaN(e) && e < now) return false;
+          }
+          return true;
         });
 
         if (matches.length > 0) {
-          const chosen = matches[Math.floor(Math.random() * matches.length)];
-          setAd(chosen);
+          // Find first unshown ad in this session
+          const unshown = matches.find((m) => !sessionStorage.getItem(`popup_ad_shown_${m.id || m._id}`));
+          const chosen = unshown || matches[0];
+          const adKey = `popup_ad_shown_${chosen.id || chosen._id}`;
 
-          // Configurable Delay Duration (default to 3 seconds if not set)
-          const delaySec = Math.max(1, Number(chosen.popupDelay) || 3);
+          if (!sessionStorage.getItem(adKey)) {
+            setAd(chosen);
+            const delaySec = Math.max(1, Number(chosen.popupDelay) || 2);
 
-          const timer = setTimeout(() => {
-            if (active) {
-              setOpen(true);
-              sessionStorage.setItem('popup_ad_shown', 'true');
-              void api.trackAdView(chosen.id || chosen._id || '');
-            }
-          }, delaySec * 1000);
-
-          return () => clearTimeout(timer);
+            timer = setTimeout(() => {
+              if (active) {
+                setOpen(true);
+                sessionStorage.setItem(adKey, 'true');
+                void api.trackAdView(chosen.id || chosen._id || '');
+              }
+            }, delaySec * 1000);
+          }
         }
       } catch {
         // ignore
       }
-    })();
+    };
 
+    void checkPopup();
+
+    const handleSync = () => { void checkPopup(); };
+    window.addEventListener('ad_campaign_updated', handleSync);
     return () => {
       active = false;
+      if (timer) clearTimeout(timer);
+      window.removeEventListener('ad_campaign_updated', handleSync);
     };
   }, []);
 
