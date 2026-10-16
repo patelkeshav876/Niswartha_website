@@ -142,11 +142,29 @@ export function Settings() {
   };
 
   const handleToggleMaintenance = async (newVal: boolean) => {
-    const updated = { ...config, maintenanceMode: newVal };
+    // If turning off maintenance mode, automatically clear announcement if it was about maintenance/availability
+    const shouldClearAnnouncement = !newVal && config.globalAnnouncement && (
+      config.globalAnnouncement.toLowerCase().includes('maintenance') ||
+      config.globalAnnouncement.toLowerCase().includes('available') ||
+      config.globalAnnouncement.toLowerCase().includes('tonight') ||
+      config.globalAnnouncement.toLowerCase().includes('tomorrow')
+    );
+
+    const updated = {
+      ...config,
+      maintenanceMode: newVal,
+      ...(shouldClearAnnouncement ? { globalAnnouncement: '' } : {})
+    };
     setConfig(updated);
     try {
       await api.updateConfig(updated);
-      toast.success(newVal ? 'Maintenance Mode activated. Public pages now locked.' : 'Maintenance Mode turned OFF! Website is now fully live.');
+      toast.success(
+        newVal
+          ? 'Maintenance Mode activated. Public pages now locked.'
+          : shouldClearAnnouncement
+            ? 'Maintenance Mode turned OFF & announcement banner removed! Website is fully live.'
+            : 'Maintenance Mode turned OFF! Website is now fully live.'
+      );
     } catch {
       toast.error('Could not sync maintenance mode');
     }
@@ -392,6 +410,24 @@ export function Settings() {
                       >
                         Turn ON Maintenance Mode
                       </Button>
+                    )}
+
+                    {config.globalAnnouncement && (
+                      <div className="mt-2.5 p-2.5 bg-amber-50/90 border border-amber-200 rounded-xl text-[11px] flex items-center justify-between gap-2">
+                        <div className="truncate">
+                          <span className="font-bold text-amber-950 block">Top Notification Banner:</span>
+                          <span className="text-amber-800 italic truncate block">"{config.globalAnnouncement}"</span>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={handleClearAnnouncement}
+                          className="rounded-lg text-[10px] h-6 px-2 border-red-300 text-red-700 hover:bg-red-50 shrink-0 font-bold"
+                        >
+                          Clear Banner
+                        </Button>
+                      </div>
                     )}
                   </div>
 

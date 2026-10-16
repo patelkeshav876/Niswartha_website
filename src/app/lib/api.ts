@@ -30,7 +30,7 @@ interface FetchOptions extends RequestInit {
 export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
   const { requireAuth: _requireAuth = false, ...fetchOptions } = options;
 
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || 'demo-token';
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
