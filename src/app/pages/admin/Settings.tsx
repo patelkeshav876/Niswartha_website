@@ -132,10 +132,17 @@ export function Settings() {
   const handleSaveConfig = async () => {
     setLoading(true);
     try {
-      await api.updateConfig(config);
+      const clean = { ...config };
+      delete clean._id;
+      delete clean.__v;
+      const saved = await api.updateConfig(clean);
+      if (saved) {
+        setConfig((prev: any) => ({ ...prev, ...saved }));
+      }
       toast.success('All configurations saved and applied successfully!');
-    } catch {
-      toast.error('Failed to save settings');
+    } catch (err: any) {
+      console.error('handleSaveConfig error:', err);
+      toast.error(err?.message || 'Failed to save settings');
     } finally {
       setLoading(false);
     }

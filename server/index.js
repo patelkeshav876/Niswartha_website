@@ -1868,20 +1868,24 @@ app.get('/api/config', async (req, res) => {
 app.put('/api/config', requireAdmin, async (req, res) => {
   try {
     const updated = { ...req.body, id: 'global-config' };
+    delete updated._id;
+    delete updated.__v;
     if (updated.ashramPhone && !updated.contactPhone) {
       updated.contactPhone = updated.ashramPhone;
     } else if (updated.contactPhone && !updated.ashramPhone) {
       updated.ashramPhone = updated.contactPhone;
     }
-    await Config.findOneAndUpdate({ id: 'global-config' }, updated, { upsert: true, new: true }).lean();
+    await Config.findOneAndUpdate({ id: 'global-config' }, { $set: updated }, { upsert: true, new: true }).lean();
     
-    await AuditLog.create({
-      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      userId: req.user?.id || 'admin',
-      action: 'update_global_config',
-      details: 'Updated global site settings & contact numbers',
-      createdAt: new Date().toISOString()
-    });
+    try {
+      await AuditLog.create({
+        id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        userId: req.user?.id || 'admin',
+        action: 'update_global_config',
+        details: 'Updated global site settings & contact numbers',
+        createdAt: new Date().toISOString()
+      });
+    } catch {}
 
     res.json(updated);
   } catch (e) {

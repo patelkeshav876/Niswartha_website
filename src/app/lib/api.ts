@@ -884,23 +884,37 @@ export const api = {
     return merged;
   },
   updateConfig: async (data: Record<string, unknown>) => {
-    if (data.primaryThemeColor && typeof data.primaryThemeColor === 'string') {
-      applyThemeColor(data.primaryThemeColor);
-      localStorage.setItem('primary_theme_color', data.primaryThemeColor);
+    const cleanData = { ...data };
+    delete (cleanData as any)._id;
+    delete (cleanData as any).__v;
+
+    if (cleanData.primaryThemeColor && typeof cleanData.primaryThemeColor === 'string') {
+      applyThemeColor(cleanData.primaryThemeColor);
+      try {
+        localStorage.setItem('primary_theme_color', cleanData.primaryThemeColor);
+      } catch {}
     }
 
     // Always immediately sync to local storage and broadcast to open browser components
-    localStorage.setItem('superadmin_config', JSON.stringify(data));
-    window.dispatchEvent(new CustomEvent('niswartha_config_updated', { detail: data }));
+    try {
+      localStorage.setItem('superadmin_config', JSON.stringify(cleanData));
+    } catch (e) {
+      console.warn('localStorage quota warning:', e);
+    }
+    window.dispatchEvent(new CustomEvent('niswartha_config_updated', { detail: cleanData }));
 
     try {
-      const res = await fetchAPI<any>('/config', { method: 'PUT', body: JSON.stringify(data) });
-      const merged = { ...data, ...(res && typeof res === 'object' ? res : {}) };
-      localStorage.setItem('superadmin_config', JSON.stringify(merged));
+      const res = await fetchAPI<any>('/config', { method: 'PUT', body: JSON.stringify(cleanData) });
+      const merged = { ...cleanData, ...(res && typeof res === 'object' ? res : {}) };
+      delete (merged as any)._id;
+      delete (merged as any).__v;
+      try {
+        localStorage.setItem('superadmin_config', JSON.stringify(merged));
+      } catch {}
       return merged;
     } catch (err) {
       console.warn('api.updateConfig remote fallback:', err);
-      return data;
+      return cleanData;
     }
   },
 
