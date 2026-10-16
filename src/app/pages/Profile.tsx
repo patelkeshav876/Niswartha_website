@@ -30,7 +30,7 @@ import type { ItemDonation } from '../types';
 import { toast } from 'sonner';
 
 export function Profile() {
-  const { currentUser } = useUser();
+  const { currentUser, updateProfile } = useUser();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState<'itemDonations' | 'visitBookings' | 'details'>('itemDonations');
@@ -138,6 +138,7 @@ export function Profile() {
                 <UserAvatar
                   src={currentUser.avatarUrl}
                   name={currentUser.name}
+                  gender={(currentUser as any)?.gender}
                   sizeClassName="h-full w-full text-4xl"
                 />
               </div>
@@ -148,6 +149,22 @@ export function Profile() {
                   <Badge className="bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">
                     {currentUser.role === 'super_admin' ? 'Super Admin' : currentUser.role === 'admin' ? 'Ashram Admin' : 'Supporter'}
                   </Badge>
+
+                  {/* Gender Avatar Animation Badge & Quick Toggle */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const currentGender = String((currentUser as any)?.gender || 'Male').toLowerCase();
+                      const nextGender = currentGender === 'female' ? 'Male' : 'Female';
+                      updateProfile({ gender: nextGender });
+                      toast.success(`Switched avatar to ${nextGender} animation!`);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-200/80 hover:bg-amber-100 transition-colors shadow-2xs cursor-pointer"
+                    title="Click to toggle avatar animation (Boy / Girl)"
+                  >
+                    <span>{String((currentUser as any)?.gender || '').toLowerCase() === 'female' ? '👧 Female Animation' : '👦 Male Animation'}</span>
+                    <span className="text-[9px] text-amber-600 font-semibold">(Click to switch)</span>
+                  </button>
                 </div>
                 <p className="text-xs text-zinc-500 font-medium">
                   {currentUser.bio || 'Niswartha Donor & Community Supporter'}

@@ -10,6 +10,7 @@ export interface User {
   phone?: string;
   location?: string;
   dateOfBirth?: string; // YYYY-MM-DD
+  gender?: 'Male' | 'Female' | 'Other' | string;
   notificationPreferences?: {
     email: boolean;
     push: boolean;

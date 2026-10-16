@@ -85,6 +85,7 @@ export function AdminLayout() {
             <UserAvatar
               src={currentUser?.avatarUrl}
               name={currentUser?.name || 'Admin'}
+              gender={(currentUser as any)?.gender}
               sizeClassName="h-11 w-11 shadow-inner group-hover:scale-105 transition-transform"
             />
             <div className="min-w-0 flex-1">
@@ -103,6 +104,7 @@ export function AdminLayout() {
             <UserAvatar
               src={currentUser?.avatarUrl}
               name={currentUser?.name || 'Admin'}
+              gender={(currentUser as any)?.gender}
               sizeClassName="h-9 w-9 shadow-sm hover:scale-105 transition-transform"
             />
           </Link>
@@ -218,6 +220,7 @@ export function AdminLayout() {
                   <UserAvatar
                     src={currentUser?.avatarUrl}
                     name={currentUser?.name || 'Admin'}
+                    gender={(currentUser as any)?.gender}
                     shape="rounded"
                     sizeClassName="h-12 w-12 text-lg shadow-sm hover:ring-2 hover:ring-primary/40 hover:scale-105 transition-all cursor-pointer"
                   />

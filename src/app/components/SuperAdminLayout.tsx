@@ -126,6 +126,7 @@ export function SuperAdminLayout() {
             <UserAvatar
               src={currentUser?.avatarUrl}
               name={currentUser?.name || 'Super Admin'}
+              gender={(currentUser as any)?.gender}
               sizeClassName="h-9 w-9 shadow-sm group-hover:scale-105 transition-transform"
             />
             <div className="min-w-0">

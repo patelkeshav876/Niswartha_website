@@ -107,6 +107,7 @@ export function UserLayout() {
               <UserAvatar
                 src={currentUser?.avatarUrl}
                 name={currentUser?.name}
+                gender={(currentUser as any)?.gender}
                 sizeClassName="h-11 w-11"
               />
             </div>
@@ -123,6 +124,7 @@ export function UserLayout() {
           <UserAvatar
             src={currentUser?.avatarUrl}
             name={currentUser?.name}
+            gender={(currentUser as any)?.gender}
             sizeClassName="h-9 w-9"
           />
         </div>
@@ -245,6 +247,7 @@ export function UserLayout() {
                 <UserAvatar
                   src={currentUser?.avatarUrl}
                   name={currentUser?.name}
+                  gender={(currentUser as any)?.gender}
                   shape="rounded"
                   sizeClassName="h-12 w-12 text-lg shadow-sm"
                 />

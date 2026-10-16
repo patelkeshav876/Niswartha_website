@@ -217,13 +217,21 @@ export function Navbar() {
                     >
                       <div
                         className={cn(
-                          'flex h-8 w-8 items-center justify-center rounded-full font-bold text-sm',
+                          'flex h-8 w-8 items-center justify-center rounded-full font-bold text-sm overflow-hidden shrink-0',
                           !scrolled && isHeroPage
-                            ? 'bg-white/20 text-white border border-white/30'
-                            : 'bg-primary/10 text-primary'
+                            ? 'border border-white/40 shadow-xs bg-white/20'
+                            : 'border border-primary/20 shadow-xs bg-primary/10'
                         )}
                       >
-                        {currentUser.name?.charAt(0)?.toUpperCase() || 'U'}
+                        {currentUser.avatarUrl ? (
+                          <img src={currentUser.avatarUrl} alt={currentUser.name} className="h-full w-full object-cover" />
+                        ) : (
+                          <img
+                            src={String((currentUser as any)?.gender || '').toLowerCase() === 'female' ? '/avatars/female.svg' : '/avatars/male.svg'}
+                            alt="Avatar"
+                            className="h-full w-full object-cover"
+                          />
+                        )}
                       </div>
                       <span
                         className={cn(
