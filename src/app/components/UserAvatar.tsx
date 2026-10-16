@@ -10,18 +10,15 @@ export type UserAvatarProps = {
   shape?: 'circle' | 'rounded';
   sizeClassName?: string;
   fallbackIcon?: boolean;
-  useAnimation?: boolean;
 };
 
 export function UserAvatar({
   src,
   name = 'User',
-  gender,
   className,
   shape = 'circle',
   sizeClassName = 'h-10 w-10',
   fallbackIcon = false,
-  useAnimation = true,
 }: UserAvatarProps) {
   const [imageError, setImageError] = useState(false);
   const initial = (name || 'U').trim().charAt(0).toUpperCase();
@@ -44,29 +41,6 @@ export function UserAvatar({
           className
         )}
       />
-    );
-  }
-
-  // Fallback to animated male / female SVG avatar if useAnimation is true and no fallbackIcon requested
-  if (useAnimation && !fallbackIcon) {
-    const isFemale = String(gender || '').trim().toLowerCase() === 'female';
-    const svgSrc = isFemale ? '/avatars/female.svg' : '/avatars/male.svg';
-    return (
-      <div
-        className={cn(
-          sizeClassName,
-          shapeClass,
-          'overflow-hidden shadow-sm shrink-0 border border-primary/20 bg-primary/5 flex items-center justify-center relative select-none',
-          className
-        )}
-        title={`${name || 'User'} (${isFemale ? 'Female' : 'Male'} Avatar)`}
-      >
-        <img
-          src={svgSrc}
-          alt={name || 'Avatar'}
-          className="h-full w-full object-cover pointer-events-none"
-        />
-      </div>
     );
   }
 

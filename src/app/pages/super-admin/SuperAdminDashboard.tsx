@@ -1,11 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router';
+import { useLocation, Link } from 'react-router';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Textarea } from '../../components/ui/textarea';
-import { Badge } from '../../components/ui/badge';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,65 +15,23 @@ import {
 import {
   Activity,
   Users,
-  Megaphone,
   FileText,
-  Settings,
   Database,
   ShieldCheck,
   Cpu,
   RefreshCw,
-  Mail,
-  Edit2,
   Trash2,
-  Plus,
   TrendingUp,
   Download,
   Upload,
   AlertTriangle,
-  Image as ImageIcon,
-  Layers,
-  Crop,
-  Eye,
+  Settings,
   ExternalLink,
-  Award,
-  Sparkles,
-  Palette,
 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { toast } from 'sonner';
-import { HeroManager } from '../../components/HeroManager';
-import { ImageUploadWithCamera } from '../../components/ImageUploadWithCamera';
-import { applyThemeColor } from '../../lib/api';
 
-type ActiveTab = 'health' | 'users' | 'ads' | 'logs' | 'configs' | 'hero' | 'backup';
-
-const DEFAULT_SUPERADMIN_CONFIG = {
-  siteName: 'Niswartha — Selfless Service',
-  siteTagline: 'Empowering Deaf & Dumb Children',
-  contactEmail: 'contact@niswartha.org',
-  contactPhone: '+91 91312 01107',
-  ashramPhone: '+91 91312 01107',
-  maintenanceMode: false,
-  allowNewRegistrations: true,
-  enableNotifications: true,
-  globalAnnouncement: '',
-  marqueeSpeed: 35,
-  supportCauseTitle: 'Support Our Cause',
-  supportCauseSubtitle: 'Your generous contribution helps us provide better care, education, and opportunities to our children.',
-  supportCauseBgUrl: '',
-  donationWording: 'Support Our Mission',
-  whatsappNumber: '+91 91312 01107',
-  whatsappWelcomeMessage: 'Hello Niswartha Team, I would like to support your noble mission.',
-  heroBgType: 'gradient',
-  heroOverlayOpacity: 0.55,
-  heroBgUrl: '',
-  heroParallax: true,
-  aboutHeroImgUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80',
-  aboutAssemblyImgUrl: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=80',
-  aboutAwardImgUrl: 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?auto=format&fit=crop&w=800&q=80',
-  aboutPrincipalImgUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80',
-  primaryThemeColor: 'green',
-};
+type ActiveTab = 'health' | 'users' | 'logs' | 'backup';
 
 export function SuperAdminDashboard() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('health');
@@ -85,50 +39,15 @@ export function SuperAdminDashboard() {
 
   useEffect(() => {
     if (location.pathname.endsWith('/users')) setActiveTab('users');
-    else if (location.pathname.endsWith('/ads')) setActiveTab('ads');
     else if (location.pathname.endsWith('/logs')) setActiveTab('logs');
-    else if (location.pathname.endsWith('/configs')) setActiveTab('configs');
-    else if (location.pathname.endsWith('/hero')) setActiveTab('hero');
     else if (location.pathname.endsWith('/backup')) setActiveTab('backup');
     else setActiveTab('health');
   }, [location.pathname]);
-  
-  // States - Initialize with full default config so Configurations tab NEVER renders blank!
-  const [config, setConfig] = useState<any>(DEFAULT_SUPERADMIN_CONFIG);
+
   const [users, setUsers] = useState<any[]>([]);
-  const [ads, setAds] = useState<any[]>([]);
   const [logs, setLogs] = useState<{ email: any[]; security: any[]; audit: any[] }>({ email: [], security: [], audit: [] });
   const [loading, setLoading] = useState(false);
   const [logsFilter, setLogsFilter] = useState<'all' | 'email' | 'security' | 'audit'>('all');
-  
-  // Ad modal states
-  const [isAdModalOpen, setIsAdModalOpen] = useState(false);
-  const [editingAd, setEditingAd] = useState<any>(null);
-  const [previewAd, setPreviewAd] = useState<any>(null);
-  const [adForm, setAdForm] = useState({
-    title: '',
-    bannerUrl: '',
-    targetUrl: '',
-    placement: 'home_top',
-    bannerHeight: 180,
-    aspectRatio: '4/1',
-    customWidth: '100%',
-    startDate: '',
-    endDate: '',
-    enabled: true,
-    popupDelay: 3,
-  });
-
-  const handleDirectUpload = (e: React.ChangeEvent<HTMLInputElement>, setter: (url: string) => void) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const res = ev.target?.result as string;
-      if (res) setter(res);
-    };
-    reader.readAsDataURL(file);
-  };
 
   // Simulated metrics for System Health
   const [metrics, setMetrics] = useState({
@@ -137,19 +56,6 @@ export function SuperAdminDashboard() {
     dbLatency: 4,
     uptime: '14d 6h 32m'
   });
-
-  // Fetch functions with safe silent fallbacks
-  const fetchConfig = async () => {
-    try {
-      const c = await api.getConfig();
-      if (c && typeof c === 'object') {
-        setConfig((prev: any) => ({ ...DEFAULT_SUPERADMIN_CONFIG, ...prev, ...c }));
-        return;
-      }
-    } catch {
-      // Default config already set
-    }
-  };
 
   const fetchUsers = async () => {
     try {
@@ -165,30 +71,6 @@ export function SuperAdminDashboard() {
       { id: 'super-admin-keshav', name: 'Keshav Patel', email: 'keshavpatel3690@gmail.com', role: 'super_admin', createdAt: new Date().toISOString() },
       { id: 'user-demo-1', name: 'Rahul Sharma', email: 'rahul@example.com', role: 'donor', createdAt: new Date().toISOString() },
       { id: 'user-demo-2', name: 'Priya Verma', email: 'priya@example.com', role: 'admin', createdAt: new Date().toISOString() },
-    ]);
-  };
-
-  const fetchAds = async () => {
-    try {
-      const a = await api.getAdvertisements();
-      if (Array.isArray(a)) {
-        setAds(a);
-        return;
-      }
-    } catch {
-      // Ignore
-    }
-    setAds([
-      {
-        id: 'ad-1',
-        title: 'Support Deaf Children Education 2026',
-        bannerUrl: 'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&w=1200&q=80',
-        targetUrl: '/donate/ashram-1',
-        placement: 'home_top',
-        enabled: true,
-        impressions: 1420,
-        clicks: 310,
-      },
     ]);
   };
 
@@ -214,22 +96,21 @@ export function SuperAdminDashboard() {
         { id: 'sec-3', eventType: 'system_config_updated', email: 'keshavpatel3690@gmail.com', ip: '127.0.0.1', createdAt: new Date(Date.now() - 5400000).toISOString() },
       ],
       audit: [
-        { id: 'aud-1', action: 'UPDATE_CONFIG', user: 'Keshav Patel', details: 'Updated Super Admin studio & background settings', createdAt: new Date().toISOString() },
-        { id: 'aud-2', action: 'HERO_CONFIG_SAVE', user: 'Keshav Patel', details: 'Configured video hero backdrop & YouTube converter', createdAt: new Date(Date.now() - 7200000).toISOString() },
-        { id: 'aud-3', action: 'BADGE_MANAGEMENT', user: 'Keshav Patel', details: 'Updated Superhero honor badges showcase colors', createdAt: new Date(Date.now() - 14400000).toISOString() },
+        { id: 'aud-1', action: 'UPDATE_CONFIG', user: 'Keshav Patel', details: 'Updated website studio & background settings in Admin Settings', createdAt: new Date().toISOString() },
+        { id: 'aud-2', action: 'HERO_CONFIG_SAVE', user: 'Keshav Patel', details: 'Configured video hero backdrop in Admin Settings', createdAt: new Date(Date.now() - 7200000).toISOString() },
+        { id: 'aud-3', action: 'ROLE_MODIFICATION', user: 'Keshav Patel', details: 'Updated user administrative privileges', createdAt: new Date(Date.now() - 14400000).toISOString() },
       ],
     });
   };
 
   const loadAll = async () => {
     setLoading(true);
-    await Promise.all([fetchConfig(), fetchUsers(), fetchAds(), fetchLogs()]);
+    await Promise.all([fetchUsers(), fetchLogs()]);
     setLoading(false);
   };
 
   useEffect(() => {
     void loadAll();
-    // Simulate cpu fluctuations
     const timer = setInterval(() => {
       setMetrics((m) => ({
         ...m,
@@ -240,17 +121,6 @@ export function SuperAdminDashboard() {
     }, 4000);
     return () => clearInterval(timer);
   }, [logsFilter]);
-
-  // Handle updates
-  const handleUpdateConfig = async () => {
-    try {
-      await api.updateConfig(config);
-      toast.success('Configurations updated successfully!');
-      void fetchConfig();
-    } catch {
-      toast.error('Failed to update config settings.');
-    }
-  };
 
   const handleUpdateUserRole = async (id: string, role: string) => {
     setUsers((prev) => prev.map((u) => (u.id === id || (u as any)._id === id ? { ...u, role } : u)));
@@ -274,97 +144,7 @@ export function SuperAdminDashboard() {
     }
   };
 
-  // Ads logic
-  const openAdModal = (adToEdit: any = null) => {
-    if (adToEdit) {
-      setEditingAd(adToEdit);
-      setAdForm({
-        title: adToEdit.title,
-        bannerUrl: adToEdit.bannerUrl,
-        targetUrl: adToEdit.targetUrl,
-        placement: adToEdit.placement,
-        bannerHeight: adToEdit.bannerHeight ? Number(adToEdit.bannerHeight) : 180,
-        aspectRatio: adToEdit.aspectRatio || '4/1',
-        customWidth: adToEdit.customWidth || '100%',
-        startDate: adToEdit.startDate.split('T')[0],
-        endDate: adToEdit.endDate.split('T')[0],
-        enabled: adToEdit.enabled
-      });
-    } else {
-      setEditingAd(null);
-      setAdForm({
-        title: '',
-        bannerUrl: '',
-        targetUrl: '',
-        placement: 'home_top',
-        bannerHeight: 180,
-        aspectRatio: '4/1',
-        customWidth: '100%',
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString().split('T')[0],
-        enabled: true
-      });
-    }
-    setIsAdModalOpen(true);
-  };
-
-  const handleSaveAd = async () => {
-    if (!adForm.title.trim() || !adForm.bannerUrl.trim() || !adForm.targetUrl.trim()) {
-      toast.error('All text fields (Title, Banner Image URL, Target URL) are required.');
-      return;
-    }
-    const cleanData = {
-      ...adForm,
-      title: adForm.title.trim(),
-      bannerUrl: adForm.bannerUrl.trim(),
-      targetUrl: adForm.targetUrl.trim(),
-      startDate: adForm.startDate || new Date().toISOString().split('T')[0],
-      endDate: adForm.endDate || new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
-    };
-    delete (cleanData as any)._id;
-
-    try {
-      if (editingAd) {
-        const targetId = editingAd.id || editingAd._id;
-        await api.updateAdvertisement(targetId, cleanData);
-        toast.success('Ad campaign modified successfully.');
-      } else {
-        await api.createAdvertisement(cleanData);
-        toast.success('Ad campaign launched successfully!');
-      }
-      Object.keys(sessionStorage).forEach((k) => {
-        if (k.startsWith('popup_ad_shown')) sessionStorage.removeItem(k);
-      });
-      window.dispatchEvent(new Event('ad_campaign_updated'));
-      setIsAdModalOpen(false);
-      void fetchAds();
-    } catch (e: any) {
-      console.error('Failed to save ad campaign:', e);
-      Object.keys(sessionStorage).forEach((k) => {
-        if (k.startsWith('popup_ad_shown')) sessionStorage.removeItem(k);
-      });
-      window.dispatchEvent(new Event('ad_campaign_updated'));
-      setIsAdModalOpen(false);
-      void fetchAds();
-      toast.success('Ad campaign saved successfully.');
-    }
-  };
-
-  const handleDeleteAd = async (adItem: any) => {
-    const targetId = adItem.id || adItem._id;
-    if (!targetId || !confirm(`Cancel and delete advertisement "${adItem.title}"?`)) return;
-    try {
-      setAds((prev) => prev.filter((a) => a.id !== targetId && a._id !== targetId && a.id !== adItem.id && a._id !== adItem._id));
-      await api.deleteAdvertisement(targetId);
-      toast.success('Ad campaign deleted.');
-      void fetchAds();
-    } catch (e: any) {
-      toast.error(e?.message || 'Failed to delete ad.');
-      void fetchAds();
-    }
-  };
-
-  // Backup & Restore handlers with Security Confirmation & Automatic Pre-Action Backup
+  // Backup & Restore handlers
   const [restoreFilePending, setRestoreFilePending] = useState<any | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [securityActionInProgress, setSecurityActionInProgress] = useState(false);
@@ -382,7 +162,6 @@ export function SuperAdminDashboard() {
         },
       };
 
-      // 1. Download file automatically to user's system
       const jsonStr = JSON.stringify(snapshot, null, 2);
       const blob = new Blob([jsonStr], { type: 'application/json' });
       const dlUrl = URL.createObjectURL(blob);
@@ -394,7 +173,6 @@ export function SuperAdminDashboard() {
       document.body.removeChild(link);
       URL.revokeObjectURL(dlUrl);
 
-      // 2. Add security notification to notifications list
       try {
         const notif = {
           id: `sec-backup-${Date.now()}`,
@@ -410,7 +188,6 @@ export function SuperAdminDashboard() {
         localStorage.setItem('notifications', JSON.stringify([notif, ...notifs]));
       } catch {}
 
-      // 3. Save security archive log in superadmin_security_backups
       try {
         const secBackups = localStorage.getItem('superadmin_security_backups');
         const list = secBackups ? JSON.parse(secBackups) : [];
@@ -515,22 +292,37 @@ export function SuperAdminDashboard() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold font-serif text-zinc-950">System Dashboard</h1>
-          <p className="text-xs text-muted-foreground">Manage core system policies, security constraints, and campaigns</p>
+          <p className="text-xs text-muted-foreground">Manage core system security, diagnostic metrics, user directory, and database backups</p>
         </div>
         <Button onClick={loadAll} variant="outline" size="sm" className="rounded-full gap-1.5 h-9 bg-white">
           <RefreshCw className="h-3.5 w-3.5" /> Reload
         </Button>
       </div>
 
+      {/* Admin Settings Link Banner */}
+      <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-900 shadow-sm">
+        <div>
+          <span className="font-bold flex items-center gap-1.5 text-amber-950 text-sm">
+            <Settings className="h-4 w-4 text-amber-600" />
+            Website Studio, Hero Media & Configurations
+          </span>
+          <p className="text-[11px] text-amber-800/90 mt-0.5">
+            Page Hero banners, contact info, accent themes, and website operational settings are now in Admin Settings for streamlined administration.
+          </p>
+        </div>
+        <Link to="/admin/settings">
+          <Button size="sm" variant="outline" className="rounded-full bg-white border-amber-300 text-amber-950 font-bold hover:bg-amber-100 gap-1.5 h-8 whitespace-nowrap shadow-xs">
+            Open Admin Settings <ExternalLink className="h-3.5 w-3.5" />
+          </Button>
+        </Link>
+      </div>
+
       {/* Main Tabs Container */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide border-b border-zinc-200">
         {[
           { id: 'health' as const, label: 'System Health', icon: Activity },
-          { id: 'hero' as const, label: 'Page Hero Manager', icon: Layers },
           { id: 'users' as const, label: 'User Management', icon: Users },
-          { id: 'ads' as const, label: 'Ads Manager', icon: Megaphone },
           { id: 'logs' as const, label: 'System Logs', icon: FileText },
-          { id: 'configs' as const, label: 'Configurations', icon: Settings },
           { id: 'backup' as const, label: 'Backup / Restore', icon: Database }
         ].map((t) => (
           <button
@@ -550,7 +342,6 @@ export function SuperAdminDashboard() {
 
       {/* Tab Contents */}
       <div className="pt-2">
-        {activeTab === 'hero' && <HeroManager />}
         {activeTab === 'health' && (
           <div className="space-y-6 animate-fade-up">
             {/* System overview counters */}
@@ -604,7 +395,7 @@ export function SuperAdminDashboard() {
               </Card>
             </div>
 
-            {/* Logs overview list */}
+            {/* Diagnostics overview list */}
             <Card className="border-none shadow-sm bg-white">
               <CardContent className="p-6">
                 <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider mb-4">Diagnostics</h3>
@@ -676,66 +467,6 @@ export function SuperAdminDashboard() {
           </Card>
         )}
 
-        {activeTab === 'ads' && (
-          <div className="space-y-6 animate-fade-up">
-            <div className="flex justify-between items-center">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-900">Sponsor Ads Directory</h2>
-              <Button onClick={() => openAdModal()} className="rounded-full shadow-sm">
-                <Plus className="h-4 w-4 mr-2" /> Launch Campaign
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {ads.map((ad) => (
-                <Card key={ad.id} className="overflow-hidden border border-zinc-200 bg-white shadow-sm flex flex-col justify-between">
-                  <div className="relative aspect-[3/1] bg-zinc-100 border-b">
-                    <img src={ad.bannerUrl} className="w-full h-full object-cover" alt="" />
-                    <Badge className="absolute top-2 right-2 rounded-full uppercase text-[9px] tracking-wider font-bold">
-                      {ad.placement}
-                    </Badge>
-                  </div>
-                  <CardContent className="p-4 flex-1 flex flex-col justify-between">
-                    <div>
-                      <h4 className="font-bold text-sm text-zinc-950 mb-1 leading-snug">{ad.title}</h4>
-                      <p className="text-[10px] text-zinc-400">Target: <a href={ad.targetUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">{ad.targetUrl}</a></p>
-                      
-                      <div className="grid grid-cols-2 gap-2 mt-3 bg-zinc-50 border rounded-xl p-2.5 text-center text-xs">
-                        <div>
-                          <p className="text-[9px] font-bold text-muted-foreground uppercase">Impressions</p>
-                          <p className="font-bold text-zinc-900 text-sm mt-0.5">{ad.views || 0}</p>
-                        </div>
-                        <div className="border-l">
-                          <p className="text-[9px] font-bold text-muted-foreground uppercase">Clicks</p>
-                          <p className="font-bold text-zinc-900 text-sm mt-0.5">{ad.clicks || 0}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2 justify-end mt-4 pt-3 border-t">
-                      <Button variant="outline" size="sm" className="rounded-full text-xs h-8" onClick={() => setPreviewAd(ad)}>
-                        <Eye className="h-3 w-3 mr-1.5" /> Preview
-                      </Button>
-                      <Button variant="outline" size="sm" className="rounded-full text-xs h-8" onClick={() => openAdModal(ad)}>
-                        <Edit2 className="h-3 w-3 mr-1.5" /> Edit
-                      </Button>
-                      <Button variant="ghost" size="sm" className="rounded-full text-xs text-destructive hover:bg-destructive/5 h-8" onClick={() => handleDeleteAd(ad)}>
-                        <Trash2 className="h-3 w-3 mr-1.5" /> Delete
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-
-              {ads.length === 0 && (
-                <div className="col-span-full text-center py-12 text-muted-foreground border-2 border-dashed rounded-2xl bg-white p-6">
-                  <Megaphone className="h-8 w-8 text-zinc-300 mx-auto mb-2" />
-                  <p className="text-sm font-semibold">No advertisements launched yet</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
         {activeTab === 'logs' && (
           <div className="space-y-6 animate-fade-up">
             <div className="flex gap-2">
@@ -802,470 +533,6 @@ export function SuperAdminDashboard() {
               </CardContent>
             </Card>
           </div>
-        )}
-
-        {activeTab === 'configs' && config && (
-          <Card className="border-none shadow-sm bg-white animate-fade-up">
-            <CardContent className="p-6 space-y-6">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-900 border-b pb-3 flex items-center gap-2">
-                <Settings className="h-4 w-4 text-amber-500" />
-                Global Configurations
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Mode controls */}
-                <div className="space-y-4">
-                  <h3 className="font-serif font-bold text-zinc-850 text-sm">Policies and Announcement Banners</h3>
-                  
-                  <div className="flex items-center justify-between border p-3 rounded-xl bg-zinc-50/50">
-                    <div>
-                      <p className="text-xs font-bold text-zinc-900">Maintenance Mode</p>
-                      <p className="text-[10px] text-zinc-500">Locks public pages and shows update overlay screen</p>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={config.maintenanceMode || false}
-                      onChange={(e) => setConfig({ ...config, maintenanceMode: e.target.checked })}
-                      className="h-4 w-4 text-primary border-zinc-300 rounded focus:ring-primary"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-zinc-700 uppercase">Global Announcement Text</label>
-                    <Input
-                      value={config.globalAnnouncement || ''}
-                      onChange={(e) => setConfig({ ...config, globalAnnouncement: e.target.value })}
-                      placeholder="e.g. Donation receipts for 80G tax benefits are now available."
-                      className="rounded-xl text-xs"
-                    />
-                  </div>
-
-                  {/* Marquee Motion Speed Control */}
-                  <div className="space-y-2 border p-3 rounded-xl bg-emerald-50/40 border-emerald-100">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-zinc-900 uppercase flex items-center gap-1.5">
-                        <Sparkles className="h-3.5 w-3.5 text-[#1E3A8A]" />
-                        Staff Roster Marquee Speed (Seconds)
-                      </label>
-                      <span className="text-xs font-mono font-bold text-[#1E3A8A]">
-                        {config.marqueeSpeed || 35}s {Number(config.marqueeSpeed || 35) <= 20 ? '(Fast)' : Number(config.marqueeSpeed || 35) >= 50 ? '(Slow)' : '(Normal)'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="range"
-                        min={10}
-                        max={80}
-                        step={5}
-                        value={config.marqueeSpeed || 35}
-                        onChange={(e) => setConfig({ ...config, marqueeSpeed: Number(e.target.value) })}
-                        className="w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-[#1E3A8A]"
-                      />
-                      <Input
-                        type="number"
-                        min={10}
-                        max={80}
-                        value={config.marqueeSpeed || 35}
-                        onChange={(e) => setConfig({ ...config, marqueeSpeed: Number(e.target.value) })}
-                        className="w-20 rounded-xl text-xs font-bold font-mono h-8"
-                      />
-                    </div>
-                    <p className="text-[10px] text-zinc-500">Lower seconds = faster continuous motion, higher seconds = smooth slow motion.</p>
-                  </div>
-                </div>
-
-                {/* Terminology */}
-                <div className="space-y-4">
-                  <h3 className="font-serif font-bold text-zinc-850 text-sm">Terminology</h3>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-zinc-700 uppercase">Donation Button text (Wording)</label>
-                    <select
-                      value={config.donationWording || 'Support Our Mission'}
-                      onChange={(e) => setConfig({ ...config, donationWording: e.target.value })}
-                      className="text-xs bg-card border rounded-xl w-full px-3 py-2.5"
-                    >
-                      <option value="Support Our Mission">Support Our Mission (Recommended)</option>
-                      <option value="Make an Impact">Make an Impact</option>
-                      <option value="Join Our Cause">Join Our Cause</option>
-                      <option value="Be a Helping Hand">Be a Helping Hand</option>
-                      <option value="Contribute with Love">Contribute with Love</option>
-                      <option value="Partner With Us">Partner With Us</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Contact & Support Phone and WhatsApp configuration */}
-                <div className="space-y-4">
-                  <h3 className="font-serif font-bold text-zinc-850 text-sm">Direct Phone & WhatsApp Support Settings</h3>
-                  <div className="space-y-3">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">Support / Ashram Phone Number (Used in Support page, Footer & Direct Calls)</label>
-                      <Input
-                        value={config.ashramPhone || config.contactPhone || ''}
-                        onChange={(e) => setConfig({ ...config, ashramPhone: e.target.value, contactPhone: e.target.value })}
-                        placeholder="e.g. +91 91312 01107"
-                        className="rounded-xl text-xs"
-                      />
-                      <p className="text-[10px] text-zinc-400">Updates the phone number on Help/Support page, Footer, and Donation call buttons.</p>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">WhatsApp Number (Used in Floating Button & Support Chat)</label>
-                      <Input
-                        value={config.whatsappNumber || ''}
-                        onChange={(e) => setConfig({ ...config, whatsappNumber: e.target.value })}
-                        placeholder="e.g. +91 91312 01107"
-                        className="rounded-xl text-xs"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">WhatsApp Pre-filled Message</label>
-                      <Textarea
-                        value={config.whatsappWelcomeMessage || ''}
-                        onChange={(e) => setConfig({ ...config, whatsappWelcomeMessage: e.target.value })}
-                        placeholder="Welcome message when users open chat..."
-                        className="text-xs min-h-[70px] rounded-xl"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Support Our Cause Element Settings */}
-                <div className="space-y-4">
-                  <h3 className="font-serif font-bold text-zinc-850 text-sm">"Support Our Cause" Element Settings</h3>
-                  <div className="space-y-3 bg-zinc-50 p-4 rounded-2xl border">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">Card Title</label>
-                      <Input
-                        value={config.supportCauseTitle || 'Support Our Cause'}
-                        onChange={(e) => setConfig({ ...config, supportCauseTitle: e.target.value })}
-                        placeholder="e.g. Support Our Cause"
-                        className="rounded-xl text-xs bg-white"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">Subtitle Description</label>
-                      <Textarea
-                        value={config.supportCauseSubtitle || 'Your generous contribution helps us provide better care, education, and opportunities to our children.'}
-                        onChange={(e) => setConfig({ ...config, supportCauseSubtitle: e.target.value })}
-                        placeholder="Description text..."
-                        className="text-xs min-h-[60px] rounded-xl bg-white"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">Background / Featured Image URL</label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={config.supportCauseBgUrl || ''}
-                          onChange={(e) => setConfig({ ...config, supportCauseBgUrl: e.target.value })}
-                          placeholder="Paste image URL or choose file from device..."
-                          className="rounded-xl text-xs bg-white flex-1"
-                        />
-                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
-                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload Photo
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, supportCauseBgUrl: url }))}
-                          />
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Hero Backdrop settings */}
-                <div className="space-y-4">
-                  <h3 className="font-serif font-bold text-zinc-850 text-sm">Hero backdrop settings</h3>
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-zinc-700 uppercase">Backdrop Type</label>
-                        <select
-                          value={config.heroBgType || 'gradient'}
-                          onChange={(e) => setConfig({ ...config, heroBgType: e.target.value })}
-                          className="text-xs bg-card border rounded-xl w-full px-3 py-2"
-                        >
-                          <option value="gradient">Default Gradient Canvas</option>
-                          <option value="image">Parallax Cover Photo</option>
-                        </select>
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-zinc-700 uppercase">Overlay Opacity</label>
-                        <input
-                          type="number"
-                          step="0.05"
-                          min="0"
-                          max="1"
-                          value={config.heroOverlayOpacity !== undefined ? config.heroOverlayOpacity : 0.55}
-                          onChange={(e) => setConfig({ ...config, heroOverlayOpacity: Number(e.target.value) })}
-                          className="text-xs bg-card border rounded-xl w-full px-3 py-2 focus:outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">Backdrop Image URL</label>
-                      <Input
-                        value={config.heroBgUrl || ''}
-                        onChange={(e) => setConfig({ ...config, heroBgUrl: e.target.value })}
-                        placeholder="Paste image URL (PNG, JPG, WebP)..."
-                        className="rounded-xl text-xs"
-                      />
-                    </div>
-
-
-                    <div className="flex items-center justify-between border p-2.5 rounded-xl bg-zinc-50/50">
-                      <div>
-                        <p className="text-xs font-bold text-zinc-900">Parallax Scrolling</p>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={config.heroParallax || false}
-                        onChange={(e) => setConfig({ ...config, heroParallax: e.target.checked })}
-                        className="h-4 w-4 text-primary border-zinc-300 rounded focus:ring-primary"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* About Us Custom Page Images */}
-                <div className="space-y-4 md:col-span-2 border-t pt-4">
-                  <h3 className="font-serif font-bold text-zinc-850 text-sm">About Us Custom Page Images</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-zinc-50 p-4 rounded-2xl border">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">Hero Section Photo</label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={config.aboutHeroImgUrl || ''}
-                          onChange={(e) => setConfig({ ...config, aboutHeroImgUrl: e.target.value })}
-                          placeholder="Image URL or upload..."
-                          className="rounded-xl text-xs bg-white flex-1"
-                        />
-                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
-                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, aboutHeroImgUrl: url }))}
-                          />
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">School Assembly Photo</label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={config.aboutAssemblyImgUrl || ''}
-                          onChange={(e) => setConfig({ ...config, aboutAssemblyImgUrl: e.target.value })}
-                          placeholder="Image URL or upload..."
-                          className="rounded-xl text-xs bg-white flex-1"
-                        />
-                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
-                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, aboutAssemblyImgUrl: url }))}
-                          />
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">National Award Photo</label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={config.aboutAwardImgUrl || ''}
-                          onChange={(e) => setConfig({ ...config, aboutAwardImgUrl: e.target.value })}
-                          placeholder="Image URL or upload..."
-                          className="rounded-xl text-xs bg-white flex-1"
-                        />
-                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
-                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, aboutAwardImgUrl: url }))}
-                          />
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">Principal Photo</label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={config.aboutPrincipalImgUrl || ''}
-                          onChange={(e) => setConfig({ ...config, aboutPrincipalImgUrl: e.target.value })}
-                          placeholder="Image URL or upload..."
-                          className="rounded-xl text-xs bg-white flex-1"
-                        />
-                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
-                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, aboutPrincipalImgUrl: url }))}
-                          />
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">Sports Education Photo</label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={config.aboutSportsImgUrl || ''}
-                          onChange={(e) => setConfig({ ...config, aboutSportsImgUrl: e.target.value })}
-                          placeholder="Image URL or upload..."
-                          className="rounded-xl text-xs bg-white flex-1"
-                        />
-                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
-                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, aboutSportsImgUrl: url }))}
-                          />
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">Cultural Education Photo</label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={config.aboutCulturalImgUrl || ''}
-                          onChange={(e) => setConfig({ ...config, aboutCulturalImgUrl: e.target.value })}
-                          placeholder="Image URL or upload..."
-                          className="rounded-xl text-xs bg-white flex-1"
-                        />
-                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
-                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, aboutCulturalImgUrl: url }))}
-                          />
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">Art & Craft Photo</label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={config.aboutArtImgUrl || ''}
-                          onChange={(e) => setConfig({ ...config, aboutArtImgUrl: e.target.value })}
-                          placeholder="Image URL or upload..."
-                          className="rounded-xl text-xs bg-white flex-1"
-                        />
-                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
-                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, aboutArtImgUrl: url }))}
-                          />
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-700 uppercase">Speech & Digital Photo</label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={config.aboutDigitalImgUrl || ''}
-                          onChange={(e) => setConfig({ ...config, aboutDigitalImgUrl: e.target.value })}
-                          placeholder="Image URL or upload..."
-                          className="rounded-xl text-xs bg-white flex-1"
-                        />
-                        <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
-                          <Upload className="h-3.5 w-3.5 mr-1" /> Upload
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => handleDirectUpload(e, (url) => setConfig({ ...config, aboutDigitalImgUrl: url }))}
-                          />
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Website Primary Theme Color Selection */}
-                <div className="space-y-4 md:col-span-2 border-t pt-4">
-                  <h3 className="font-serif font-bold text-zinc-900 text-sm flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-[#1E3A8A]" />
-                    Website Primary Theme Accent Color
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Switch the overall site accent theme between our signature Niswartha Emerald Green and our official Niswartha Logo Bluish color.
-                  </p>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div
-                      onClick={() => {
-                        setConfig((prev: any) => ({ ...prev, primaryThemeColor: 'green' }));
-                        applyThemeColor('green');
-                        toast.success('Applied Niswartha Emerald Green theme!');
-                      }}
-                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-3 ${
-                        (config.primaryThemeColor || 'green') === 'green'
-                          ? 'border-[#1E3A8A] bg-emerald-50/70 shadow-sm'
-                          : 'border-zinc-200 bg-white hover:border-zinc-300'
-                      }`}
-                    >
-                      <div className="h-10 w-10 rounded-xl bg-[#1E3A8A] text-white flex items-center justify-center font-bold text-lg shadow">
-                        🌿
-                      </div>
-                      <div>
-                        <p className="font-bold text-xs text-zinc-900">Niswartha Emerald Green</p>
-                        <p className="text-[10px] text-zinc-500">Default primary green theme (#1E3A8A)</p>
-                      </div>
-                    </div>
-
-                    <div
-                      onClick={() => {
-                        setConfig((prev: any) => ({ ...prev, primaryThemeColor: 'blue' }));
-                        applyThemeColor('blue');
-                        toast.success('Applied Niswartha Logo Bluish theme!');
-                      }}
-                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-3 ${
-                        config.primaryThemeColor === 'blue'
-                          ? 'border-[#1E3A8A] bg-blue-50/70 shadow-sm'
-                          : 'border-zinc-200 bg-white hover:border-zinc-300'
-                      }`}
-                    >
-                      <div className="h-10 w-10 rounded-xl bg-[#1E3A8A] text-white flex items-center justify-center font-bold text-lg shadow">
-                        💙
-                      </div>
-                      <div>
-                        <p className="font-bold text-xs text-zinc-900">Niswartha Logo Bluish Color</p>
-                        <p className="text-[10px] text-zinc-500">Official logo royal blue theme (#1E3A8A)</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="border-t pt-5 text-right">
-                <Button onClick={handleUpdateConfig} className="rounded-full px-6">
-                  Save Changes
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         )}
 
         {activeTab === 'backup' && (
@@ -1340,189 +607,6 @@ export function SuperAdminDashboard() {
           </Card>
         )}
       </div>
-
-      {/* Launcher/Editor Modal for Ads */}
-      <Dialog open={isAdModalOpen} onOpenChange={setIsAdModalOpen}>
-        <DialogContent className="max-w-md rounded-3xl p-6 bg-white">
-          <DialogHeader>
-            <DialogTitle className="font-serif text-lg font-bold">{editingAd ? 'Edit Ad Campaign' : 'Launch Ad Campaign'}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-700 uppercase">Sponsor Name / Campaign Title *</label>
-              <Input
-                value={adForm.title}
-                onChange={(e) => setAdForm({ ...adForm, title: e.target.value })}
-                placeholder="e.g. Green Valley Organic Foods"
-                className="rounded-xl text-xs"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-700 uppercase">Banner Image Link URL *</label>
-              <div className="flex gap-2">
-                <Input
-                  value={adForm.bannerUrl}
-                  onChange={(e) => setAdForm({ ...adForm, bannerUrl: e.target.value })}
-                  placeholder="Paste banner photo URL or upload from device..."
-                  className="rounded-xl text-xs flex-1"
-                />
-                <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-50 shadow-xs">
-                  <Upload className="h-3.5 w-3.5 mr-1" /> Upload Image
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleDirectUpload(e, (url) => setAdForm({ ...adForm, bannerUrl: url }))}
-                  />
-                </label>
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-700 uppercase">Click Destination Link URL *</label>
-              <Input
-                value={adForm.targetUrl}
-                onChange={(e) => setAdForm({ ...adForm, targetUrl: e.target.value })}
-                placeholder="Paste sponsor target URL..."
-                className="rounded-xl text-xs"
-              />
-            </div>
-
-            {/* Ad Resizing & Dimensions */}
-            <div className="space-y-3 bg-zinc-50 p-3.5 rounded-2xl border">
-              <p className="text-xs font-bold text-zinc-800 uppercase flex items-center justify-between">
-                <span>Ad Dimensions & Sizing</span>
-                <span className="text-primary font-mono">{adForm.bannerHeight}px height</span>
-              </p>
-              
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-zinc-600 uppercase">Banner Height (px)</label>
-                  <input
-                    type="range"
-                    min="80"
-                    max="350"
-                    step="10"
-                    value={adForm.bannerHeight}
-                    onChange={(e) => setAdForm({ ...adForm, bannerHeight: Number(e.target.value) })}
-                    className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-primary"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-zinc-600 uppercase">Aspect Ratio</label>
-                  <select
-                    value={adForm.aspectRatio}
-                    onChange={(e) => setAdForm({ ...adForm, aspectRatio: e.target.value })}
-                    className="text-xs bg-white border rounded-xl w-full px-2 py-1.5"
-                  >
-                    <option value="5/1">5:1 Slim Banner</option>
-                    <option value="4/1">4:1 Standard Banner</option>
-                    <option value="3/1">3:1 High Banner</option>
-                    <option value="16/9">16:9 Video Banner</option>
-                    <option value="1/1">1:1 Square</option>
-                    <option value="auto">Auto Aspect</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Live Ad Dimension Test Box */}
-              {adForm.bannerUrl && (
-                <div className="space-y-1 pt-1 border-t">
-                  <p className="text-[10px] font-bold text-zinc-500 uppercase">Live Ad Size Test Preview:</p>
-                  <div
-                    className="relative rounded-xl overflow-hidden border bg-zinc-900 mx-auto"
-                    style={{ height: `${Math.min(adForm.bannerHeight, 140)}px` }}
-                  >
-                    <img src={adForm.bannerUrl} className="w-full h-full object-cover" alt="" />
-                    <span className="absolute bottom-1.5 right-1.5 bg-black/70 text-white rounded px-1.5 py-0.5 text-[9px]">
-                      {adForm.bannerHeight}px · {adForm.aspectRatio}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-zinc-700 uppercase">Placement Slot</label>
-                <select
-                  value={adForm.placement}
-                  onChange={(e) => setAdForm({ ...adForm, placement: e.target.value })}
-                  className="text-xs bg-card border rounded-xl w-full px-3 py-2"
-                >
-                  <option value="all">🌟 All Placement Slots (Show Everywhere)</option>
-                  <option value="home_top">Home Top Banner</option>
-                  <option value="home_bottom">Home Bottom Banner</option>
-                  <option value="explore_sidebar">Explore Page Sidebar</option>
-                  <option value="about_bottom">About Us Bottom Slot</option>
-                  <option value="popup_center">Center Screen Pop-Up Modal</option>
-                  <option value="popup_bottom_left">Bottom-Left Corner Floating Pop-Up</option>
-                  <option value="popup_bottom_right">Bottom-Right Corner Floating Pop-Up</option>
-                </select>
-              </div>
-
-              <div className="space-y-1 flex items-center justify-between pl-4">
-                <label className="text-xs font-bold text-zinc-700 uppercase">Campaign Active</label>
-                <input
-                  type="checkbox"
-                  checked={adForm.enabled}
-                  onChange={(e) => setAdForm({ ...adForm, enabled: e.target.checked })}
-                  className="h-4 w-4 text-primary border-zinc-300 rounded focus:ring-amber-500"
-                />
-              </div>
-            </div>
-
-            {adForm.placement.startsWith('popup') && (
-              <div className="space-y-1 bg-amber-50/60 p-3 rounded-2xl border border-amber-200">
-                <div className="flex justify-between items-center text-xs font-bold text-amber-900 uppercase">
-                  <span>Pop-Up Display Delay</span>
-                  <span className="text-primary font-mono">{adForm.popupDelay || 3} seconds</span>
-                </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="30"
-                  step="1"
-                  value={adForm.popupDelay || 3}
-                  onChange={(e) => setAdForm({ ...adForm, popupDelay: Number(e.target.value) })}
-                  className="w-full h-1.5 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-primary"
-                />
-                <p className="text-[10px] text-amber-700">Ad will automatically pop up after {adForm.popupDelay || 3} seconds on public pages.</p>
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-zinc-700 uppercase">Start Date</label>
-                <input
-                  type="date"
-                  value={adForm.startDate}
-                  onChange={(e) => setAdForm({ ...adForm, startDate: e.target.value })}
-                  className="text-xs bg-card border rounded-xl w-full px-3 py-2 focus:outline-none"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-zinc-700 uppercase">End Date</label>
-                <input
-                  type="date"
-                  value={adForm.endDate}
-                  onChange={(e) => setAdForm({ ...adForm, endDate: e.target.value })}
-                  className="text-xs bg-card border rounded-xl w-full px-3 py-2 focus:outline-none"
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter className="border-t pt-4 mt-3">
-            <Button variant="outline" className="rounded-full text-xs h-9" onClick={() => setIsAdModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button className="rounded-full px-5 text-xs h-9" onClick={handleSaveAd}>
-              {editingAd ? 'Save Changes' : 'Launch Campaign'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Restore Database Security Confirmation Modal */}
       <AlertDialog open={Boolean(restoreFilePending)} onOpenChange={(o) => !o && setRestoreFilePending(null)}>

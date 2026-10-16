@@ -292,30 +292,22 @@ export function Settings() {
                 title="Click to update photo"
               >
                 <div className="h-24 w-24 rounded-full border-4 border-white shadow-md overflow-hidden bg-zinc-100 flex items-center justify-center relative">
-                  <img
-                    src={avatarUrl || (gender === 'Female' ? '/avatars/female.svg' : '/avatars/male.svg')}
-                    alt={currentUser.name}
-                    className="h-full w-full object-cover"
-                  />
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={currentUser.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-emerald-600 via-[#0F6D4E] to-teal-800 text-white font-serif text-3xl font-bold">
+                      {currentUser.name?.charAt(0)?.toUpperCase() || 'U'}
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold">
                     <Camera className="h-4 w-4" />
                   </div>
                 </div>
               </div>
-
-              {/* Reset to Animated Avatar button if custom photo is loaded */}
-              {avatarUrl && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAvatarUrl('');
-                    toast.info('Switched to animated character avatar');
-                  }}
-                  className="mb-2 text-[10px] font-bold text-[#1E3A8A] hover:underline"
-                >
-                  ↺ Use Animated Avatar
-                </button>
-              )}
 
               {/* Donor Portal Status Badge */}
               <div className="mb-2 flex items-center gap-1.5">
@@ -454,30 +446,24 @@ export function Settings() {
                   <div className="flex items-center gap-6">
                     <label
                       onClick={() => setGender('Male')}
-                      className="flex items-center gap-2.5 cursor-pointer text-xs font-bold text-zinc-800"
+                      className="flex items-center gap-2 cursor-pointer text-xs font-bold text-zinc-800"
                     >
                       <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${gender === 'Male' ? 'border-[#F97316] bg-white' : 'border-zinc-300'
                         }`}>
                         {gender === 'Male' && <div className="h-2.5 w-2.5 rounded-full bg-[#F97316]" />}
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <img src="/avatars/male.svg" alt="Male Avatar" className="h-6 w-6 rounded-full object-cover border border-zinc-200 shadow-2xs" />
-                        <span>Male (Boy Avatar)</span>
-                      </div>
+                      <span>Male</span>
                     </label>
 
                     <label
                       onClick={() => setGender('Female')}
-                      className="flex items-center gap-2.5 cursor-pointer text-xs font-bold text-zinc-800"
+                      className="flex items-center gap-2 cursor-pointer text-xs font-bold text-zinc-800"
                     >
                       <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${gender === 'Female' ? 'border-[#F97316] bg-white' : 'border-zinc-300'
                         }`}>
                         {gender === 'Female' && <div className="h-2.5 w-2.5 rounded-full bg-[#F97316]" />}
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <img src="/avatars/female.svg" alt="Female Avatar" className="h-6 w-6 rounded-full object-cover border border-zinc-200 shadow-2xs" />
-                        <span>Female (Girl Avatar)</span>
-                      </div>
+                      <span>Female</span>
                     </label>
                   </div>
                 </div>

@@ -8,7 +8,6 @@ import {
   LayoutDashboard,
   Calendar,
   Gift,
-  MessageSquare,
   Users,
   Settings,
   LogOut,
@@ -30,7 +29,6 @@ import { UserAvatar } from './UserAvatar';
 const ADMIN_LINKS = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/admin/needs', label: 'Needs Management', icon: Gift },
-  { to: '/admin/feed', label: 'News & Updates', icon: MessageSquare },
   { to: '/admin/gallery', label: 'Gallery Management', icon: Image },
   { to: '/admin/schemes', label: 'Gov Schemes', icon: FileText },
   { to: '/admin/events', label: 'Event Management', icon: Calendar },

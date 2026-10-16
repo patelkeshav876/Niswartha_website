@@ -28,12 +28,9 @@ import { UserAvatar } from './UserAvatar';
 const SIDEBAR_ITEMS = [
   { to: '/super-admin', label: 'System Health', icon: Activity, end: true },
   { to: '/notifications', label: 'Notifications & Complaints', icon: Bell },
-  { to: '/super-admin/hero', label: 'Page Hero Manager', icon: Layers },
   { to: '/super-admin/users', label: 'User Directory', icon: Users },
-  { to: '/super-admin/ads', label: 'Ad Placements', icon: Megaphone },
   { to: '/super-admin/logs', label: 'System Audit Logs', icon: FileText },
-  { to: '/super-admin/configs', label: 'Configurations', icon: Settings },
-  { to: '/super-admin/backup', label: 'Backup & Restore', icon: Database }
+  { to: '/super-admin/backup', label: 'Backup & Restore', icon: Database },
 ] as const;
 
 export function SuperAdminLayout() {
@@ -135,6 +132,14 @@ export function SuperAdminLayout() {
             </div>
           </Link>
           <div className="space-y-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-start rounded-xl text-xs gap-2"
+              onClick={() => navigate('/admin/settings')}
+            >
+              <Settings className="h-3.5 w-3.5 text-amber-600" /> Admin Settings & Hero
+            </Button>
             <Button
               variant="outline"
               size="sm"

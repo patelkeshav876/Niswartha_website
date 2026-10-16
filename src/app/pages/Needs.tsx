@@ -9,7 +9,6 @@ import { Link } from 'react-router';
 import { api } from '../lib/api';
 import type { Need } from '../types';
 import { ScrollReveal } from '../components/ScrollReveal';
-import { AdBanner } from '../components/AdBanner';
 import { PremiumHeroBackdrop } from '../components/home/PremiumHeroBackdrop';
 import { toast } from 'sonner';
 import { optimizeUnsplashUrl } from '../lib/unsplash';
@@ -185,7 +184,6 @@ export function Needs() {
                   fulfillment and update totals in real-time.
                 </p>
               </div>
-              <AdBanner placement="explore_sidebar" />
             </div>
           </div>
         </div>

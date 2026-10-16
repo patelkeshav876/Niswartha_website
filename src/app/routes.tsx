@@ -38,7 +38,6 @@ const ManageNeeds = lazy(() => import('./pages/admin/ManageNeeds').then((m) => (
 const ManageEvents = lazy(() => import('./pages/admin/ManageEvents').then((m) => ({ default: m.ManageEvents })));
 const CreateEvent = lazy(() => import('./pages/admin/CreateEvent').then((m) => ({ default: m.CreateEvent })));
 const EventBookings = lazy(() => import('./pages/admin/EventBookings').then((m) => ({ default: m.EventBookings })));
-const FeedManagement = lazy(() => import('./pages/admin/FeedManagement').then((m) => ({ default: m.FeedManagement })));
 const AdminSettings = lazy(() => import('./pages/admin/Settings').then((m) => ({ default: m.Settings })));
 const ManageGallery = lazy(() => import('./pages/admin/ManageGallery').then((m) => ({ default: m.ManageGallery })));
 const ManageSchemes = lazy(() => import('./pages/admin/ManageSchemes').then((m) => ({ default: m.ManageSchemes })));
@@ -146,7 +145,6 @@ export const router = createBrowserRouter([
           { path: 'events', element: <SuspenseWrap><ManageEvents /></SuspenseWrap> },
           { path: 'events/bookings/:id', element: <SuspenseWrap><EventBookings /></SuspenseWrap> },
           { path: 'events/create', element: <SuspenseWrap><CreateEvent /></SuspenseWrap> },
-          { path: 'feed', element: <SuspenseWrap><FeedManagement /></SuspenseWrap> },
           { path: 'settings', element: <SuspenseWrap><AdminSettings /></SuspenseWrap> },
           { path: 'gallery', element: <SuspenseWrap><ManageGallery /></SuspenseWrap> },
           { path: 'schemes', element: <SuspenseWrap><ManageSchemes /></SuspenseWrap> },
@@ -163,12 +161,11 @@ export const router = createBrowserRouter([
         element: <SuperAdminRoute><SuspenseWrap><SuperAdminLayout /></SuspenseWrap></SuperAdminRoute>,
         children: [
           { index: true, element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
-          { path: 'hero', element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
           { path: 'users', element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
-          { path: 'ads', element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
           { path: 'logs', element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
-          { path: 'configs', element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
           { path: 'backup', element: <SuspenseWrap><SuperAdminDashboard /></SuspenseWrap> },
+          { path: 'hero', element: <Navigate to="/admin/settings" replace /> },
+          { path: 'configs', element: <Navigate to="/admin/settings" replace /> },
         ],
       },
 

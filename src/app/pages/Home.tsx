@@ -29,7 +29,6 @@ import {
   SectionTransition,
 } from '../components/ScrollReveal';
 import { PremiumHeroBackdrop } from '../components/home/PremiumHeroBackdrop';
-import { AdBanner } from '../components/AdBanner';
 import { optimizeUnsplashUrl } from '../lib/unsplash';
 
 /* ───── Count-Up Hook ───── */
@@ -214,9 +213,6 @@ export function Home() {
 
       {/* ════════════ MAIN CONTENT ════════════ */}
       <main ref={mainRef} className="flex-1">
-        <div className="section-container pt-6">
-          <AdBanner placement="home_top" />
-        </div>
 
         {/* ──── Quick Actions ──── */}
         <section className="section-container py-16 lg:py-20">
@@ -542,10 +538,6 @@ export function Home() {
             </ScrollReveal>
           </div>
         </section>
-
-        <div className="section-container pb-8 mt-6">
-          <AdBanner placement="home_bottom" />
-        </div>
       </main>
     </div>
   );

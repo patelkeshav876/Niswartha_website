@@ -43,7 +43,6 @@ import {
 } from '../components/ScrollReveal';
 import { PremiumHeroBackdrop } from '../components/home/PremiumHeroBackdrop';
 import { SchoolDoodleArt } from '../components/SchoolDoodleArt';
-import { AdBanner } from '../components/AdBanner';
 import { api } from '../lib/api';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -992,10 +991,6 @@ export function About() {
             </div>
           </section>
         </SectionTransition>
-
-        <div className="section-container">
-          <AdBanner placement="about_bottom" />
-        </div>
       </main>
     </div>
   );
