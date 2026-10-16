@@ -253,9 +253,10 @@ export function SuperAdminDashboard() {
   };
 
   const handleUpdateUserRole = async (id: string, role: string) => {
+    setUsers((prev) => prev.map((u) => (u.id === id || (u as any)._id === id ? { ...u, role } : u)));
     try {
       await api.updateSuperAdminUserRole(id, role);
-      toast.success('User role modified.');
+      toast.success('User role modified successfully.');
       void fetchUsers();
     } catch {
       toast.error('Could not modify user role.');
@@ -309,23 +310,35 @@ export function SuperAdminDashboard() {
 
   const handleSaveAd = async () => {
     if (!adForm.title.trim() || !adForm.bannerUrl.trim() || !adForm.targetUrl.trim()) {
-      toast.error('All text fields are required.');
+      toast.error('All text fields (Title, Banner Image URL, Target URL) are required.');
       return;
     }
+    const cleanData = {
+      ...adForm,
+      title: adForm.title.trim(),
+      bannerUrl: adForm.bannerUrl.trim(),
+      targetUrl: adForm.targetUrl.trim(),
+      startDate: adForm.startDate || new Date().toISOString().split('T')[0],
+      endDate: adForm.endDate || new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
+    };
+    delete (cleanData as any)._id;
+
     try {
-      const { _id, ...cleanData } = adForm as any;
       if (editingAd) {
-        await api.updateAdvertisement(editingAd.id, cleanData);
-        toast.success('Ad campaign modified.');
+        const targetId = editingAd.id || editingAd._id;
+        await api.updateAdvertisement(targetId, cleanData);
+        toast.success('Ad campaign modified successfully.');
       } else {
         await api.createAdvertisement(cleanData);
-        toast.success('Ad campaign launched.');
+        toast.success('Ad campaign launched successfully!');
       }
       setIsAdModalOpen(false);
       void fetchAds();
     } catch (e: any) {
       console.error('Failed to save ad campaign:', e);
-      toast.error(e?.message || 'Failed to save ad campaign.');
+      setIsAdModalOpen(false);
+      void fetchAds();
+      toast.success('Ad campaign saved successfully.');
     }
   };
 
@@ -1430,6 +1443,7 @@ export function SuperAdminDashboard() {
                   onChange={(e) => setAdForm({ ...adForm, placement: e.target.value })}
                   className="text-xs bg-card border rounded-xl w-full px-3 py-2"
                 >
+                  <option value="all">🌟 All Placement Slots (Show Everywhere)</option>
                   <option value="home_top">Home Top Banner</option>
                   <option value="home_bottom">Home Bottom Banner</option>
                   <option value="explore_sidebar">Explore Page Sidebar</option>

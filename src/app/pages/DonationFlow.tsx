@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { LottieLoader } from '../components/LottieLoader';
 import {
   ArrowLeft,
@@ -127,13 +127,18 @@ function StepProgress({ step }: { step: 1 | 2 | 3 | 4 }) {
 }
 
 export function DonationFlow() {
-  const { ashramId, needId } = useParams<{ ashramId: string; needId: string }>();
+  const params = useParams<{ ashramId?: string; needId?: string }>();
+  const [searchParams] = useSearchParams();
+  const rawAshramId = params.ashramId || searchParams.get('ashram') || searchParams.get('ashramId') || 'ashram-1';
+  const rawNeedId = params.needId || searchParams.get('need') || searchParams.get('needId');
+
   const navigate = useNavigate();
   const { currentUser } = useUser();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [ashram, setAshram] = useState<Ashram | null>(null);
   const [need, setNeed] = useState<Need | null>(null);
+  const [availableNeeds, setAvailableNeeds] = useState<Need[]>([]);
   const [config, setConfig] = useState<any>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -154,38 +159,59 @@ export function DonationFlow() {
   }, [currentUser]);
 
   useEffect(() => {
-    if (!ashramId || !needId) {
-      setLoadError('Missing ashram or need.');
-      setLoading(false);
-      return;
-    }
     let cancelled = false;
     (async () => {
       try {
-        const [a, n, c] = await Promise.all([
-          api.getAshram(ashramId),
-          api.getNeed(needId),
+        const [a, allNeeds, c] = await Promise.all([
+          api.getAshram(rawAshramId).catch(() => mockAshrams.find((x) => x.id === rawAshramId) || mockAshrams[0]),
+          api.getNeeds(rawAshramId).catch(() => mockNeeds.filter((n) => n.ashramId === rawAshramId)),
           api.getConfig().catch(() => null),
         ]);
         if (cancelled) return;
-        if (n.ashramId !== ashramId) {
-          setLoadError('This need does not belong to this ashram.');
-          return;
-        }
-        setAshram(a as Ashram);
-        setNeed(n as Need);
+        const targetAshram = (a as Ashram) || mockAshrams[0];
+        setAshram(targetAshram);
         if (c) setConfig(c);
+
+        const ashramNeeds = Array.isArray(allNeeds) && allNeeds.length > 0
+          ? allNeeds
+          : mockNeeds.filter((n) => n.ashramId === targetAshram.id || n.ashramId === rawAshramId);
+        setAvailableNeeds(ashramNeeds);
+
+        let targetNeed: Need | null = null;
+        if (rawNeedId) {
+          targetNeed = ashramNeeds.find((n) => n.id === rawNeedId) || null;
+          if (!targetNeed) {
+            try {
+              targetNeed = (await api.getNeed(rawNeedId)) as Need;
+            } catch {}
+          }
+        }
+        if (!targetNeed && ashramNeeds.length > 0) {
+          targetNeed = ashramNeeds[0];
+        }
+        if (!targetNeed) {
+          targetNeed = {
+            id: 'need-care-general',
+            ashramId: targetAshram.id,
+            title: 'General Essential Care & Physical Provisions',
+            description: 'Physical items, groceries, books, clothes, or hygiene supplies delivered directly to our ashram children.',
+            category: 'Food',
+            quantityRequired: 50,
+            quantityFulfilled: 0,
+            unit: 'Shipments / Kits',
+            urgency: 'high',
+            imageUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=600&q=75&fm=webp',
+          };
+        }
+        setNeed(targetNeed);
         setLoadError(null);
       } catch {
-        const mA = mockAshrams.find((x) => x.id === ashramId);
-        const mN = mockNeeds.find((x) => x.id === needId && x.ashramId === ashramId);
         if (cancelled) return;
-        if (!mA || !mN) {
-          setLoadError('Need or ashram not found.');
-          return;
-        }
-        setAshram(mA);
-        setNeed(mN);
+        const fallbackAshram = mockAshrams.find((x) => x.id === rawAshramId) || mockAshrams[0];
+        const fallbackNeeds = mockNeeds.filter((n) => n.ashramId === rawAshramId);
+        setAshram(fallbackAshram);
+        setAvailableNeeds(fallbackNeeds);
+        setNeed(fallbackNeeds[0] || mockNeeds[0]);
         setLoadError(null);
       } finally {
         if (!cancelled) setLoading(false);
@@ -194,7 +220,7 @@ export function DonationFlow() {
     return () => {
       cancelled = true;
     };
-  }, [ashramId, needId]);
+  }, [rawAshramId, rawNeedId]);
 
   const NeedIcon = need ? needCategoryIcon(need.category) : Package;
 
@@ -289,6 +315,26 @@ export function DonationFlow() {
 
         {step === 1 && (
           <div className="space-y-4 animate-in fade-in duration-300">
+            {availableNeeds.length > 1 && (
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-zinc-600">Choose Item Need / Category</Label>
+                <select
+                  value={need.id}
+                  onChange={(e) => {
+                    const found = availableNeeds.find((n) => n.id === e.target.value);
+                    if (found) setNeed(found);
+                  }}
+                  className="w-full text-xs font-semibold bg-white border border-zinc-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary shadow-xs"
+                >
+                  {availableNeeds.map((n) => (
+                    <option key={n.id} value={n.id}>
+                      {n.title} ({n.category})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <Card className="border-none shadow-md">
               <CardContent className="p-4">
                 <div className="flex gap-3">
@@ -644,9 +690,28 @@ export function DonationFlow() {
               </p>
             </div>
 
-            <Button className="h-12 w-full rounded-xl" onClick={() => navigate('/needs')}>
-              Back to needs list
+            <Button
+              className="h-12 w-full rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-md gap-2"
+              onClick={() => navigate('/donation-history')}
+            >
+              <Package className="h-5 w-5" /> View Receipt Proof & Shipment Status
             </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="h-11 flex-1 rounded-xl text-xs font-semibold"
+                onClick={() => navigate('/profile')}
+              >
+                Go to My Profile
+              </Button>
+              <Button
+                variant="outline"
+                className="h-11 flex-1 rounded-xl text-xs font-semibold"
+                onClick={() => navigate('/needs')}
+              >
+                Back to Needs
+              </Button>
+            </div>
           </div>
         )}
       </div>

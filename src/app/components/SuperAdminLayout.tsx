@@ -82,15 +82,15 @@ export function SuperAdminLayout() {
       {/* ──── Desktop Sidebar ──── */}
       <aside className="hidden lg:flex flex-col w-64 border-r border-zinc-200 bg-white shrink-0">
         <div className="flex h-20 items-center gap-3 px-6 border-b border-zinc-100">
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-md shadow-primary/10 group-hover:scale-105 transition-transform bg-white border border-primary/20 shrink-0 p-1">
+          <div className="flex items-center gap-3 select-none">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-md shadow-primary/10 bg-white border border-primary/20 shrink-0 p-1">
               <img src="/logo.png" alt="Niswartha Logo" className="h-full w-full object-contain" />
             </div>
             <div>
               <p className="text-lg font-bold tracking-tight text-zinc-950 font-serif">Niswartha</p>
               <p className="-mt-1 text-[9px] font-bold uppercase tracking-[0.15em] text-primary">Super Admin</p>
             </div>
-          </Link>
+          </div>
         </div>
 
         {/* Sidebar Nav links */}

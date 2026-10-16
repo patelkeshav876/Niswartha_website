@@ -31,9 +31,11 @@ export function AdBanner({ placement }: Props) {
 
         const now = new Date();
         const matches = list.filter((a: any) => {
-          if (!a.enabled || a.placement !== placement) return false;
-          const start = new Date(a.startDate);
-          const end = new Date(a.endDate);
+          if (!a.enabled) return false;
+          const isSlotMatch = a.placement === 'all' || a.placement === 'all_slots' || a.placement === placement;
+          if (!isSlotMatch) return false;
+          const start = a.startDate ? new Date(a.startDate) : new Date(0);
+          const end = a.endDate ? new Date(a.endDate) : new Date(Date.now() + 365 * 86400000);
           return start <= now && end >= now;
         });
 

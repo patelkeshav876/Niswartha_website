@@ -462,7 +462,7 @@ export function VisitBooking() {
                       setForm((f) => ({
                         ...f,
                         orgType: v as VisitBookingFormState['orgType'],
-                        orgName: v === 'Individual' || v === 'Other' ? '' : f.orgName,
+                        orgName: v === 'Individual' ? '' : f.orgName,
                       }))
                     }
                   >
@@ -479,18 +479,18 @@ export function VisitBooking() {
                   </Select>
                 </div>
 
-                {/* Organization Name (Conditional) */}
-                {form.orgType && form.orgType !== 'Individual' && form.orgType !== 'Other' && (
-                  <div className="space-y-2">
+                {/* Organization Name (Conditional for any group / organization / other) */}
+                {form.orgType && form.orgType !== 'Individual' && (
+                  <div className="space-y-2 animate-in fade-in duration-200">
                     <Label htmlFor="vb-orgname" className="text-zinc-700 font-medium">
-                      Organization Name
+                      Organization / Group Name
                     </Label>
                     <Input
                       id="vb-orgname"
                       value={form.orgName}
                       onChange={(e) => setForm((f) => ({ ...f, orgName: e.target.value }))}
                       className="rounded-xl border-zinc-200"
-                      placeholder="Enter organization / group details"
+                      placeholder="Enter organization / group / entity name"
                     />
                   </div>
                 )}
@@ -681,15 +681,16 @@ export function VisitBooking() {
                 {ashram.location}
               </p>
 
-              <div className="relative overflow-hidden rounded-2xl bg-zinc-50 border aspect-video h-48">
+              <div className="relative overflow-hidden rounded-2xl bg-zinc-100 border aspect-video min-h-[220px]">
                 <iframe
-                  title="Niswartha Location Map"
-                  src="https://maps.google.com/maps?q=Deaf%20and%20Dumb%20Industrial%20Institute%2C%20Shankar%20Nagar%2C%20Nagpur&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                  title="Niswartha Ashram Location Map"
+                  src="https://maps.google.com/maps?q=Deaf%20and%20Dumb%20Industrial%20Institute%2C%20Shankar%20Nagar%2C%20Nagpur%2C%20Maharashtra&t=&z=15&ie=UTF8&iwloc=&output=embed"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
                   allowFullScreen
                   loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
                 />
               </div>
 

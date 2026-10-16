@@ -119,9 +119,10 @@ export const router = createBrowserRouter([
       { path: 'visit-book', element: <Navigate to="/visit-book/ashram-1" replace /> },
       { path: 'bookings', element: <Navigate to="/my-bookings" replace /> },
       { path: 'mybookings', element: <Navigate to="/my-bookings" replace /> },
-      { path: 'visit-bookings', element: <Navigate to="/my-bookings" replace /> },
       { path: 'donate/:id', element: <ProtectedRoute><SuspenseWrap><Donation /></SuspenseWrap></ProtectedRoute> },
       { path: 'donate-flow/:ashramId/:needId', element: <ProtectedRoute><SuspenseWrap><DonationFlow /></SuspenseWrap></ProtectedRoute> },
+      { path: 'donate-flow/:ashramId', element: <ProtectedRoute><SuspenseWrap><DonationFlow /></SuspenseWrap></ProtectedRoute> },
+      { path: 'donate-flow', element: <ProtectedRoute><SuspenseWrap><DonationFlow /></SuspenseWrap></ProtectedRoute> },
 
       // User dashboard routes wrapped in UserLayout
       {

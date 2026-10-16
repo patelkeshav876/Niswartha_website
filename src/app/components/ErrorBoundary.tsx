@@ -1,5 +1,6 @@
 import React, { Component, type ReactNode } from 'react';
 import { useRouteError, useNavigate } from 'react-router';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { Button } from './ui/button';
 import { RefreshCw, Home, Sparkles } from 'lucide-react';
 
@@ -99,16 +100,15 @@ function ErrorFallbackView({
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
       <div className="w-full max-w-md bg-white border border-zinc-200/80 rounded-3xl p-8 shadow-2xl space-y-6 animate-fade-up">
-        {/* Brand Icon Container */}
-        <div className="relative mx-auto h-28 w-28 flex items-center justify-center rounded-3xl bg-primary/10 border border-primary/20 shadow-inner overflow-hidden">
-          <img
-            src="/logo.png"
-            alt="Niswartha"
-            width={64}
-            height={64}
-            className="h-16 w-16 object-contain"
+        {/* Lottie or Heart Animation Fallback Container */}
+        <div className="relative mx-auto h-28 w-28 flex items-center justify-center rounded-3xl bg-emerald-50/80 border border-emerald-200/60 shadow-inner overflow-hidden">
+          <DotLottieReact
+            src="https://lottie.host/81a91c10-0988-42fa-986c-0e78fbcf19d4/6uVNm3L66h.lottie"
+            loop
+            autoplay
+            style={{ width: '100px', height: '100px' }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/10 to-transparent pointer-events-none" />
         </div>
 
         <div>

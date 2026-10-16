@@ -1,6 +1,7 @@
 import { useNavigate } from 'react';
 import { Button } from '../components/ui/button';
 import { Home, ArrowLeft } from 'lucide-react';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 export function NotFound() {
   const navigate = useNavigate();
@@ -8,13 +9,11 @@ export function NotFound() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-6 text-center">
       <div className="space-y-6 max-w-md mx-auto">
-        <div className="relative mx-auto flex h-36 w-36 items-center justify-center rounded-3xl bg-primary/10 border border-primary/20 shadow-inner">
-          <img
-            src="/logo.png"
-            alt="Niswartha"
-            width={72}
-            height={72}
-            className="h-20 w-20 object-contain"
+        <div className="w-64 h-64 mx-auto flex items-center justify-center">
+          <DotLottieReact
+            src="https://lottie.host/4a01adbf-e915-4ec0-b5ac-463987a8425d/rykF3b26je.lottie"
+            loop
+            autoplay
           />
         </div>
         

@@ -155,6 +155,7 @@ const SecurityLog = generic('SecurityLogDoc', 'security_logs');
 const AuditLog = generic('AuditLogDoc', 'audit_logs');
 const HeroConfig = generic('HeroConfigDoc', 'hero_configs');
 const Complaint = generic('ComplaintDoc', 'complaints');
+const ItemDonation = generic('ItemDonationDoc', 'item_donations');
 
 /** Must match client `VISIT_TIME_SLOTS` ids */
 const VISIT_SLOT_IDS = [
@@ -1369,6 +1370,59 @@ app.post('/api/donations/batch', async (req, res) => {
   }
 });
 
+// --- Physical Item Donations & Proof Receipt ---
+app.get('/api/item-donations', async (req, res) => {
+  try {
+    const filter = {};
+    if (req.query.userId) {
+      filter.$or = [{ userId: req.query.userId }, { phone: req.query.userId }];
+    }
+    if (req.query.ashramId) {
+      filter.ashramId = req.query.ashramId;
+    }
+    const items = await ItemDonation.find(filter).sort({ createdAt: -1 }).lean();
+    res.json(items.map(({ _id, ...x }) => ({ id: x.id || String(_id), ...x })));
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+app.post('/api/item-donations', async (req, res) => {
+  try {
+    const data = req.body;
+    const doc = {
+      id: data.id || `item-don-${Date.now()}`,
+      status: data.status || 'pending',
+      createdAt: new Date().toISOString(),
+      ...data,
+    };
+    await ItemDonation.create(doc);
+    res.json(doc);
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+app.put('/api/item-donations/:id/status', requireAdmin, async (req, res) => {
+  try {
+    const { status, adminNotes } = req.body;
+    const query = mongoose.Types.ObjectId.isValid(req.params.id)
+      ? { $or: [{ id: req.params.id }, { _id: req.params.id }] }
+      : { id: req.params.id };
+    await ItemDonation.updateOne(query, {
+      $set: {
+        status,
+        adminNotes,
+        verifiedAt: new Date().toISOString(),
+        verifiedBy: req.user?.email || 'admin',
+      },
+    });
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
 // --- Seed ---
 app.post('/api/init-data', async (req, res) => {
   try {
@@ -1977,7 +2031,7 @@ app.get('/api/super-admin/logs', requireSuperAdmin, async (req, res) => {
 app.get('/api/super-admin/users', requireSuperAdmin, async (req, res) => {
   try {
     const users = await User.find({}).lean();
-    res.json(users.map(({ _id, password, ...u }) => u));
+    res.json(users.map(({ _id, password, ...u }) => ({ id: u.id || String(_id), ...u })));
   } catch (e) {
     res.status(500).json({ error: String(e.message) });
   }
@@ -1990,20 +2044,30 @@ app.put('/api/super-admin/users/:id/role', requireSuperAdmin, async (req, res) =
       return res.status(400).json({ error: 'Invalid role' });
     }
     
-    const u = await User.findOne({ id: req.params.id }).lean();
+    const idParam = req.params.id;
+    const query = mongoose.Types.ObjectId.isValid(idParam)
+      ? { $or: [{ id: idParam }, { _id: idParam }, { email: idParam }] }
+      : { $or: [{ id: idParam }, { email: idParam }] };
+
+    let u = await User.findOne(query).lean();
+    if (!u) {
+      u = await User.findOne({ email: new RegExp(`^${idParam}$`, 'i') }).lean();
+    }
     if (!u) return res.status(404).json({ error: 'User not found' });
     
-    await User.updateOne({ id: req.params.id }, { $set: { role } });
+    await User.updateOne({ _id: u._id }, { $set: { role } });
     
-    await AuditLog.create({
-      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      userId: req.user.id,
-      action: 'update_user_role',
-      details: `Changed role of user ${u.email} to ${role}`,
-      createdAt: new Date().toISOString()
-    });
+    try {
+      await AuditLog.create({
+        id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        userId: req.user?.id || req.user?._id || 'super-admin',
+        action: 'update_user_role',
+        details: `Changed role of user ${u.email} to ${role}`,
+        createdAt: new Date().toISOString()
+      });
+    } catch {}
 
-    res.json({ success: true });
+    res.json({ success: true, role });
   } catch (e) {
     res.status(500).json({ error: String(e.message) });
   }
@@ -2011,18 +2075,25 @@ app.put('/api/super-admin/users/:id/role', requireSuperAdmin, async (req, res) =
 
 app.delete('/api/super-admin/users/:id', requireSuperAdmin, async (req, res) => {
   try {
-    const u = await User.findOne({ id: req.params.id }).lean();
+    const idParam = req.params.id;
+    const query = mongoose.Types.ObjectId.isValid(idParam)
+      ? { $or: [{ id: idParam }, { _id: idParam }, { email: idParam }] }
+      : { $or: [{ id: idParam }, { email: idParam }] };
+
+    let u = await User.findOne(query).lean();
     if (!u) return res.status(404).json({ error: 'User not found' });
     
-    await User.deleteOne({ id: req.params.id });
+    await User.deleteOne({ _id: u._id });
     
-    await AuditLog.create({
-      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      userId: req.user.id,
-      action: 'delete_user',
-      details: `Deleted user account: ${u.email}`,
-      createdAt: new Date().toISOString()
-    });
+    try {
+      await AuditLog.create({
+        id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        userId: req.user?.id || req.user?._id || 'super-admin',
+        action: 'delete_user',
+        details: `Deleted user account: ${u.email}`,
+        createdAt: new Date().toISOString()
+      });
+    } catch {}
 
     res.json({ success: true });
   } catch (e) {

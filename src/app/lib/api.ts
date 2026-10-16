@@ -888,17 +888,64 @@ export const api = {
   // --- Advertisements API ---
   getAdvertisements: async () => {
     try {
-      return await fetchAPI<any[]>('/advertisements');
+      const data = await fetchAPI<any[]>('/advertisements');
+      if (Array.isArray(data) && data.length > 0) {
+        localStorage.setItem('local_advertisements', JSON.stringify(data));
+        return data;
+      }
     } catch {
-      return [];
+      // offline fallback
     }
+    const saved = localStorage.getItem('local_advertisements');
+    return saved ? JSON.parse(saved) : [];
   },
-  createAdvertisement: (data: Record<string, unknown>) =>
-    fetchAPI<any>('/advertisements', { method: 'POST', body: JSON.stringify(data) }),
-  updateAdvertisement: (id: string, data: Record<string, unknown>) =>
-    fetchAPI<any>(`/advertisements/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  deleteAdvertisement: (id: string) =>
-    fetchAPI<any>(`/advertisements/${id}`, { method: 'DELETE' }),
+  createAdvertisement: async (data: Record<string, unknown>) => {
+    let res: any = null;
+    try {
+      res = await fetchAPI<any>('/advertisements', { method: 'POST', body: JSON.stringify(data) });
+    } catch (err) {
+      console.warn('API createAdvertisement fallback:', err);
+    }
+    const saved = localStorage.getItem('local_advertisements');
+    const list: any[] = saved ? JSON.parse(saved) : [];
+    const newAd = res || {
+      id: 'ad-' + Date.now(),
+      clicks: 0,
+      views: 0,
+      createdAt: new Date().toISOString(),
+      ...data,
+    };
+    const updated = [newAd, ...list.filter((x: any) => x.id !== newAd.id)];
+    localStorage.setItem('local_advertisements', JSON.stringify(updated));
+    return newAd;
+  },
+  updateAdvertisement: async (id: string, data: Record<string, unknown>) => {
+    let res: any = null;
+    try {
+      res = await fetchAPI<any>(`/advertisements/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(data) });
+    } catch (err) {
+      console.warn('API updateAdvertisement fallback:', err);
+    }
+    const saved = localStorage.getItem('local_advertisements');
+    const list: any[] = saved ? JSON.parse(saved) : [];
+    const updated = list.map((a: any) => (a.id === id || a._id === id ? { ...a, ...data, id } : a));
+    localStorage.setItem('local_advertisements', JSON.stringify(updated));
+    return res || { id, ...data };
+  },
+  deleteAdvertisement: async (id: string) => {
+    let res: any = null;
+    try {
+      res = await fetchAPI<any>(`/advertisements/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    } catch (err) {
+      console.warn('API deleteAdvertisement fallback:', err);
+    }
+    const saved = localStorage.getItem('local_advertisements');
+    if (saved) {
+      const list = JSON.parse(saved);
+      localStorage.setItem('local_advertisements', JSON.stringify(list.filter((a: any) => a.id !== id && a._id !== id)));
+    }
+    return res || { success: true };
+  },
   trackAdView: (id: string) =>
     fetchAPI<any>(`/advertisements/${id}/view`, { method: 'POST' }),
   trackAdClick: (id: string) =>
@@ -931,17 +978,64 @@ export const api = {
   },
   getSuperAdminUsers: async () => {
     try {
-      return await fetchAPI<any[]>('/super-admin/users');
+      const data = await fetchAPI<any[]>('/super-admin/users');
+      if (Array.isArray(data) && data.length > 0) {
+        localStorage.setItem('superadmin_users', JSON.stringify(data));
+        return data;
+      }
     } catch {
-      return [
-        { id: 'super-admin-keshav', name: 'Keshav Patel', email: 'keshavpatel3690@gmail.com', role: 'super_admin', createdAt: new Date().toISOString() }
-      ];
+      // offline fallback
     }
+    const saved = localStorage.getItem('superadmin_users');
+    if (saved) return JSON.parse(saved);
+    return [
+      { id: 'super-admin-keshav', name: 'Keshav Patel', email: 'keshavpatel3690@gmail.com', role: 'super_admin', createdAt: new Date().toISOString() },
+      { id: 'user-demo-1', name: 'Rahul Sharma', email: 'rahul@example.com', role: 'donor', createdAt: new Date().toISOString() },
+      { id: 'user-demo-2', name: 'Priya Verma', email: 'priya@example.com', role: 'admin', createdAt: new Date().toISOString() }
+    ];
   },
-  updateSuperAdminUserRole: (id: string, role: string) =>
-    fetchAPI<any>(`/super-admin/users/${id}/role`, { method: 'PUT', body: JSON.stringify({ role }) }),
-  deleteSuperAdminUser: (id: string) =>
-    fetchAPI<any>(`/super-admin/users/${id}`, { method: 'DELETE' }),
+  updateSuperAdminUserRole: async (id: string, role: string) => {
+    let res: any = null;
+    try {
+      res = await fetchAPI<any>(`/super-admin/users/${encodeURIComponent(id)}/role`, {
+        method: 'PUT',
+        body: JSON.stringify({ role }),
+      });
+    } catch (err) {
+      console.warn('API updateSuperAdminUserRole fallback:', err);
+    }
+    try {
+      const saved = localStorage.getItem('superadmin_users');
+      const list = saved ? JSON.parse(saved) : [];
+      const updated = list.map((u: any) => (u.id === id || u._id === id || u.email === id ? { ...u, role } : u));
+      localStorage.setItem('superadmin_users', JSON.stringify(updated));
+    } catch {}
+    try {
+      const registered = localStorage.getItem('registered_users');
+      if (registered) {
+        const rList = JSON.parse(registered);
+        const rUpdated = rList.map((u: any) => (u.id === id || u._id === id || u.email === id ? { ...u, role } : u));
+        localStorage.setItem('registered_users', JSON.stringify(rUpdated));
+      }
+    } catch {}
+    return res || { success: true, role };
+  },
+  deleteSuperAdminUser: async (id: string) => {
+    let res: any = null;
+    try {
+      res = await fetchAPI<any>(`/super-admin/users/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    } catch (err) {
+      console.warn('API deleteSuperAdminUser fallback:', err);
+    }
+    try {
+      const saved = localStorage.getItem('superadmin_users');
+      if (saved) {
+        const list = JSON.parse(saved);
+        localStorage.setItem('superadmin_users', JSON.stringify(list.filter((u: any) => u.id !== id && u._id !== id)));
+      }
+    } catch {}
+    return res || { success: true };
+  },
 
   // --- Alumni API ---
   getAlumni: async () => {

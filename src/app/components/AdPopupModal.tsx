@@ -37,16 +37,16 @@ export function AdPopupModal() {
         const now = new Date();
         const matches = list.filter((a: any) => {
           if (!a.enabled) return false;
-          if (
-            a.placement !== 'popup' &&
-            a.placement !== 'popup_center' &&
-            a.placement !== 'popup_bottom_left' &&
-            a.placement !== 'popup_bottom_right'
-          ) {
-            return false;
-          }
-          const start = new Date(a.startDate);
-          const end = new Date(a.endDate);
+          const isPopup =
+            a.placement === 'all' ||
+            a.placement === 'all_slots' ||
+            a.placement === 'popup' ||
+            a.placement === 'popup_center' ||
+            a.placement === 'popup_bottom_left' ||
+            a.placement === 'popup_bottom_right';
+          if (!isPopup) return false;
+          const start = a.startDate ? new Date(a.startDate) : new Date(0);
+          const end = a.endDate ? new Date(a.endDate) : new Date(Date.now() + 365 * 86400000);
           return start <= now && end >= now;
         });
 

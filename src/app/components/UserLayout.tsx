@@ -82,8 +82,8 @@ export function UserLayout() {
     <div className="flex h-full flex-col bg-[#F5F2EB] text-zinc-800 border-r border-zinc-200/50">
       {/* Brand Header */}
       <div className="flex h-20 items-center justify-between px-6 border-b border-zinc-200/30 border-dashed">
-        <Link to="/" className="flex items-center gap-3 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-md shadow-primary/10 group-hover:scale-105 transition-transform bg-white border border-primary/20 shrink-0 p-1">
+        <div className="flex items-center gap-3 select-none">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-md shadow-primary/10 bg-white border border-primary/20 shrink-0 p-1">
             <img src="/logo.png" alt="Niswartha Logo" className="h-full w-full object-contain" />
           </div>
           {!collapsed && (
@@ -91,7 +91,7 @@ export function UserLayout() {
               <p className="text-md font-bold tracking-tight font-serif text-zinc-900">Niswartha</p>
             </div>
           )}
-        </Link>
+        </div>
         {mobileOpen && (
           <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)} className="rounded-full">
             <X className="h-5 w-5" />

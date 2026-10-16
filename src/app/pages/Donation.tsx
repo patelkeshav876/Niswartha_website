@@ -92,23 +92,34 @@ export function Donation() {
 
   const [ashram, setAshram] = useState<Ashram | null>(null);
   const [config, setConfig] = useState<any>(null);
+  const [needs, setNeeds] = useState<any[]>([]);
   const [loadingAshram, setLoadingAshram] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [a, c] = await Promise.all([
+        const [a, c, n] = await Promise.all([
           ashramId ? api.getAshram(ashramId).catch(() => mockAshrams.find((x) => x.id === ashramId) || null) : null,
           api.getConfig().catch(() => null),
+          api.getNeeds(ashramId).catch(() => []),
         ]);
         if (!cancelled) {
           setAshram(a as Ashram);
           if (c) setConfig(c);
+          if (Array.isArray(n) && n.length > 0) {
+            setNeeds(n);
+          } else {
+            const fallback = mockNeeds.filter((m) => m.ashramId === ashramId);
+            setNeeds(fallback.length > 0 ? fallback : mockNeeds);
+          }
         }
       } catch {
         const m = mockAshrams.find((x) => x.id === ashramId);
-        if (!cancelled) setAshram(m || null);
+        if (!cancelled) {
+          setAshram(m || null);
+          setNeeds(mockNeeds);
+        }
       } finally {
         if (!cancelled) setLoadingAshram(false);
       }
@@ -217,8 +228,14 @@ export function Donation() {
           </div>
 
           <Button
-            onClick={() => navigate(`/donate-flow?ashram=${ashram.id}`)}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs rounded-2xl h-12 gap-2 shadow-sm"
+            onClick={() => {
+              if (needs && needs.length > 0) {
+                navigate(`/donate-flow/${ashram.id}/${needs[0].id}`);
+              } else {
+                navigate(`/donate-flow/${ashram.id}`);
+              }
+            }}
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs rounded-2xl h-12 gap-2 shadow-sm cursor-pointer"
           >
             <Package className="h-4 w-4" /> Send Physical Items & Get Receipt Proof
           </Button>
