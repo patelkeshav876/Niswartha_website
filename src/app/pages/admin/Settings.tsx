@@ -25,6 +25,8 @@ import {
   Sliders,
   Shield,
   Palette,
+  Heart,
+  X,
 } from 'lucide-react';
 import { api, applyThemeColor } from '../../lib/api';
 import { mockAlumni } from '../../data/mock';
@@ -136,6 +138,28 @@ export function Settings() {
       toast.error('Failed to save settings');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleMaintenance = async (newVal: boolean) => {
+    const updated = { ...config, maintenanceMode: newVal };
+    setConfig(updated);
+    try {
+      await api.updateConfig(updated);
+      toast.success(newVal ? 'Maintenance Mode activated. Public pages now locked.' : 'Maintenance Mode turned OFF! Website is now fully live.');
+    } catch {
+      toast.error('Could not sync maintenance mode');
+    }
+  };
+
+  const handleClearAnnouncement = async () => {
+    const updated = { ...config, globalAnnouncement: '' };
+    setConfig(updated);
+    try {
+      await api.updateConfig(updated);
+      toast.success('Announcement banner removed and cleared!');
+    } catch {
+      toast.error('Failed to clear announcement');
     }
   };
 
@@ -331,17 +355,44 @@ export function Settings() {
               <Card className="border border-zinc-200 shadow-sm rounded-3xl bg-white p-6 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Maintenance Mode */}
-                  <div className="flex items-center justify-between border p-4 rounded-2xl bg-zinc-50/60">
-                    <div>
-                      <p className="text-xs font-bold text-zinc-900">Maintenance Mode</p>
-                      <p className="text-[11px] text-zinc-500">Locks public pages and shows update overlay screen</p>
+                  <div className={`p-4 rounded-2xl border transition-all ${config.maintenanceMode ? 'bg-amber-500/10 border-amber-300' : 'bg-zinc-50/60 border-zinc-200'}`}>
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs font-bold text-zinc-900">Maintenance Mode</p>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${config.maintenanceMode ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                            {config.maintenanceMode ? '🔴 ACTIVE (Public Locked)' : '🟢 OFF (Website Live)'}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-zinc-500 mt-0.5">Locks public pages and shows update overlay screen</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={config.maintenanceMode || false}
+                        onChange={(e) => handleToggleMaintenance(e.target.checked)}
+                        className="h-5 w-5 text-primary border-zinc-300 rounded focus:ring-primary cursor-pointer shrink-0"
+                      />
                     </div>
-                    <input
-                      type="checkbox"
-                      checked={config.maintenanceMode || false}
-                      onChange={(e) => setConfig({ ...config, maintenanceMode: e.target.checked })}
-                      className="h-4 w-4 text-primary border-zinc-300 rounded focus:ring-primary cursor-pointer"
-                    />
+                    {config.maintenanceMode ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => handleToggleMaintenance(false)}
+                        className="w-full mt-2 rounded-xl text-xs font-bold h-8 bg-emerald-600 hover:bg-emerald-700 text-white"
+                      >
+                        ✓ Turn OFF Maintenance Mode Now
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleToggleMaintenance(true)}
+                        className="w-full mt-2 rounded-xl text-xs font-semibold h-8 text-zinc-700 border-zinc-300 hover:bg-amber-50"
+                      >
+                        Turn ON Maintenance Mode
+                      </Button>
+                    )}
                   </div>
 
                   {/* Donation Wording */}
@@ -364,14 +415,38 @@ export function Settings() {
 
                 {/* Global Announcement Text */}
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold text-zinc-800 uppercase">Global Announcement Text</Label>
-                  <Input
-                    value={config.globalAnnouncement || ''}
-                    onChange={(e) => setConfig({ ...config, globalAnnouncement: e.target.value })}
-                    placeholder="e.g. Donation receipts for 80G tax benefits are now available."
-                    className="rounded-xl text-xs"
-                  />
-                  <p className="text-[10px] text-zinc-400">Leave blank to hide the announcement banner.</p>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold text-zinc-800 uppercase">Global Announcement Text</Label>
+                    {config.globalAnnouncement && (
+                      <button
+                        type="button"
+                        onClick={handleClearAnnouncement}
+                        className="text-[11px] text-destructive hover:underline font-semibold cursor-pointer flex items-center gap-1"
+                      >
+                        <X className="h-3 w-3" /> Clear & Remove Banner
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={config.globalAnnouncement || ''}
+                      onChange={(e) => setConfig({ ...config, globalAnnouncement: e.target.value })}
+                      placeholder="e.g. Donation receipts for 80G tax benefits are now available."
+                      className="rounded-xl text-xs flex-1"
+                    />
+                    {config.globalAnnouncement && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleClearAnnouncement}
+                        className="rounded-xl text-xs h-9 px-3 border-red-200 text-destructive hover:bg-red-50"
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-zinc-400">Leave blank or click Clear to hide the announcement notification banner across the website.</p>
                 </div>
 
                 {/* Staff Roster Marquee Speed */}

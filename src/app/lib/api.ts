@@ -846,41 +846,60 @@ export const api = {
 
   // --- Configurations API ---
   getConfig: async () => {
+    let remoteCfg: any = null;
     try {
-      const cfg = await fetchAPI<any>('/config');
-      if (cfg?.primaryThemeColor) applyThemeColor(cfg.primaryThemeColor);
-      return cfg;
+      remoteCfg = await fetchAPI<any>('/config');
     } catch {
-      const saved = localStorage.getItem('superadmin_config');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed?.primaryThemeColor) applyThemeColor(parsed.primaryThemeColor);
-        return parsed;
-      }
-      return {
-        siteName: 'Niswartha — Selfless Service',
-        siteTagline: 'Empowering Deaf & Dumb Children',
-        contactEmail: 'contact@niswartha.org',
-        contactPhone: '+91 91312 01107',
-        ashramPhone: '+91 91312 01107',
-        whatsappNumber: '+91 91312 01107',
-        whatsappWelcomeMessage: 'Hello! I would like to learn more about support options for the Niswartha Ashram.',
-        maintenanceMode: false,
-        allowNewRegistrations: true,
-        enableNotifications: true,
-        primaryThemeColor: 'green',
-      };
+      // Offline fallback
     }
+
+    let localCfg: any = null;
+    try {
+      const saved = localStorage.getItem('superadmin_config');
+      if (saved) localCfg = JSON.parse(saved);
+    } catch {}
+
+    const defaults = {
+      siteName: 'Niswartha — Selfless Service',
+      siteTagline: 'Empowering Deaf & Dumb Children',
+      contactEmail: 'contact@niswartha.org',
+      contactPhone: '+91 91312 01107',
+      ashramPhone: '+91 91312 01107',
+      whatsappNumber: '+91 91312 01107',
+      whatsappWelcomeMessage: 'Hello! I would like to learn more about support options for the Niswartha Ashram.',
+      maintenanceMode: false,
+      allowNewRegistrations: true,
+      enableNotifications: true,
+      globalAnnouncement: '',
+      primaryThemeColor: 'green',
+    };
+
+    const merged = {
+      ...defaults,
+      ...(remoteCfg || {}),
+      ...(localCfg || {}),
+    };
+
+    if (merged?.primaryThemeColor) applyThemeColor(merged.primaryThemeColor);
+    return merged;
   },
   updateConfig: async (data: Record<string, unknown>) => {
     if (data.primaryThemeColor && typeof data.primaryThemeColor === 'string') {
       applyThemeColor(data.primaryThemeColor);
       localStorage.setItem('primary_theme_color', data.primaryThemeColor);
     }
+
+    // Always immediately sync to local storage and broadcast to open browser components
+    localStorage.setItem('superadmin_config', JSON.stringify(data));
+    window.dispatchEvent(new CustomEvent('niswartha_config_updated', { detail: data }));
+
     try {
-      return await fetchAPI<any>('/config', { method: 'PUT', body: JSON.stringify(data) });
-    } catch {
-      localStorage.setItem('superadmin_config', JSON.stringify(data));
+      const res = await fetchAPI<any>('/config', { method: 'PUT', body: JSON.stringify(data) });
+      const merged = { ...data, ...(res && typeof res === 'object' ? res : {}) };
+      localStorage.setItem('superadmin_config', JSON.stringify(merged));
+      return merged;
+    } catch (err) {
+      console.warn('api.updateConfig remote fallback:', err);
       return data;
     }
   },
