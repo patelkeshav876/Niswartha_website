@@ -16,15 +16,14 @@ export function optimizeUnsplashUrl(
   url: string,
   width: number,
   height: number,
-  quality = 75,
+  quality = 68,
 ): string {
   if (!url || !url.includes('unsplash.com')) return url;
 
   try {
     const u = new URL(url);
-    // Use 2x for retina screens but cap at reasonable sizes
-    u.searchParams.set('w', String(width * 2));
-    u.searchParams.set('h', String(height * 2));
+    u.searchParams.set('w', String(Math.round(width)));
+    u.searchParams.set('h', String(Math.round(height)));
     u.searchParams.set('q', String(quality));
     u.searchParams.set('fm', 'webp');
     u.searchParams.set('fit', 'crop');

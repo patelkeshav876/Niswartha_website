@@ -69,10 +69,14 @@ export function UrgentNeedsSection({ urgentNeeds }: UrgentNeedsSectionProps) {
                       src={optimizeUnsplashUrl(
                         need.imageUrl ||
                           'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c',
-                        70,
-                        70,
-                        70,
+                        80,
+                        80,
+                        65,
                       )}
+                      srcSet={`
+                        ${optimizeUnsplashUrl(need.imageUrl || 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c', 80, 80, 65)} 1x,
+                        ${optimizeUnsplashUrl(need.imageUrl || 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c', 160, 160, 65)} 2x
+                      `}
                       alt={need.title}
                       width={80}
                       height={80}

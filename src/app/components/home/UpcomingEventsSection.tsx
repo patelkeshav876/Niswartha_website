@@ -62,15 +62,23 @@ export function UpcomingEventsSection({ upcomingEvents }: UpcomingEventsSectionP
                   src={optimizeUnsplashUrl(
                     event.imageUrl ||
                       'https://images.unsplash.com/photo-1512341689857-198e7e2f3ca8',
-                    600,
                     400,
+                    250,
+                    68,
                   )}
+                  srcSet={`
+                    ${optimizeUnsplashUrl(event.imageUrl || 'https://images.unsplash.com/photo-1512341689857-198e7e2f3ca8', 360, 225, 65)} 360w,
+                    ${optimizeUnsplashUrl(event.imageUrl || 'https://images.unsplash.com/photo-1512341689857-198e7e2f3ca8', 480, 300, 68)} 480w,
+                    ${optimizeUnsplashUrl(event.imageUrl || 'https://images.unsplash.com/photo-1512341689857-198e7e2f3ca8', 640, 400, 68)} 640w
+                  `}
+                  sizes="(max-width: 640px) calc(100vw - 32px), (max-width: 1024px) 50vw, 400px"
                   alt={event.title}
-                  width={600}
-                  height={400}
+                  width={400}
+                  height={250}
                   loading="lazy"
                   decoding="async"
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  style={{ aspectRatio: '16 / 10' }}
                 />
                 <div className="absolute left-3 top-3">
                   <div className="rounded-lg bg-background/90 px-2.5 py-1.5 text-center shadow-sm backdrop-blur-sm">
