@@ -466,6 +466,25 @@ textarea,
   animation: shimmer 2s infinite;
 }
 
+/* Ambient Hero Background Zoom Breathing Effect */
+@keyframes heroZoom {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-hero-zoom {
+  animation: heroZoom 20s ease-in-out infinite;
+  will-change: transform;
+  transform-origin: center center;
+}
+
 /* Card hover lift utility */
 .card-hover {
   transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);

@@ -153,7 +153,7 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
         >
           <img
             src={bgUrl}
-            className={cn('w-full h-full object-center', fitClass)}
+            className={cn('w-full h-full object-center animate-hero-zoom', fitClass)}
             alt="Niswartha Hero Background"
             loading="eager"
             // @ts-ignore

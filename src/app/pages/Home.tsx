@@ -259,7 +259,7 @@ export function Home() {
                         <span className={action.iconBg}>{action.icon}</span>
                       </div>
                       <div>
-                        <h3 className="text-base font-bold lg:text-lg">{action.title}</h3>
+                        <h2 className="text-base font-bold lg:text-lg">{action.title}</h2>
                         <p className="text-sm text-muted-foreground">{action.subtitle}</p>
                       </div>
                       <ArrowRight className="ml-auto h-5 w-5 text-muted-foreground/40" />
