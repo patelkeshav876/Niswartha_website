@@ -35,9 +35,26 @@ export default defineConfig(({ mode }) => {
   assetsInclude: ['**/*.svg', '**/*.csv'],
 
   build: {
-    chunkSizeWarningLimit: 2000,
+    chunkSizeWarningLimit: 1000,
     target: 'es2020',
     cssMinify: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'vendor-react';
+            }
+            if (id.includes('motion')) {
+              return 'vendor-motion';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+          }
+        },
+      },
+    },
   }
   }
 })
