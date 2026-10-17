@@ -5,13 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Preload Critical LCP Hero Image Early (Frame 0) -->
     <link rel="preload" as="image" href="/hero-bg.webp" type="image/webp" fetchpriority="high" />
-    <!-- Frame 0: Flatten Network Waterfall by pre-fetching config concurrently with JS download -->
+    <!-- Frame 0: Eliminate Network Waterfall by pre-fetching all critical initial APIs concurrently with JS download -->
     <script>
       (function() {
         try {
-          window.__CONFIG_PROMISE__ = fetch('/api/config')
-            .then(function(res) { return res.ok ? res.json() : null; })
-            .catch(function() { return null; });
+          window.__PRELOADED_API__ = {
+            config: fetch('/api/config').then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
+            needs: fetch('/api/needs').then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
+            ashrams: fetch('/api/ashrams').then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
+            events: fetch('/api/events').then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; })
+          };
+          window.__CONFIG_PROMISE__ = window.__PRELOADED_API__.config;
         } catch(e) {}
       })();
     </script>

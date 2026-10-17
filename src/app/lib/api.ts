@@ -188,6 +188,12 @@ export const api = {
 
   getAshrams: async () => {
     try {
+      if (typeof window !== 'undefined' && (window as any).__PRELOADED_API__?.ashrams) {
+        const preloaded = (window as any).__PRELOADED_API__.ashrams;
+        (window as any).__PRELOADED_API__.ashrams = null;
+        const res = await preloaded;
+        if (res && Array.isArray(res) && res.length > 0) return res;
+      }
       return await fetchAPI<Ashram[]>('/ashrams');
     } catch {
       return mockAshrams;
@@ -208,9 +214,17 @@ export const api = {
   getNeeds: async (ashramId?: string) => {
     let apiData: Need[] | null = null;
     try {
-      apiData = await fetchAPI<Need[]>(
-        ashramId ? `/needs?ashramId=${encodeURIComponent(ashramId)}` : '/needs',
-      );
+      if (!ashramId && typeof window !== 'undefined' && (window as any).__PRELOADED_API__?.needs) {
+        const preloaded = (window as any).__PRELOADED_API__.needs;
+        (window as any).__PRELOADED_API__.needs = null;
+        const res = await preloaded;
+        if (res && Array.isArray(res) && res.length > 0) apiData = res;
+      }
+      if (!apiData) {
+        apiData = await fetchAPI<Need[]>(
+          ashramId ? `/needs?ashramId=${encodeURIComponent(ashramId)}` : '/needs',
+        );
+      }
     } catch {
       // Backend may be offline or Vercel edge without mongo
     }
@@ -312,6 +326,12 @@ export const api = {
 
   getEvents: async (ashramId?: string) => {
     try {
+      if (!ashramId && typeof window !== 'undefined' && (window as any).__PRELOADED_API__?.events) {
+        const preloaded = (window as any).__PRELOADED_API__.events;
+        (window as any).__PRELOADED_API__.events = null;
+        const res = await preloaded;
+        if (res && Array.isArray(res) && res.length > 0) return res;
+      }
       return await fetchAPI<Event[]>(
         ashramId ? `/events?ashramId=${encodeURIComponent(ashramId)}` : '/events',
       );
@@ -866,10 +886,13 @@ export const api = {
         let remoteCfg: any = null;
         try {
           // Check if Frame 0 prefetch in index.html is available
-          if (typeof window !== 'undefined' && (window as any).__CONFIG_PROMISE__) {
-            const preloaded = (window as any).__CONFIG_PROMISE__;
-            (window as any).__CONFIG_PROMISE__ = null;
-            remoteCfg = await preloaded;
+          if (typeof window !== 'undefined') {
+            const preloaded = (window as any).__PRELOADED_API__?.config || (window as any).__CONFIG_PROMISE__;
+            if (preloaded) {
+              if ((window as any).__PRELOADED_API__) (window as any).__PRELOADED_API__.config = null;
+              (window as any).__CONFIG_PROMISE__ = null;
+              remoteCfg = await preloaded;
+            }
           }
 
           if (!remoteCfg) {
