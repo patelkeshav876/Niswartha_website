@@ -58,12 +58,47 @@ export function HeroManager() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, field: 'bgUrl' | 'bgVideoUrl' | 'mobileFallbackUrl') => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setForm((prev) => ({ ...prev, [field]: reader.result as string }));
-      toast.success('File loaded successfully');
-    };
-    reader.readAsDataURL(file);
+
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1280;
+          let { width, height } = img;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressed = canvas.toDataURL('image/webp', 0.75);
+            setForm((prev) => ({ ...prev, [field]: compressed }));
+            toast.success('Optimized WebP hero image loaded');
+            return;
+          }
+          setForm((prev) => ({ ...prev, [field]: event.target?.result as string }));
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setForm((prev) => ({ ...prev, [field]: reader.result as string }));
+        toast.success('File loaded successfully');
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const fetchConfig = async (pageKey: string) => {
@@ -101,7 +136,10 @@ export function HeroManager() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.updateHeroConfig(selectedPage, form);
+      const clean = { ...form };
+      delete (clean as any)._id;
+      delete (clean as any).__v;
+      await api.updateHeroConfig(selectedPage, clean);
       toast.success(`Hero backdrop configuration saved for ${PAGES.find((p) => p.key === selectedPage)?.label}`);
     } catch {
       toast.error('Failed to save hero configuration');

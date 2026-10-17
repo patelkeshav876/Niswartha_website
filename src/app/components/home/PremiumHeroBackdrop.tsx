@@ -34,7 +34,7 @@ function getInitialConfig(pageKey: string) {
 
   return {
     bgType: 'image',
-    bgUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=75&fm=webp',
+    bgUrl: '/hero-bg.webp',
     overlayOpacity: 0.55,
   };
 }
@@ -85,8 +85,9 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
   // bgType is strictly 'gradient' or 'image'
   const rawBgType = config?.bgType || config?.heroBgType;
   const bgType = rawBgType === 'gradient' ? 'gradient' : (pageKey === 'about' ? 'gradient' : 'image');
-  const rawBgUrl = config?.bgUrl || config?.heroBgUrl || (pageKey === 'about' ? '' : 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=75&fm=webp');
-  const bgUrl = rawBgUrl ? optimizeUnsplashUrl(rawBgUrl, 1200, 800, 75) : '';
+  const rawBgUrl = config?.bgUrl || config?.heroBgUrl || (pageKey === 'about' ? '' : '/hero-bg.webp');
+  const safeBgUrl = (rawBgUrl && rawBgUrl.startsWith('data:image/')) ? '/hero-bg.webp' : rawBgUrl;
+  const bgUrl = safeBgUrl ? optimizeUnsplashUrl(safeBgUrl, 1200, 800, 75) : '';
   const overlayOpacity = config?.overlayOpacity !== undefined ? Number(config.overlayOpacity) : (config?.heroOverlayOpacity !== undefined ? Number(config.heroOverlayOpacity) : 0.55);
   const blurIntensity = config?.blurIntensity !== undefined ? Number(config.blurIntensity) : 0;
   const brightness = config?.brightness !== undefined ? Number(config.brightness) : 1.0;
@@ -140,32 +141,26 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
         </>
       )}
 
-      {/* ──── Image Fill (Optimized WebP, high fetch priority, instant load) ──── */}
+      {/* ──── Image Fill (Optimized WebP, high fetch priority, instant LCP) ──── */}
       {bgType === 'image' && bgUrl && (
         <div
           className="absolute inset-0 w-full h-[120%] pointer-events-none overflow-hidden"
           style={{
-            transform: `translateY(${parallaxShift}px) translateZ(0)`,
+            transform: enableParallax ? `translateY(${parallaxShift}px) translateZ(0)` : undefined,
             filter: blurIntensity > 0 ? `blur(${blurIntensity}px)` : undefined,
-            transition: 'transform 0.1s ease-out',
+            transition: enableParallax ? 'transform 0.1s ease-out' : undefined,
           }}
         >
-          <motion.img
+          <img
             src={bgUrl}
-            className={cn('w-full h-full object-center will-change-transform', fitClass)}
-            alt=""
+            className={cn('w-full h-full object-center', fitClass)}
+            alt="Niswartha Hero Background"
             loading="eager"
             // @ts-ignore
             fetchpriority="high"
             decoding="async"
-            initial={{ scale: 1 }}
-            animate={{ scale: [1, 1.08, 1] }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              repeatType: 'reverse',
-              ease: 'easeInOut',
-            }}
+            width={1200}
+            height={800}
           />
         </div>
       )}

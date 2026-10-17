@@ -2157,6 +2157,8 @@ app.put('/api/hero-config/:pageKey', requireAdmin, async (req, res) => {
       pageKey,
       updatedAt: new Date().toISOString()
     };
+    delete payload._id;
+    delete payload.__v;
 
     const updated = await HeroConfig.findOneAndUpdate(
       { pageKey },
@@ -2164,13 +2166,15 @@ app.put('/api/hero-config/:pageKey', requireAdmin, async (req, res) => {
       { upsert: true, new: true }
     ).lean();
 
-    await AuditLog.create({
-      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      userId: req.user.id,
-      action: 'update_hero_config',
-      details: `Updated Hero configuration for page: ${pageKey}`,
-      createdAt: new Date().toISOString()
-    });
+    try {
+      await AuditLog.create({
+        id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        userId: req.user?.id || 'admin',
+        action: 'update_hero_config',
+        details: `Updated Hero configuration for page: ${pageKey}`,
+        createdAt: new Date().toISOString()
+      });
+    } catch {}
 
     res.json(updated);
   } catch (e) {
