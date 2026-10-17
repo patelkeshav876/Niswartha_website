@@ -45,6 +45,7 @@ export function WhatsAppButton() {
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-[45] flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl shadow-[#25D366]/20 transition-all hover:scale-110 hover:shadow-[#25D366]/35 active:scale-95 group animate-fade-up"
       title="Contact us on WhatsApp"
+      aria-label="Contact us on WhatsApp"
     >
       <MessageCircle className="h-7 w-7 transition-transform group-hover:rotate-6" />
       <span className="absolute right-16 scale-0 rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white shadow-lg transition-all group-hover:scale-100 whitespace-nowrap bg-zinc-900/90 backdrop-blur-sm select-none">

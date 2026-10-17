@@ -146,9 +146,10 @@ export function Home() {
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 30, filter: 'blur(8px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'none' }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.75, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            style={{ willChange: 'transform, opacity' }}
             className="mx-auto max-w-4xl font-serif text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl lg:text-7xl"
           >
             Empowering Every Child
@@ -156,9 +157,10 @@ export function Home() {
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 20, filter: 'blur(6px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'none' }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.65, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            style={{ willChange: 'transform, opacity' }}
             className="mx-auto mt-6 max-w-2xl text-base text-white/60 leading-relaxed sm:text-lg"
           >
             {ashram.description}
@@ -239,10 +241,11 @@ export function Home() {
               ].map((action, idx) => (
                 <motion.div
                   key={action.title}
-                  initial={{ opacity: 0, y: 24, filter: 'blur(6px)' }}
-                  whileInView={{ opacity: 1, y: 0, filter: 'none' }}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.55, delay: idx * 0.12, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ willChange: 'transform, opacity' }}
                 >
                   <Card
                     role="button"
@@ -300,10 +303,11 @@ export function Home() {
                 {urgentNeeds.slice(0, 3).map((need, i) => (
                   <motion.div
                     key={need.id}
-                    initial={{ opacity: 0, y: 24, filter: 'blur(6px)' }}
-                    whileInView={{ opacity: 1, y: 0, filter: 'none' }}
+                    initial={{ opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '-5%' }}
                     transition={{ duration: 0.55, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                    style={{ willChange: 'transform, opacity' }}
                   >
                     <Card
                       className="card-hover cursor-pointer overflow-hidden border-0 bg-card shadow-[0_8px_30px_-10px_rgba(15,23,42,0.1)] rounded-2xl ring-1 ring-border/50"
@@ -387,10 +391,11 @@ export function Home() {
             {upcomingEvents.map((event, idx) => (
               <motion.div
                 key={event.id}
-                initial={{ opacity: 0, y: 24, filter: 'blur(6px)' }}
-                whileInView={{ opacity: 1, y: 0, filter: 'none' }}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.55, delay: idx * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                style={{ willChange: 'transform, opacity' }}
               >
                 <Card
                   className="card-hover cursor-pointer overflow-hidden border-0 bg-card shadow-[0_8px_30px_-10px_rgba(15,23,42,0.1)] rounded-2xl ring-1 ring-border/50"
@@ -463,10 +468,11 @@ export function Home() {
                     ].map((item, i) => (
                       <motion.div
                         key={i}
-                        initial={{ opacity: 0, x: -20, filter: 'blur(4px)' }}
-                        whileInView={{ opacity: 1, x: 0, filter: 'none' }}
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.5, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                        style={{ willChange: 'transform, opacity' }}
                         className="flex items-center gap-4 rounded-xl bg-card/80 px-4 py-3 shadow-sm ring-1 ring-border/40 backdrop-blur-sm"
                       >
                         <item.icon className="h-5 w-5 shrink-0 text-primary" />
@@ -489,10 +495,11 @@ export function Home() {
 
                 {/* Donate CTA Card with Custom Admin Image Support */}
                 <motion.div
-                  initial={{ opacity: 0, x: 30, filter: 'blur(8px)' }}
-                  whileInView={{ opacity: 1, x: 0, filter: 'none' }}
+                  initial={{ opacity: 0, x: 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ willChange: 'transform, opacity' }}
                   className="w-[92%] sm:w-full max-w-md lg:max-w-none mx-auto"
                 >
                   <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-primary to-primary/80 shadow-xl shadow-primary/15 rounded-3xl">

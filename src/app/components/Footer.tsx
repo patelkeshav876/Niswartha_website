@@ -56,6 +56,7 @@ export function Footer() {
                     href={ashram.facebookUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="Visit Niswartha on Facebook"
                     className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/5 text-white/60 ring-1 ring-white/10 transition-all hover:bg-primary/20 hover:text-primary hover:ring-primary/30"
                   >
                     <Facebook className="h-4 w-4" />
@@ -63,6 +64,7 @@ export function Footer() {
                 )}
                 <a
                   href={`mailto:${ashram.contact.email}`}
+                  aria-label="Send email to Niswartha"
                   className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/5 text-white/60 ring-1 ring-white/10 transition-all hover:bg-primary/20 hover:text-primary hover:ring-primary/30"
                 >
                   <Mail className="h-4 w-4" />

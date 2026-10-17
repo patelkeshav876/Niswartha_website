@@ -195,6 +195,7 @@ export function Navbar() {
                   <Button
                     variant="ghost"
                     size="icon"
+                    aria-label="View notifications"
                     className={cn(
                       'relative h-10 w-10 rounded-full transition-colors duration-200',
                       !scrolled && isHeroPage
@@ -210,6 +211,8 @@ export function Navbar() {
                   <div className="relative" data-profile-dropdown>
                     <button
                       onClick={() => setProfileOpen(!profileOpen)}
+                      aria-label="Open user profile menu"
+                      aria-expanded={profileOpen}
                       className={cn(
                         'flex items-center gap-2 rounded-full p-1 pr-3 transition-colors duration-200',
                         !scrolled && isHeroPage ? 'hover:bg-white/15' : 'hover:bg-muted/60'
@@ -329,6 +332,8 @@ export function Navbar() {
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
+                aria-expanded={mobileOpen}
                 className={cn(
                   'lg:hidden h-10 w-10 rounded-full transition-colors duration-200',
                   !scrolled && isHeroPage ? 'text-white hover:bg-white/15' : ''

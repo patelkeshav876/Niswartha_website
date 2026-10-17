@@ -49,17 +49,16 @@ export function ScrollReveal({
   return (
     <motion.div
       className={className}
+      style={{ willChange: 'transform, opacity' }}
       initial={{
         opacity: 0,
         x,
         y,
-        filter: blur && !shouldReduceMotion ? 'blur(10px)' : 'none',
       }}
       whileInView={{
         opacity: 1,
         x: 0,
         y: 0,
-        filter: 'none',
       }}
       viewport={{ once, margin: '-8% 0px -6% 0px' }}
       transition={{
@@ -102,17 +101,16 @@ export function BlurReveal({
   return (
     <motion.div
       className={className}
+      style={{ willChange: 'transform, opacity' }}
       initial={{
         opacity: 0,
         x,
         y,
-        filter: shouldReduceMotion ? 'none' : 'blur(10px)',
       }}
       whileInView={{
         opacity: 1,
         x: 0,
         y: 0,
-        filter: 'none',
       }}
       viewport={{ once: true, margin: '-6% 0px -4% 0px' }}
       transition={{
@@ -181,16 +179,15 @@ export function TextRevealItem({
   return (
     <motion.div
       className={className}
+      style={{ willChange: 'transform, opacity' }}
       variants={{
         hidden: {
           opacity: 0,
           y: shouldReduceMotion ? 0 : 36,
-          filter: blur && !shouldReduceMotion ? 'blur(8px)' : 'none',
         },
         visible: {
           opacity: 1,
           y: 0,
-          filter: 'none',
           transition: {
             duration: shouldReduceMotion ? 0.2 : 1.25,
             ease: EASE_SMOOTH,
@@ -273,19 +270,18 @@ export function ImageReveal({
     <motion.div
       ref={ref}
       className={`overflow-hidden will-change-transform ${wrapperClassName}`}
+      style={{ willChange: 'transform, opacity' }}
       initial={{
         opacity: 0,
         x: xInit,
         y: yInit,
         scale: shouldReduceMotion ? 1 : 0.94,
-        filter: shouldReduceMotion ? 'none' : 'blur(8px)',
       }}
       whileInView={{
         opacity: 1,
         x: 0,
         y: 0,
         scale: 1,
-        filter: 'none',
       }}
       viewport={{ once: true, margin: '-6% 0px -4% 0px' }}
       transition={{
