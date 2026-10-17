@@ -115,6 +115,10 @@ function RotatingMemberCard({
                   <img
                     src={current.imageUrl}
                     alt={current.name}
+                    width={48}
+                    height={48}
+                    loading="lazy"
+                    decoding="async"
                     className="h-12 w-12 rounded-xl object-cover border border-primary/20 shrink-0 shadow-xs"
                   />
                 ) : (
@@ -769,6 +773,10 @@ export function About() {
                         <img
                           src={m.imageUrl}
                           alt={m.name}
+                          width={40}
+                          height={40}
+                          loading="lazy"
+                          decoding="async"
                           className="h-10 w-10 rounded-full object-cover border border-primary/40 shrink-0"
                         />
                       ) : (

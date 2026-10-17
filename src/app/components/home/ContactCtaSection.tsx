@@ -85,6 +85,8 @@ export function ContactCtaSection({ ashram }: ContactCtaSectionProps) {
                     <img
                       src={optimizeUnsplashUrl(config.supportCauseBgUrl, 800, 500)}
                       alt="Support Our Cause"
+                      width={800}
+                      height={500}
                       loading="lazy"
                       decoding="async"
                       className="absolute inset-0 w-full h-full object-cover object-center"
