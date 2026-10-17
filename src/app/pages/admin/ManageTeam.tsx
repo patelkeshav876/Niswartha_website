@@ -38,6 +38,15 @@ export function ManageTeam() {
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Principal Profile Configuration
+  const [principalName, setPrincipalName] = useState('Dr. Meenal Sudhir Sangole');
+  const [principalRole, setPrincipalRole] = useState('Principal (Deaf and Dumb Industrial Institute, Nagpur)');
+  const [principalBio, setPrincipalBio] = useState('Serving as Principal since 1993, Dr. Sangole has led the institution with immense dedication, maintaining a consistent 100% board examination record and empowering every student with self-reliance, academic excellence, and joyful socialization.');
+  const [principalImgUrl, setPrincipalImgUrl] = useState('');
+  const [principalDialogOpen, setPrincipalDialogOpen] = useState(false);
+  const [savingPrincipal, setSavingPrincipal] = useState(false);
+  const principalFileInputRef = useRef<HTMLInputElement>(null);
+
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -88,13 +97,64 @@ export function ManageTeam() {
   const loadTeam = async () => {
     setLoading(true);
     try {
-      const data = await api.getTeamMembers();
+      const [data, conf] = await Promise.all([
+        api.getTeamMembers(),
+        api.getConfig().catch(() => null),
+      ]);
       setTeam(data);
+      if (conf) {
+        if (conf.aboutPrincipalName) setPrincipalName(conf.aboutPrincipalName);
+        if (conf.aboutPrincipalRole) setPrincipalRole(conf.aboutPrincipalRole);
+        if (conf.aboutPrincipalBio) setPrincipalBio(conf.aboutPrincipalBio);
+        if (conf.aboutPrincipalImgUrl) setPrincipalImgUrl(conf.aboutPrincipalImgUrl);
+      }
     } catch (err) {
       console.error(err);
       toast.error('Failed to load team members');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePrincipalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please choose a valid image file');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (result) {
+        setPrincipalImgUrl(result);
+        toast.success('Principal photo selected from device');
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const savePrincipal = async () => {
+    if (!principalName.trim()) {
+      toast.error('Principal name is required');
+      return;
+    }
+    setSavingPrincipal(true);
+    try {
+      const updated = await api.updateConfig({
+        aboutPrincipalName: principalName.trim(),
+        aboutPrincipalRole: principalRole.trim(),
+        aboutPrincipalBio: principalBio.trim(),
+        aboutPrincipalImgUrl: principalImgUrl.trim(),
+      });
+      window.dispatchEvent(new CustomEvent('niswartha_config_updated', { detail: updated }));
+      toast.success('Principal profile updated successfully!');
+      setPrincipalDialogOpen(false);
+    } catch {
+      toast.error('Failed to update principal profile');
+    } finally {
+      setSavingPrincipal(false);
     }
   };
 
@@ -249,6 +309,48 @@ export function ManageTeam() {
           </Button>
         </div>
       </div>
+
+      {/* ──── Institute Principal & Leadership ──── */}
+      <Card className="border border-emerald-100 bg-gradient-to-r from-emerald-50/70 via-emerald-50/30 to-white shadow-xs rounded-2xl overflow-hidden">
+        <CardContent className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+          <div className="flex items-center gap-4">
+            <div className="relative h-16 w-16 sm:h-20 sm:w-20 shrink-0 rounded-2xl overflow-hidden bg-emerald-100 ring-2 ring-emerald-500/20 shadow-xs">
+              {principalImgUrl ? (
+                <img
+                  src={principalImgUrl}
+                  alt={principalName}
+                  className="h-full w-full object-cover object-top"
+                />
+              ) : (
+                <div className="h-full w-full flex items-center justify-center text-emerald-700 bg-emerald-100 font-bold text-xl">
+                  {principalName.charAt(0)}
+                </div>
+              )}
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] uppercase font-bold tracking-wider">
+                  School Principal
+                </Badge>
+                <span className="text-[11px] text-muted-foreground">About Page Leadership</span>
+              </div>
+              <h3 className="text-base sm:text-lg font-bold text-zinc-900 leading-tight">
+                {principalName}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1 max-w-xl">
+                {principalRole}
+              </p>
+            </div>
+          </div>
+
+          <Button
+            onClick={() => setPrincipalDialogOpen(true)}
+            className="rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold gap-1.5 shadow-xs shrink-0 self-start sm:self-auto"
+          >
+            <Edit2 className="h-3.5 w-3.5" /> Edit Principal Details
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Filter / Search Bar */}
       <div className="relative max-w-md">
@@ -434,6 +536,91 @@ export function ManageTeam() {
             </Button>
             <Button onClick={saveMember} disabled={saving} className="rounded-full bg-[#1E3A8A] text-white font-bold text-xs">
               {saving ? 'Saving...' : 'Save Member'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Principal Edit Dialog */}
+      <Dialog open={principalDialogOpen} onOpenChange={setPrincipalDialogOpen}>
+        <DialogContent className="max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-serif text-lg font-bold text-zinc-950 flex items-center gap-2">
+              <User className="h-5 w-5 text-emerald-600" />
+              Edit School Principal (About Us Page)
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label className="text-xs font-bold text-zinc-700 uppercase">Principal Full Name *</Label>
+              <Input
+                value={principalName}
+                onChange={(e) => setPrincipalName(e.target.value)}
+                placeholder="e.g. Dr. Meenal Sudhir Sangole"
+                className="mt-1 rounded-xl text-xs"
+              />
+            </div>
+            <div>
+              <Label className="text-xs font-bold text-zinc-700 uppercase">Designation / Leadership Title</Label>
+              <Input
+                value={principalRole}
+                onChange={(e) => setPrincipalRole(e.target.value)}
+                placeholder="e.g. Principal (Deaf and Dumb Industrial Institute, Nagpur)"
+                className="mt-1 rounded-xl text-xs"
+              />
+            </div>
+            <div>
+              <Label className="text-xs font-bold text-zinc-700 uppercase">Leadership Message / Bio</Label>
+              <Textarea
+                value={principalBio}
+                onChange={(e) => setPrincipalBio(e.target.value)}
+                placeholder="Principal's message or biography..."
+                rows={3}
+                className="mt-1 rounded-xl text-xs leading-relaxed"
+              />
+            </div>
+            <div>
+              <Label className="text-xs font-bold text-zinc-700 uppercase">Principal Photo (URL or Upload)</Label>
+              <div className="flex gap-2 mt-1">
+                <Input
+                  value={principalImgUrl}
+                  onChange={(e) => setPrincipalImgUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="rounded-xl text-xs flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => principalFileInputRef.current?.click()}
+                  className="rounded-xl text-xs shrink-0 border-zinc-200"
+                >
+                  <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                </Button>
+                <input
+                  type="file"
+                  ref={principalFileInputRef}
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handlePrincipalImageUpload}
+                />
+              </div>
+              {principalImgUrl && (
+                <div className="mt-2 h-20 w-20 rounded-xl overflow-hidden border border-zinc-200 shadow-xs">
+                  <img src={principalImgUrl} alt="Principal Preview" className="h-full w-full object-cover" />
+                </div>
+              )}
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setPrincipalDialogOpen(false)} className="rounded-full text-xs">
+              Cancel
+            </Button>
+            <Button
+              onClick={savePrincipal}
+              disabled={savingPrincipal}
+              className="rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold"
+            >
+              {savingPrincipal ? 'Saving...' : 'Save Principal Profile'}
             </Button>
           </DialogFooter>
         </DialogContent>

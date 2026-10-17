@@ -757,28 +757,51 @@ export function Settings() {
                   )}
                 </div>
 
-                {/* 4. Principal Photo */}
-                <div className="space-y-2 p-4 rounded-2xl bg-zinc-50/80 border border-zinc-200/80">
+                {/* 4. Principal Profile (Name, Role, Photo) */}
+                <div className="space-y-3 p-4 rounded-2xl bg-zinc-50/80 border border-zinc-200/80">
                   <Label className="text-xs font-bold text-zinc-800 uppercase flex items-center justify-between">
-                    <span>4. Principal Photo</span>
+                    <span>4. Principal Profile (About Page)</span>
                     <span className="text-[10px] text-zinc-400 font-normal">Leadership Card</span>
                   </Label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={config.aboutPrincipalImgUrl || ''}
-                      onChange={(e) => setConfig({ ...config, aboutPrincipalImgUrl: e.target.value })}
-                      placeholder="Principal photo URL..."
-                      className="rounded-xl text-xs bg-white flex-1"
-                    />
-                    <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-100 shadow-xs whitespace-nowrap">
-                      <Upload className="h-3.5 w-3.5 mr-1" /> Upload
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => handleUpload(e, 'aboutPrincipalImgUrl')}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <span className="text-[10px] text-zinc-500 font-medium">Principal Full Name</span>
+                      <Input
+                        value={config.aboutPrincipalName || ''}
+                        onChange={(e) => setConfig({ ...config, aboutPrincipalName: e.target.value })}
+                        placeholder="Dr. Meenal Sudhir Sangole"
+                        className="rounded-xl text-xs bg-white mt-1"
                       />
-                    </label>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-zinc-500 font-medium">Designation / Role Title</span>
+                      <Input
+                        value={config.aboutPrincipalRole || ''}
+                        onChange={(e) => setConfig({ ...config, aboutPrincipalRole: e.target.value })}
+                        placeholder="Principal (Deaf and Dumb Industrial Institute, Nagpur)"
+                        className="rounded-xl text-xs bg-white mt-1"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-zinc-500 font-medium">Principal Photo</span>
+                    <div className="flex gap-2 mt-1">
+                      <Input
+                        value={config.aboutPrincipalImgUrl || ''}
+                        onChange={(e) => setConfig({ ...config, aboutPrincipalImgUrl: e.target.value })}
+                        placeholder="Principal photo URL..."
+                        className="rounded-xl text-xs bg-white flex-1"
+                      />
+                      <label className="inline-flex items-center px-3 py-1.5 rounded-xl border border-zinc-200 text-xs font-semibold cursor-pointer bg-white hover:bg-zinc-100 shadow-xs whitespace-nowrap">
+                        <Upload className="h-3.5 w-3.5 mr-1" /> Upload
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleUpload(e, 'aboutPrincipalImgUrl')}
+                        />
+                      </label>
+                    </div>
                   </div>
                   {config.aboutPrincipalImgUrl && (
                     <img src={config.aboutPrincipalImgUrl} alt="Principal" className="h-24 w-full object-cover rounded-xl border mt-2" />

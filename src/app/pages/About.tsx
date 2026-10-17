@@ -213,6 +213,9 @@ export function About() {
   const assemblyImage = config?.aboutAssemblyImgUrl || 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=900&q=75&fm=webp';
   const awardImage = config?.aboutAwardImgUrl || 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?auto=format&fit=crop&w=900&q=75&fm=webp';
   const principalImage = config?.aboutPrincipalImgUrl || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=700&q=75&fm=webp';
+  const principalName = config?.aboutPrincipalName || 'Dr. Meenal Sudhir Sangole';
+  const principalRole = config?.aboutPrincipalRole || 'Principal (Deaf and Dumb Industrial Institute, Nagpur)';
+  const principalBio = config?.aboutPrincipalBio || 'Serving as Principal since 1993, Dr. Sangole has led the institution with immense dedication, maintaining a consistent 100% board examination record and empowering every student with self-reliance, academic excellence, and joyful socialization.';
 
   // Alternating Education Section Images (Matching Screenshot 3) - Optimized WebP
   const sportsImage = config?.aboutSportsImgUrl || 'https://images.unsplash.com/photo-1576618148400-f54bed99fcfd?auto=format&fit=crop&w=800&q=75&fm=webp';
@@ -620,10 +623,10 @@ export function About() {
         </section>
 
         {/* ════════════ Screenshot 1: Principal Intro & Inspiring Quote ════════════ */}
-        <section className="bg-[#0b110e] text-white py-20 lg:py-28 overflow-hidden relative">
-          {/* Ambient subtle light glows */}
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-10 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <section className="bg-[#0b110e] text-white py-20 lg:py-28 overflow-hidden relative" style={{ contain: 'paint' }}>
+          {/* Ambient subtle light glows with GPU acceleration */}
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/15 rounded-full blur-3xl pointer-events-none will-change-transform" aria-hidden="true" />
+          <div className="absolute bottom-0 left-10 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none will-change-transform" aria-hidden="true" />
 
           <div className="section-container relative z-10 space-y-16 max-w-6xl mx-auto">
             {/* Top Full-Width Underlined Quote (Matching Screenshot 1 exactly) */}
@@ -648,7 +651,7 @@ export function About() {
                   {/* Photo of Principal sliding in from corner-left */}
                   <ImageReveal
                     src={principalImage}
-                    alt="Dr. Meenal Sudhir Sangole"
+                    alt={principalName}
                     from="corner-left"
                     delay={0.15}
                     wrapperClassName="relative rounded-3xl shadow-2xl overflow-hidden aspect-[4/3] sm:aspect-[1/1] z-10"
@@ -663,10 +666,10 @@ export function About() {
                   <TextRevealItem>
                     <div>
                       <h3 className="font-poppins font-bold text-2xl sm:text-3xl lg:text-4xl text-white tracking-tight">
-                        Dr. Meenal Sudhir Sangole
+                        {principalName}
                       </h3>
                       <p className="text-sm sm:text-base text-emerald-400 font-medium mt-1">
-                        Principal (Deaf and Dumb Industrial Institute, Nagpur)
+                        {principalRole}
                       </p>
                     </div>
                   </TextRevealItem>
@@ -679,7 +682,7 @@ export function About() {
 
                   <TextRevealItem blur={false}>
                     <p className="text-sm sm:text-base text-white/80 leading-relaxed">
-                      Serving as Principal since 1993, Dr. Sangole has led the institution with immense dedication, maintaining a consistent 100% board examination record and empowering every student with self-reliance, academic excellence, and joyful socialization.
+                      {principalBio}
                     </p>
                   </TextRevealItem>
                 </TextRevealGroup>
