@@ -950,6 +950,14 @@ export const api = {
     return fn;
   })(),
 
+  getProfileConfig: async () => {
+    try {
+      return await fetchAPI<any>('/config/profiles');
+    } catch {
+      return {};
+    }
+  },
+
   updateConfig: async (data: Record<string, unknown>) => {
     // Invalidate config cache immediately so updates reflect instantly everywhere
     if (typeof (api?.getConfig as any)?.invalidate === 'function') {

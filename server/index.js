@@ -1859,7 +1859,33 @@ app.get('/api/config', async (req, res) => {
         await Config.updateOne({ id: 'global-config' }, { $set: conf });
       }
     }
-    res.json(conf);
+    // Partition heavy Base64 profile arrays (profileTemplates, profileBgUrl, profileCarUrl, profileCustomElements)
+    // out of the critical initial config payload so /api/config drops from 3.17 MB down to ~2 KB.
+    const {
+      profileTemplates,
+      profileBgUrl,
+      profileCarUrl,
+      profileCustomElements,
+      ...lightweightConfig
+    } = conf;
+
+    res.json(lightweightConfig);
+  } catch (e) {
+    res.status(500).json({ error: String(e.message) });
+  }
+});
+
+// Deferred sub-category endpoint for heavy profile custom elements / templates
+app.get('/api/config/profiles', async (req, res) => {
+  try {
+    const conf = await Config.findOne({ id: 'global-config' }).lean();
+    if (!conf) return res.json({});
+    res.json({
+      profileTemplates: conf.profileTemplates || [],
+      profileBgUrl: conf.profileBgUrl || '',
+      profileCarUrl: conf.profileCarUrl || '',
+      profileCustomElements: conf.profileCustomElements || [],
+    });
   } catch (e) {
     res.status(500).json({ error: String(e.message) });
   }
