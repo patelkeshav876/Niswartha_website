@@ -3,6 +3,7 @@ import { Outlet, useLocation, Link } from 'react-router';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { useUser } from './context/UserContext';
+import { useConfig } from './context/ConfigContext';
 import { Toaster, toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import { WhatsAppButton } from './components/WhatsAppButton';
@@ -14,44 +15,13 @@ import { Button } from './components/ui/button';
 export function Layout() {
   const location = useLocation();
   const { currentUser, loading } = useUser();
-  const [config, setConfig] = useState<any>(null);
+  const { config } = useConfig();
   const [announcementDismissed, setAnnouncementDismissed] = useState(false);
 
   // Scroll to top on route changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [location.pathname]);
-
-  // Load global config details (e.g. for maintenance filter, announcements, theme)
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        const c = await api.getConfig();
-        if (active) {
-          setConfig(c);
-          if (c?.primaryThemeColor) applyThemeColor(c.primaryThemeColor);
-        }
-      } catch {
-        // use defaults
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [location.pathname]);
-
-  // Listen to immediate config updates dispatched by Admin Settings
-  useEffect(() => {
-    const handleConfigUpdate = (e: any) => {
-      if (e?.detail) {
-        setConfig((prev: any) => ({ ...prev, ...e.detail }));
-        if (e.detail.primaryThemeColor) applyThemeColor(e.detail.primaryThemeColor);
-      }
-    };
-    window.addEventListener('niswartha_config_updated', handleConfigUpdate);
-    return () => window.removeEventListener('niswartha_config_updated', handleConfigUpdate);
-  }, []);
 
   const hideNavFooter = ['/login', '/signup', '/onboarding', '/super-admin'].some((path) =>
     location.pathname.startsWith(path)

@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router';
 import { Layout } from './layout';
 import { UserProvider, useUser } from './context/UserContext';
+import { ConfigProvider } from './context/ConfigContext';
 import { PageSkeleton } from './components/PageSkeleton';
 
 // Eagerly load landing page to eliminate CLS and suspense flash on initial paint
@@ -62,9 +63,13 @@ function SuspenseWrap({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Wrapper component to provide UserContext to all routes
+// Wrapper component to provide ConfigContext and UserContext to all routes
 function RootLayout({ children }: { children: React.ReactNode }) {
-  return <UserProvider>{children}</UserProvider>;
+  return (
+    <ConfigProvider>
+      <UserProvider>{children}</UserProvider>
+    </ConfigProvider>
+  );
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {

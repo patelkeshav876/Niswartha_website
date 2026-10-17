@@ -183,30 +183,30 @@ function RotatingMemberCard({
   );
 }
 
+import { useConfig } from '../context/ConfigContext';
+
 export function About() {
   const navigate = useNavigate();
   const ashram = mockAshrams[0];
   const [team, setTeam] = useState<any[]>(DEFAULT_STAFF);
-  const [config, setConfig] = useState<any>(null);
+  const { config } = useConfig();
 
   useEffect(() => {
+    let active = true;
     const fetchData = async () => {
       try {
-        const [teamData, configData] = await Promise.all([
-          api.getTeamMembers().catch(() => []),
-          api.getConfig().catch(() => null),
-        ]);
-        if (teamData && teamData.length > 0) {
+        const teamData = await api.getTeamMembers().catch(() => []);
+        if (active && teamData && teamData.length > 0) {
           setTeam(teamData);
-        }
-        if (configData) {
-          setConfig(configData);
         }
       } catch {
         // fallback
       }
     };
     fetchData();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const heroImage = config?.aboutHeroImgUrl || 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=900&q=75&fm=webp';

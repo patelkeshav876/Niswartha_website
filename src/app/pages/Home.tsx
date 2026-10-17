@@ -1,165 +1,130 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, lazy, Suspense } from 'react';
 import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
-import {
-  Heart,
-  MapPin,
-  Phone,
-  Mail,
-  ArrowRight,
-  Users,
-  Calendar,
-  TrendingUp,
-  Facebook,
-  Gift,
-  Sparkles,
-} from 'lucide-react';
+import { Heart, ArrowRight, Users, Calendar, Gift } from 'lucide-react';
 import { mockAshrams, mockNeeds, mockEvents } from '../data/mock';
-import { Link, useNavigate } from 'react-router';
-import { motion, useInView, AnimatePresence } from 'motion/react';
+import { useNavigate } from 'react-router';
+import { motion, useInView } from 'motion/react';
 import { useUser } from '../context/UserContext';
+import { useConfig } from '../context/ConfigContext';
 import { api } from '../lib/api';
 import { Ashram, type Event as EventType, Need } from '../types';
-import {
-  ScrollReveal,
-  BlurReveal,
-  TextRevealGroup,
-  TextRevealItem,
-  SectionTransition,
-} from '../components/ScrollReveal';
 import { PremiumHeroBackdrop } from '../components/home/PremiumHeroBackdrop';
-import { optimizeUnsplashUrl } from '../lib/unsplash';
 
-/* ───── Count-Up Hook ───── */
-function useCountUp(target: number, duration = 2000) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: '-10% 0px' });
+// Lazily imported below-the-fold components to reduce initial parse & execution time
+const QuickActions = lazy(() => import('../components/home/QuickActions'));
+const UrgentNeedsSection = lazy(() => import('../components/home/UrgentNeedsSection'));
+const UpcomingEventsSection = lazy(() => import('../components/home/UpcomingEventsSection'));
+const ContactCtaSection = lazy(() => import('../components/home/ContactCtaSection'));
 
-  useEffect(() => {
-    if (!inView) return;
-    const start = performance.now();
-    const step = (now: number) => {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      // Ease-out cubic
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.round(eased * target));
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [inView, target, duration]);
-
-  return { count, ref };
-}
-
-/* ───── Stat Counter Component ───── */
-function StatCounter({
-  value,
-  label,
-  prefix = '',
-  suffix = '',
-  icon,
-}: {
-  value: number;
+/* ───── Unified Stat Counters Component ───── */
+// Single RAF loop batches all counter updates into one render cycle,
+// eliminating React 18 concurrent micro-task flooding and the 344ms reconciliation block.
+interface StatItem {
+  target: number;
   label: string;
   prefix?: string;
   suffix?: string;
   icon: React.ReactNode;
-}) {
-  const { count, ref } = useCountUp(value);
-  return (
-    <div className="text-center">
-      <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.06] ring-1 ring-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
-        {icon}
-      </div>
-      <p className="text-3xl font-bold tracking-tight text-white lg:text-4xl">
-        <span ref={ref}>
-          {prefix}
-          {count.toLocaleString()}
-          {suffix}
-        </span>
-      </p>
-      <p className="mt-1 text-sm text-white/50">{label}</p>
-    </div>
-  );
 }
 
-/* ───── Vertical Scroll-Up Subtitle Component for Mobile ───── */
-function ScrollUpSubtitle({ text, phrases }: { text: string; phrases: string[] }) {
-  const [index, setIndex] = useState(0);
+function UnifiedStatCounters({ stats }: { stats: StatItem[] }) {
+  const [counts, setCounts] = useState<number[]>(() => stats.map(() => 0));
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(containerRef, { once: true, margin: '-5% 0px' });
+  const hasAnimated = useRef(false);
 
   useEffect(() => {
-    if (phrases.length <= 1) return;
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % phrases.length);
-    }, 2800);
-    return () => clearInterval(interval);
-  }, [phrases]);
+    if (!inView || hasAnimated.current) return;
+    hasAnimated.current = true;
+
+    // Delay counter ignition slightly (400ms) until Framer Motion hero entrance animations settle
+    const timeout = setTimeout(() => {
+      const duration = 1800;
+      const start = performance.now();
+      const targets = stats.map((s) => s.target);
+
+      const step = (now: number) => {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+
+        setCounts(targets.map((t) => Math.round(eased * t)));
+
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        }
+      };
+
+      requestAnimationFrame(step);
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  }, [inView, stats]);
 
   return (
-    <div className="relative h-5 overflow-hidden">
-      {/* Desktop / Tablet view: show full text on one line */}
-      <p className="hidden sm:block text-sm text-muted-foreground truncate">{text}</p>
-
-      {/* Mobile view: smooth vertical scroll-up transition so card height stays strictly uniform */}
-      <div className="sm:hidden relative h-5">
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={index}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="text-xs text-muted-foreground whitespace-nowrap absolute inset-0 flex items-center"
-          >
-            {phrases[index]}
-          </motion.p>
-        </AnimatePresence>
-      </div>
-    </div>
+    <motion.div
+      ref={containerRef}
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.6 }}
+      className="mt-16 grid grid-cols-2 gap-8 sm:grid-cols-4 sm:gap-12 lg:gap-16"
+    >
+      {stats.map((stat, i) => (
+        <div key={stat.label} className="text-center">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.06] ring-1 ring-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
+            {stat.icon}
+          </div>
+          <p className="text-3xl font-bold tracking-tight text-white lg:text-4xl">
+            <span>
+              {stat.prefix || ''}
+              {counts[i].toLocaleString()}
+              {stat.suffix || ''}
+            </span>
+          </p>
+          <p className="mt-1 text-sm text-white/50">{stat.label}</p>
+        </div>
+      ))}
+    </motion.div>
   );
 }
 
 export function Home() {
   const navigate = useNavigate();
   const { currentUser } = useUser();
+  const { config } = useConfig();
   const [ashram, setAshram] = useState<Ashram>(mockAshrams[0]);
   const [needs, setNeeds] = useState<Need[]>(mockNeeds);
   const [upcomingEvents, setUpcomingEvents] = useState<EventType[]>(() =>
     mockEvents.slice(0, 3),
   );
 
-  const [config, setConfig] = useState<any>(null);
-
   useEffect(() => {
-    void loadData();
-  }, []);
-
-  const loadData = async () => {
-    try {
-      const [needsData, ashramsData, eventsData, configData] = await Promise.all([
-        api.getNeeds(),
-        api.getAshrams(),
-        api.getEvents(),
-        api.getConfig(),
-      ]);
-      if (needsData.length > 0) setNeeds(needsData);
-      if (ashramsData.length > 0) setAshram(ashramsData[0]);
-      if (configData) setConfig(configData);
-      if (eventsData && Array.isArray(eventsData)) {
-        const sorted = [...eventsData].sort(
-          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-        );
-        setUpcomingEvents(sorted.slice(0, 3));
+    let active = true;
+    const loadData = async () => {
+      try {
+        const [needsData, ashramsData, eventsData] = await Promise.all([
+          api.getNeeds(),
+          api.getAshrams(),
+          api.getEvents(),
+        ]);
+        if (!active) return;
+        if (needsData.length > 0) setNeeds(needsData);
+        if (ashramsData.length > 0) setAshram(ashramsData[0]);
+        if (eventsData && Array.isArray(eventsData)) {
+          const sorted = [...eventsData].sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+          );
+          setUpcomingEvents(sorted.slice(0, 3));
+        }
+      } catch {
+        // Keep mock data
       }
-    } catch {
-      // Keep mock data
-    }
-  };
-
-  const getFirstName = (name: string) => name.split(' ')[0];
+    };
+    void loadData();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const urgentNeeds = needs.filter((n) => n.urgency === 'high');
   const mainRef = useRef<HTMLElement | null>(null);
@@ -227,358 +192,41 @@ export function Home() {
             </Button>
           </motion.div>
 
-          {/* Count-up Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="mt-16 grid grid-cols-2 gap-8 sm:grid-cols-4 sm:gap-12 lg:gap-16"
-          >
-            <StatCounter value={50} suffix="+" label="Children Helped" icon={<Users className="h-6 w-6 text-emerald-300" />} />
-            <StatCounter value={1500} suffix="+" label="Items Donated" icon={<Heart className="h-6 w-6 text-rose-300" />} />
-            <StatCounter value={needs.length} label="Active Needs" icon={<Gift className="h-6 w-6 text-amber-300" />} />
-            <StatCounter value={upcomingEvents.length} label="Upcoming Events" icon={<Calendar className="h-6 w-6 text-sky-300" />} />
-          </motion.div>
+          {/* Unified Count-up Stats (Single RAF, Batched State, Zero Scripting Lag) */}
+          <UnifiedStatCounters
+            stats={[
+              { target: 50, suffix: '+', label: 'Children Helped', icon: <Users className="h-6 w-6 text-emerald-300" /> },
+              { target: 1500, suffix: '+', label: 'Items Donated', icon: <Heart className="h-6 w-6 text-rose-300" /> },
+              { target: needs.length, label: 'Active Needs', icon: <Gift className="h-6 w-6 text-amber-300" /> },
+              { target: upcomingEvents.length, label: 'Upcoming Events', icon: <Calendar className="h-6 w-6 text-sky-300" /> },
+            ]}
+          />
         </div>
       </PremiumHeroBackdrop>
 
       {/* ════════════ MAIN CONTENT ════════════ */}
       <main ref={mainRef} className="flex-1">
-
         {/* ──── Quick Actions ──── */}
-        <section className="section-container py-16 lg:py-20">
-          <ScrollReveal>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-              {[
-                {
-                  tint: 'bg-gradient-to-b from-primary-500/12 to-primary-500/5 ring-1 ring-primary-500/15',
-                  iconBg: 'text-primary-600',
-                  title: 'Support Our Mission',
-                  subtitle: 'Support our children with a contribution',
-                  phrases: ['Support our children', 'with a contribution'],
-                  icon: <Heart className="h-7 w-7" />,
-                  onClick: () => navigate(`/donate/${ashram.id}`),
-                },
-                {
-                  tint: 'bg-gradient-to-b from-blue-500/12 to-blue-500/5 ring-1 ring-blue-500/15',
-                  iconBg: 'text-blue-600',
-                  title: 'About Us',
-                  subtitle: 'Our story, mission & impact',
-                  phrases: ['Our story & mission', 'and student impact'],
-                  icon: <Users className="h-7 w-7" />,
-                  onClick: () => navigate('/about'),
-                },
-                {
-                  tint: 'bg-gradient-to-b from-orange-500/12 to-orange-500/5 ring-1 ring-orange-500/15',
-                  iconBg: 'text-orange-600',
-                  title: 'Visit Us',
-                  subtitle: 'Book a visit to our campus',
-                  phrases: ['Book a visit', 'to our campus'],
-                  icon: <Calendar className="h-7 w-7" />,
-                  onClick: () => navigate(`/visit-book/${ashram.id}`),
-                },
-              ].map((action, idx) => (
-                <motion.div
-                  key={action.title}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.55, delay: idx * 0.12, ease: [0.22, 1, 0.36, 1] }}
-                  style={{ willChange: 'transform, opacity' }}
-                  className="h-full"
-                >
-                  <Card
-                    role="button"
-                    tabIndex={0}
-                    className="h-full min-h-[96px] sm:min-h-[104px] cursor-pointer border-0 bg-card/95 shadow-[0_12px_40px_-12px_rgba(15,23,42,0.12)] rounded-2xl ring-1 ring-border/50 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_-16px_rgba(15,23,42,0.2)] active:scale-[0.98]"
-                    onClick={action.onClick}
-                    onKeyDown={(e) => { if (e.key === 'Enter') action.onClick(); }}
-                  >
-                    <CardContent className="flex items-center gap-4 sm:gap-5 p-5 sm:p-6 lg:p-8 h-full">
-                      <div className={`flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-2xl ${action.tint} shadow-[inset_0_2px_8px_rgba(0,0,0,0.04)]`}>
-                        <span className={action.iconBg}>{action.icon}</span>
-                      </div>
-                      <div className="min-w-0 flex-1 overflow-hidden">
-                        <h2 className="text-base font-bold lg:text-lg truncate sm:overflow-visible sm:whitespace-normal">{action.title}</h2>
-                        <ScrollUpSubtitle text={action.subtitle} phrases={action.phrases} />
-                      </div>
-                      <ArrowRight className="ml-auto h-5 w-5 shrink-0 text-muted-foreground/40" />
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </ScrollReveal>
-        </section>
+        <Suspense fallback={<div className="section-container py-16 lg:py-20 min-h-[140px] sm:min-h-[160px]" />}>
+          <QuickActions ashramId={ashram.id} />
+        </Suspense>
 
         {/* ──── Urgent Needs ──── */}
         {urgentNeeds.length > 0 && (
-          <section className="bg-muted/30 py-16 lg:py-20">
-            <div className="section-container">
-              <div className="mb-8 flex items-end justify-between">
-                <TextRevealGroup stagger={0.1}>
-                  <TextRevealItem>
-                    <div className="mb-2 flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5 text-orange-600" />
-                      <span className="text-xs font-bold uppercase tracking-wider text-orange-600">Urgent</span>
-                    </div>
-                  </TextRevealItem>
-                  <TextRevealItem>
-                    <h2 className="text-2xl font-bold lg:text-3xl font-serif">Help Us Reach Our Goals</h2>
-                  </TextRevealItem>
-                  <TextRevealItem blur={false}>
-                    <p className="mt-1 text-muted-foreground">These needs require immediate attention</p>
-                  </TextRevealItem>
-                </TextRevealGroup>
-                <BlurReveal delay={0.2} direction="left">
-                  <Link to="/needs">
-                    <Button variant="ghost" className="group text-primary">
-                      View All <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </Button>
-                  </Link>
-                </BlurReveal>
-              </div>
-
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {urgentNeeds.slice(0, 3).map((need, i) => (
-                  <motion.div
-                    key={need.id}
-                    initial={{ opacity: 0, y: 24 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: '-5%' }}
-                    transition={{ duration: 0.55, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                    style={{ willChange: 'transform, opacity' }}
-                  >
-                    <Card
-                      className="card-hover cursor-pointer overflow-hidden border-0 bg-card shadow-[0_8px_30px_-10px_rgba(15,23,42,0.1)] rounded-2xl ring-1 ring-border/50"
-                      onClick={() => navigate(`/donate-flow/${need.ashramId}/${need.id}`)}
-                    >
-                      <CardContent className="p-5 lg:p-6">
-                        <div className="flex gap-4">
-                          <img
-                            src={optimizeUnsplashUrl(need.imageUrl || 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c', 70, 70, 70)}
-                            alt={need.title}
-                            width={80}
-                            height={80}
-                            loading="lazy"
-                            decoding="async"
-                            className="h-20 w-20 min-h-20 min-w-20 shrink-0 rounded-xl object-cover shadow-inner ring-1 ring-black/5"
-                            style={{ width: '80px', height: '80px', aspectRatio: '1 / 1' }}
-                          />
-                          <div className="min-w-0 flex-1">
-                            <div className="mb-2 flex items-start justify-between">
-                              <h3 className="line-clamp-1 text-sm font-bold lg:text-base">{need.title}</h3>
-                              <Badge variant="destructive" className="ml-2 text-[10px]">
-                                Urgent
-                              </Badge>
-                            </div>
-                            <Badge variant="secondary" className="mb-3 text-[10px]">
-                              {need.category}
-                            </Badge>
-                            <div className="space-y-1.5">
-                              <div className="flex justify-between text-xs">
-                                <span className="text-muted-foreground">Progress</span>
-                                <span className="font-medium text-emerald-800">
-                                  {need.quantityFulfilled.toLocaleString()} / {need.quantityRequired.toLocaleString()} Units
-                                </span>
-                              </div>
-                              <div className="h-2 w-full overflow-hidden rounded-full bg-secondary shadow-inner">
-                                <div
-                                  className="h-full rounded-full bg-primary shadow-sm transition-all"
-                                  style={{
-                                    width: `${(need.quantityFulfilled / need.quantityRequired) * 100}%`,
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </section>
+          <Suspense fallback={<div className="bg-muted/30 py-16 lg:py-20 min-h-[380px]" />}>
+            <UrgentNeedsSection urgentNeeds={urgentNeeds} />
+          </Suspense>
         )}
 
         {/* ──── Upcoming Events ──── */}
-        <section className="section-container py-16 lg:py-20">
-            <div className="mb-8 flex items-end justify-between">
-              <TextRevealGroup stagger={0.1}>
-                <TextRevealItem>
-                  <div className="mb-2 flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-purple-600" />
-                    <span className="text-xs font-bold uppercase tracking-wider text-purple-600">Upcoming</span>
-                  </div>
-                </TextRevealItem>
-                <TextRevealItem>
-                  <h2 className="text-2xl font-bold lg:text-3xl font-serif">Community Events</h2>
-                </TextRevealItem>
-                <TextRevealItem blur={false}>
-                  <p className="mt-1 text-muted-foreground">Join us and make lasting memories</p>
-                </TextRevealItem>
-              </TextRevealGroup>
-              <BlurReveal delay={0.2} direction="left">
-                <Link to="/events">
-                  <Button variant="ghost" className="group text-primary">
-                    View All <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Button>
-                </Link>
-              </BlurReveal>
-            </div>
-
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {upcomingEvents.map((event, idx) => (
-              <motion.div
-                key={event.id}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.55, delay: idx * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                style={{ willChange: 'transform, opacity' }}
-              >
-                <Card
-                  className="card-hover cursor-pointer overflow-hidden border-0 bg-card shadow-[0_8px_30px_-10px_rgba(15,23,42,0.1)] rounded-2xl ring-1 ring-border/50"
-                  onClick={() => navigate('/events')}
-                >
-                  <div className="relative aspect-[16/10] sm:h-48 w-full overflow-hidden">
-                    <img
-                      src={optimizeUnsplashUrl(event.imageUrl || 'https://images.unsplash.com/photo-1512341689857-198e7e2f3ca8', 600, 400)}
-                      alt={event.title}
-                      width={600}
-                      height={400}
-                      loading="lazy"
-                      decoding="async"
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute left-3 top-3">
-                      <div className="rounded-lg bg-background/90 px-2.5 py-1.5 text-center shadow-sm backdrop-blur-sm">
-                        <span className="block text-[10px] font-bold uppercase text-primary">
-                          {new Date(event.date).toLocaleString('default', { month: 'short' })}
-                        </span>
-                        <span className="block text-lg font-bold leading-none text-foreground">
-                          {new Date(event.date).getDate()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <CardContent className="p-5">
-                    <h3 className="mb-2 text-lg font-bold text-foreground">{event.title}</h3>
-                    <div className="mb-1 flex items-center gap-2 text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4 shrink-0" />
-                      <span>
-                        {new Date(event.date).toLocaleDateString()} • {event.time}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4 shrink-0" />
-                      <span className="line-clamp-1">{event.location}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </section>
+        <Suspense fallback={<div className="section-container py-16 lg:py-20 min-h-[450px]" />}>
+          <UpcomingEventsSection upcomingEvents={upcomingEvents} />
+        </Suspense>
 
         {/* ──── Contact / CTA Band ──── */}
-        <section className="bg-gradient-to-br from-primary/[0.06] via-background to-primary/[0.04] py-12 lg:py-20">
-          <div className="section-container px-4 sm:px-6">
-            <ScrollReveal>
-              <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center">
-                <div>
-                  <TextRevealGroup stagger={0.1}>
-                    <TextRevealItem>
-                      <h2 className="text-2xl font-bold lg:text-3xl font-serif">Get in Touch</h2>
-                    </TextRevealItem>
-                    <TextRevealItem blur={false}>
-                      <p className="mt-2 text-muted-foreground">
-                        Reach out to us for visits, volunteering, or any inquiries.
-                      </p>
-                    </TextRevealItem>
-                  </TextRevealGroup>
-                  <div className="mt-6 space-y-3">
-                    {[
-                      { icon: Phone, content: ashram.contact.phone, href: `tel:${ashram.contact.phone}` },
-                      { icon: Mail, content: ashram.contact.email, href: `mailto:${ashram.contact.email}` },
-                      { icon: MapPin, content: ashram.location },
-                      ...(ashram.facebookUrl
-                        ? [{ icon: Facebook, content: 'Follow us on Facebook', href: ashram.facebookUrl }]
-                        : []),
-                    ].map((item, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, x: -20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                        style={{ willChange: 'transform, opacity' }}
-                        className="flex items-center gap-4 rounded-xl bg-card/80 px-4 py-3 shadow-sm ring-1 ring-border/40 backdrop-blur-sm"
-                      >
-                        <item.icon className="h-5 w-5 shrink-0 text-primary" />
-                        {item.href ? (
-                          <a
-                            href={item.href}
-                            target={item.href?.startsWith('http') ? '_blank' : undefined}
-                            rel={item.href?.startsWith('http') ? 'noopener noreferrer' : undefined}
-                            className="text-sm text-muted-foreground transition-colors hover:text-primary"
-                          >
-                            {item.content}
-                          </a>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">{item.content}</span>
-                        )}
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Donate CTA Card with Custom Admin Image Support */}
-                <motion.div
-                  initial={{ opacity: 0, x: 30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-                  style={{ willChange: 'transform, opacity' }}
-                  className="w-[92%] sm:w-full max-w-md lg:max-w-none mx-auto"
-                >
-                  <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-primary to-primary/80 shadow-xl shadow-primary/15 rounded-3xl">
-                  {config?.supportCauseBgUrl && (
-                    <>
-                      <img
-                        src={optimizeUnsplashUrl(config.supportCauseBgUrl, 800, 500)}
-                        alt="Support Our Cause"
-                        loading="lazy"
-                        decoding="async"
-                        className="absolute inset-0 w-full h-full object-cover object-center"
-                      />
-                      <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]" />
-                    </>
-                  )}
-
-                  <CardContent className="relative z-10 p-6 sm:p-10 text-center text-white">
-                    <Sparkles className="mx-auto mb-3 h-10 w-10 opacity-80" />
-                    <h3 className="text-xl sm:text-2xl font-bold mb-2 lg:text-3xl">
-                      {config?.supportCauseTitle || 'Support Our Cause'}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-white/90 mb-5 leading-relaxed max-w-md mx-auto font-medium">
-                      {config?.supportCauseSubtitle || 'Your generous contribution helps us provide better care, education, and opportunities to our children.'}
-                    </p>
-                    <Button
-                      size="lg"
-                      className="h-12 sm:h-14 w-full max-w-xs rounded-full bg-white text-primary font-bold hover:bg-white/90 shadow-xl transition-transform hover:scale-105 text-sm sm:text-base"
-                      onClick={() => navigate(`/donate/${ashram.id}`)}
-                    >
-                      {config?.donationWording || 'Support Our Mission'} <Heart className="ml-2 h-4 w-4 sm:h-5 sm:w-5 fill-primary" />
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </div>
-            </ScrollReveal>
-          </div>
-        </section>
+        <Suspense fallback={<div className="bg-gradient-to-br from-primary/[0.06] via-background to-primary/[0.04] py-12 lg:py-20 min-h-[480px]" />}>
+          <ContactCtaSection ashram={ashram} />
+        </Suspense>
       </main>
     </div>
   );

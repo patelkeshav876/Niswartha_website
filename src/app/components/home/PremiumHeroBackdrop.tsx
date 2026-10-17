@@ -45,7 +45,10 @@ function getInitialConfig(pageKey: string) {
  * text alignment, and parallax scrolling.
  * (Video backgrounds removed site-wide for instant performance).
  */
+import { useConfig } from '../../context/ConfigContext';
+
 export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: Props) {
+  const { config: globalConfig } = useConfig();
   const [config, setConfig] = useState<any>(() => getInitialConfig(pageKey));
   const [scrollY, setScrollY] = useState(0);
 
@@ -59,9 +62,13 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
           return;
         }
         // Fallback to global config if page-specific config not found
-        const globalConf = await api.getConfig();
-        if (active && globalConf) {
-          setConfig(globalConf);
+        if (active && globalConfig) {
+          setConfig(globalConfig);
+          return;
+        }
+        const fetchedGlobal = await api.getConfig();
+        if (active && fetchedGlobal) {
+          setConfig(fetchedGlobal);
         }
       } catch {
         // fallback
@@ -70,7 +77,7 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
     return () => {
       active = false;
     };
-  }, [pageKey]);
+  }, [pageKey, globalConfig]);
 
   // Scroll handler for hardware-accelerated parallax shift
   useEffect(() => {
@@ -149,7 +156,7 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
         <div
           className="absolute inset-0 w-full h-[120%] pointer-events-none overflow-hidden will-change-transform"
           style={{
-            transform: enableParallax ? `translateY(${parallaxShift}px) translateZ(0)` : undefined,
+            transform: enableParallax ? `translate3d(0, ${parallaxShift}px, 0)` : undefined,
             filter: blurIntensity > 0 ? `blur(${blurIntensity}px)` : undefined,
             transition: enableParallax ? 'transform 0.1s ease-out' : undefined,
           }}

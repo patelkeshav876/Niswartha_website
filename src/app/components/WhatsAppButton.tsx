@@ -1,35 +1,11 @@
-import { useState, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
-import { api } from '../lib/api';
+import { useConfig } from '../context/ConfigContext';
 
 /**
  * Floating WhatsApp Support button that queries dynamic backend configurations.
  */
 export function WhatsAppButton() {
-  const [config, setConfig] = useState<any>(null);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        const data = await api.getConfig();
-        if (active && data) {
-          setConfig(data);
-        }
-      } catch {
-        // Fallback default config
-        if (active) {
-          setConfig({
-            whatsappNumber: '+91 91312 01107',
-            whatsappWelcomeMessage: 'Hello! I would like to learn more about support options for the Niswartha Ashram.'
-          });
-        }
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, []);
+  const { config } = useConfig();
 
   if (!config?.whatsappNumber) return null;
 
