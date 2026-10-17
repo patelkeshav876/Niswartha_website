@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User } from '../types';
 import { mockUsers } from '../data/mock';
-import { initializeBackendData } from '../lib/initData';
+
 
 interface UserContextType {
   currentUser: User | null;
@@ -56,10 +56,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const isAdmin = isHardcodedSuperAdmin || currentUser?.role === 'admin' || currentUser?.role === 'super_admin';
   const isDonor = !isHardcodedSuperAdmin && currentUser?.role === 'donor';
 
-  useEffect(() => {
-    // Background data initialization
-    initializeBackendData();
-  }, []);
+
 
   const login = (user: User, newToken: string) => {
     // Normalize: ensure 'id' is always set
