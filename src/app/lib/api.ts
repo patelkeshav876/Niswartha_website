@@ -845,45 +845,93 @@ export const api = {
   deleteUser: (id: string) => fetchAPI<any>(`/admin/users/${id}`, { method: 'DELETE' }),
 
   // --- Configurations API ---
-  getConfig: async () => {
-    let remoteCfg: any = null;
-    try {
-      remoteCfg = await fetchAPI<any>('/config');
-    } catch {
-      // Offline fallback
-    }
+  // In-flight deduplication promise and in-memory cache for /api/config
+  getConfig: (() => {
+    let _configPromise: Promise<any> | null = null;
+    let _cachedConfig: any = null;
+    let _lastConfigFetch = 0;
+    const CONFIG_CACHE_TTL_MS = 60 * 1000; // 60 seconds
 
-    let localCfg: any = null;
-    try {
-      const saved = localStorage.getItem('superadmin_config');
-      if (saved) localCfg = JSON.parse(saved);
-    } catch {}
+    const fn = async (forceRefresh = false) => {
+      const now = Date.now();
+      if (!forceRefresh && _cachedConfig && (now - _lastConfigFetch < CONFIG_CACHE_TTL_MS)) {
+        return _cachedConfig;
+      }
 
-    const defaults = {
-      siteName: 'Niswartha — Selfless Service',
-      siteTagline: 'Empowering Deaf & Dumb Children',
-      contactEmail: 'contact@niswartha.org',
-      contactPhone: '+91 91312 01107',
-      ashramPhone: '+91 91312 01107',
-      whatsappNumber: '+91 91312 01107',
-      whatsappWelcomeMessage: 'Hello! I would like to learn more about support options for the Niswartha Ashram.',
-      maintenanceMode: false,
-      allowNewRegistrations: true,
-      enableNotifications: true,
-      globalAnnouncement: '',
-      primaryThemeColor: 'green',
+      if (!forceRefresh && _configPromise) {
+        return _configPromise;
+      }
+
+      _configPromise = (async () => {
+        let remoteCfg: any = null;
+        try {
+          // Check if Frame 0 prefetch in index.html is available
+          if (typeof window !== 'undefined' && (window as any).__CONFIG_PROMISE__) {
+            const preloaded = (window as any).__CONFIG_PROMISE__;
+            (window as any).__CONFIG_PROMISE__ = null;
+            remoteCfg = await preloaded;
+          }
+
+          if (!remoteCfg) {
+            remoteCfg = await fetchAPI<any>('/config');
+          }
+        } catch {
+          // Offline fallback
+        }
+
+        let localCfg: any = null;
+        try {
+          const saved = localStorage.getItem('superadmin_config');
+          if (saved) localCfg = JSON.parse(saved);
+        } catch {}
+
+        const defaults = {
+          siteName: 'Niswartha — Selfless Service',
+          siteTagline: 'Empowering Deaf & Dumb Children',
+          contactEmail: 'contact@niswartha.org',
+          contactPhone: '+91 91312 01107',
+          ashramPhone: '+91 91312 01107',
+          whatsappNumber: '+91 91312 01107',
+          whatsappWelcomeMessage: 'Hello! I would like to learn more about support options for the Niswartha Ashram.',
+          maintenanceMode: false,
+          allowNewRegistrations: true,
+          enableNotifications: true,
+          globalAnnouncement: '',
+          primaryThemeColor: 'green',
+        };
+
+        const merged = {
+          ...defaults,
+          ...(remoteCfg || {}),
+          ...(localCfg || {}),
+        };
+
+        if (merged?.primaryThemeColor) applyThemeColor(merged.primaryThemeColor);
+        _cachedConfig = merged;
+        _lastConfigFetch = Date.now();
+        return merged;
+      })().finally(() => {
+        _configPromise = null;
+      });
+
+      return _configPromise;
     };
 
-    const merged = {
-      ...defaults,
-      ...(remoteCfg || {}),
-      ...(localCfg || {}),
+    // Attach invalidation helper
+    (fn as any).invalidate = () => {
+      _cachedConfig = null;
+      _lastConfigFetch = 0;
+      _configPromise = null;
     };
 
-    if (merged?.primaryThemeColor) applyThemeColor(merged.primaryThemeColor);
-    return merged;
-  },
+    return fn;
+  })(),
+
   updateConfig: async (data: Record<string, unknown>) => {
+    // Invalidate config cache immediately so updates reflect instantly everywhere
+    if (typeof (api?.getConfig as any)?.invalidate === 'function') {
+      (api.getConfig as any).invalidate();
+    }
     const cleanData = { ...data };
     delete (cleanData as any)._id;
     delete (cleanData as any).__v;
@@ -1117,21 +1165,49 @@ export const api = {
       return {};
     }
   },
-  getHeroConfig: async (pageKey: string) => {
-    try {
-      return await fetchAPI<any>(`/hero-config/${encodeURIComponent(pageKey)}`);
-    } catch {
-      const saved = localStorage.getItem('hero_config_' + pageKey);
-      if (saved) return JSON.parse(saved);
-      return {
-        bgType: 'image',
-        bgUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=75&fm=webp',
-        overlayOpacity: 0.55,
-      };
+  getHeroConfig: (() => {
+    const _heroCache = new Map<string, { data: any; ts: number }>();
+    const HERO_TTL = 60 * 1000;
 
-    }
-  },
+    const fn = async (pageKey: string, forceRefresh = false) => {
+      const now = Date.now();
+      const cached = _heroCache.get(pageKey);
+      if (!forceRefresh && cached && now - cached.ts < HERO_TTL) {
+        return cached.data;
+      }
+
+      let conf: any = null;
+      try {
+        conf = await fetchAPI<any>(`/hero-config/${encodeURIComponent(pageKey)}`);
+      } catch {
+        const saved = localStorage.getItem('hero_config_' + pageKey);
+        if (saved) conf = JSON.parse(saved);
+        else {
+          conf = {
+            bgType: pageKey === 'about' ? 'gradient' : 'image',
+            bgUrl: pageKey === 'about' ? '' : '/hero-bg.webp',
+            overlayOpacity: 0.55,
+          };
+        }
+      }
+
+      if (conf) {
+        _heroCache.set(pageKey, { data: conf, ts: Date.now() });
+      }
+      return conf;
+    };
+
+    (fn as any).invalidate = (pageKey?: string) => {
+      if (pageKey) _heroCache.delete(pageKey);
+      else _heroCache.clear();
+    };
+
+    return fn;
+  })(),
   updateHeroConfig: async (pageKey: string, data: Record<string, unknown>) => {
+    if (typeof (api?.getHeroConfig as any)?.invalidate === 'function') {
+      (api.getHeroConfig as any).invalidate(pageKey);
+    }
     try {
       return await fetchAPI<any>(`/hero-config/${encodeURIComponent(pageKey)}`, { method: 'PUT', body: JSON.stringify(data) });
     } catch {

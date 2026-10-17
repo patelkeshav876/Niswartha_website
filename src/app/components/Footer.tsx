@@ -32,7 +32,15 @@ export function Footer() {
             <div className="lg:col-span-1">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-white shadow-md border border-white/20">
-                  <img src="/logo.png" alt="Niswartha Logo" className="h-full w-full object-cover" />
+                  <img
+                    src="/logo.png"
+                    alt="Niswartha Logo"
+                    width={40}
+                    height={40}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                  />
                 </div>
                 <div>
                   <p className="text-lg font-bold tracking-tight font-serif text-white">Niswartha</p>
