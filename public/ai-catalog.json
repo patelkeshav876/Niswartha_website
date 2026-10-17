@@ -1,0 +1,47 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "The Deaf and Dumb Industrial Institute, Nagpur",
+    "domain": "deafanddumbschool.vercel.app",
+    "documentationUrl": "https://deafanddumbschool.vercel.app/about",
+    "logoUrl": "https://deafanddumbschool.vercel.app/logo.png"
+  },
+  "entries": [
+    {
+      "identifier": "urn:ai:deafanddumbschool.vercel.app:api:config",
+      "displayName": "Niswartha Configuration & Institute Profile API",
+      "type": "application/openapi+json",
+      "url": "https://deafanddumbschool.vercel.app/api/config",
+      "description": "Public configuration endpoint providing verified school contact details, 80G tax exemption verification, and institute parameters.",
+      "representativeQueries": [
+        "What is the contact information and address of the Deaf and Dumb School in Nagpur?",
+        "How can I donate to Niswartha or verify 80G tax exemption?",
+        "What are the current urgent needs for hearing impaired students in Nagpur?"
+      ],
+      "tags": [
+        "ngo",
+        "education",
+        "special-needs",
+        "nagpur",
+        "charity",
+        "80g"
+      ]
+    },
+    {
+      "identifier": "urn:ai:deafanddumbschool.vercel.app:resources:llms-txt",
+      "displayName": "Niswartha LLM Agent Knowledge Base",
+      "type": "text/markdown",
+      "url": "https://deafanddumbschool.vercel.app/llms.txt",
+      "description": "Structured markdown specification detailing the institute history since 1946, academic programs, vocational training, and audited transparency.",
+      "representativeQueries": [
+        "Tell me about the history of the Deaf and Dumb Industrial Institute Nagpur",
+        "What vocational courses are available for hearing-impaired students?"
+      ],
+      "tags": [
+        "documentation",
+        "llms",
+        "institutional-profile"
+      ]
+    }
+  ]
+}

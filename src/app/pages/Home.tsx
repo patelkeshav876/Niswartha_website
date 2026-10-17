@@ -131,8 +131,8 @@ export function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* ════════════ HERO SECTION ════════════ */}
-      <PremiumHeroBackdrop pageKey="home" className="min-h-[85vh] lg:min-h-[90vh]">
-        <div className="section-container relative flex min-h-[85vh] lg:min-h-[90vh] flex-col items-center justify-center py-20 text-center">
+      <PremiumHeroBackdrop pageKey="home" className="min-h-[560px] sm:min-h-[620px] lg:min-h-[700px]">
+        <div className="section-container relative flex min-h-[560px] sm:min-h-[620px] lg:min-h-[700px] flex-col items-center justify-center py-16 lg:py-20 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

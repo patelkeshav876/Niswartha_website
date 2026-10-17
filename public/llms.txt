@@ -1,0 +1,28 @@
+# Niswartha - The Deaf and Dumb Industrial Institute, Nagpur
+
+> The Deaf and Dumb Industrial Institute, established in 1946 in Nagpur, Maharashtra, is a verified non-profit institution dedicated to providing holistic education, vocational training, boarding, and healthcare for hearing- and speech-impaired children from Grades 1 to 12.
+
+## About the Organization
+
+- [Home](https://deafanddumbschool.vercel.app/): Main digital portal featuring school history, urgent student needs, and upcoming events.
+- [About Us](https://deafanddumbschool.vercel.app/about): Comprehensive history since 1946, our mission, vision, governing body, infrastructure, and pedagogical philosophy.
+- [Current Needs](https://deafanddumbschool.vercel.app/needs): Transparent list of urgent school supplies, hearing aids, food provisions, and classroom materials needed for residential students.
+- [Ashram / Residential Care](https://deafanddumbschool.vercel.app/ashram/ashram-1): Details on our residential hostel, daily student life, nutritional meals, hygiene, and safe housing.
+- [Events & Community](https://deafanddumbschool.vercel.app/events): Calendar of cultural celebrations, annual sports days, vocational exhibitions, and community visits.
+- [Gallery](https://deafanddumbschool.vercel.app/gallery): Verified photo and video archives highlighting student activities, workshops, and milestones.
+- [Government Schemes](https://deafanddumbschool.vercel.app/schemes): Guide to Indian welfare schemes, scholarships, and assistive benefits available for children with special needs.
+- [Help & FAQ](https://deafanddumbschool.vercel.app/help): Frequently asked questions on volunteering, school visits, admissions, and donation verification.
+
+## Key Facts & Verification
+
+- Founded: 1946 (78+ years of service)
+- Location: Shankar Nagar, Nagpur, Maharashtra, India - 440010
+- Beneficiaries: 50+ residential hearing- and speech-impaired students
+- Tax Exemption: Donations are eligible for 50% tax deduction under Section 80G of the Indian Income Tax Act.
+- Registration: Registered under the Bombay Public Trusts Act and Society Registration Act.
+
+## How to Support
+
+- [Donate](https://deafanddumbschool.vercel.app/donate-flow): Make a 100% transparent donation directly towards specific student needs, meals, or educational kits.
+- [Book a Campus Visit](https://deafanddumbschool.vercel.app/visit-book/ashram-1): Schedule an in-person or guided visit to interact with our faculty and students.
+- [Contact Administration](https://deafanddumbschool.vercel.app/about#contact): Direct email, phone, and campus location details.

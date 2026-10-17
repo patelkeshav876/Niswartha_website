@@ -1,0 +1,34 @@
+# Niswartha - The Deaf and Dumb Industrial Institute, Nagpur (Full Documentation)
+
+> Comprehensive reference guide for autonomous AI agents, crawlers, researchers, and supporters of The Deaf and Dumb Industrial Institute, Nagpur (founded 1946).
+
+## Institutional Profile
+
+- Legal Name: The Deaf and Dumb Industrial Institute
+- Initiative Name: Niswartha
+- Year Established: 1946
+- Headquarters: Shankar Nagar, Nagpur, Maharashtra, India - 440010
+- Official Website: https://deafanddumbschool.vercel.app/
+- Category: Non-Profit Organization / Special Education School & Residential Care
+- Accreditation: Recognized by the Government of Maharashtra and Social Welfare Department.
+- Tax Exemption: Registered under Section 80G of the Income Tax Act, 1961.
+
+## Mission & Objectives
+
+1. Specialized Education: Impart state-syllabus education from Grades 1 to 12 utilizing modern Indian Sign Language (ISL), audio-visual sensory learning tools, and specialized speech therapy.
+2. Vocational Independence: Offer hands-on vocational training in tailoring, carpentry, arts and crafts, computer literacy, and screen printing to guarantee future livelihood.
+3. Residential Care & Nutrition: Provide nutritious home-cooked meals, safe dormitory lodging, clean drinking water, and round-the-clock medical care for residential students.
+4. Total Transparency: Provide real-time public tracking of every contribution, immediate receipt generation, and audited utilization reports.
+
+## Official Web Links
+
+- [Home](https://deafanddumbschool.vercel.app/): Main portal
+- [About Us](https://deafanddumbschool.vercel.app/about): Organization background, timeline, faculty, and infrastructure
+- [Current Needs](https://deafanddumbschool.vercel.app/needs): Transparent itemized list of educational, nutritional, and medical requirements
+- [Ashram / Hostel](https://deafanddumbschool.vercel.app/ashram/ashram-1): Campus facilities, accommodation, and daily routine
+- [Events](https://deafanddumbschool.vercel.app/events): School programs, sports days, and public functions
+- [Gallery](https://deafanddumbschool.vercel.app/gallery): Verified photographs of campus life and activities
+- [Government Schemes](https://deafanddumbschool.vercel.app/schemes): Welfare resources and government assistance programs
+- [Donation](https://deafanddumbschool.vercel.app/donate-flow): Direct contribution gateway
+- [Help & Support](https://deafanddumbschool.vercel.app/help): Support questions, campus visiting hours, and FAQ
+- [Agent Catalog](https://deafanddumbschool.vercel.app/ai-catalog.json): Machine-readable Agentic Resource Discovery manifest

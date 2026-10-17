@@ -107,11 +107,11 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
   const objectFit = config?.objectFit || 'cover';
 
   const sizeClass = {
-    full: 'min-h-screen',
-    standard: 'min-h-[75vh] lg:min-h-[85vh]',
-    compact: 'min-h-[45vh] lg:min-h-[55vh]',
+    full: 'min-h-[640px] lg:min-h-[760px] xl:min-h-screen',
+    standard: 'min-h-[520px] sm:min-h-[580px] lg:min-h-[680px]',
+    compact: 'min-h-[380px] sm:min-h-[420px] lg:min-h-[480px]',
     custom: '',
-  }[sizeMode] || 'min-h-[75vh] lg:min-h-[85vh]';
+  }[sizeMode] || 'min-h-[520px] sm:min-h-[580px] lg:min-h-[680px]';
 
   const fitClass = {
     cover: 'object-cover',
@@ -159,8 +159,9 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
             // @ts-ignore
             fetchpriority="high"
             decoding="async"
-            width={1200}
-            height={800}
+            width={1920}
+            height={1080}
+            style={{ aspectRatio: '16/9' }}
           />
         </div>
       )}

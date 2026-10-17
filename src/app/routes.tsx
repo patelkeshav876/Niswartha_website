@@ -4,8 +4,10 @@ import { Layout } from './layout';
 import { UserProvider, useUser } from './context/UserContext';
 import { PageSkeleton } from './components/PageSkeleton';
 
-// Code-split dynamic page imports for optimal bundle performance
-const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
+// Eagerly load landing page to eliminate CLS and suspense flash on initial paint
+import { Home } from './pages/Home';
+
+// Code-split secondary dynamic page imports for optimal performance
 const About = lazy(() => import('./pages/About').then((m) => ({ default: m.About })));
 const Events = lazy(() => import('./pages/Events').then((m) => ({ default: m.Events })));
 const Needs = lazy(() => import('./pages/Needs').then((m) => ({ default: m.Needs })));
@@ -100,7 +102,7 @@ export const router = createBrowserRouter([
     errorElement: <RouteErrorFallback />,
     children: [
       // Public pages
-      { index: true, path: '/', element: <SuspenseWrap><Home /></SuspenseWrap> },
+      { index: true, path: '/', element: <Home /> },
       { path: 'about', element: <SuspenseWrap><About /></SuspenseWrap> },
       { path: 'help', element: <SuspenseWrap><Help /></SuspenseWrap> },
       { path: 'events', element: <SuspenseWrap><Events /></SuspenseWrap> },
