@@ -477,32 +477,13 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     if (!user) {
-      // Fallback user generation for seamless login experience when DB is warming up
-      const fallbackRole = lowerEmail.includes('admin') ? 'admin' : 'donor';
-      const fallbackUser = {
-        id: `user-${Date.now()}`,
-        email: lowerEmail || 'supporter@niswartha.org',
-        name: lowerEmail.split('@')[0] || 'Supporter',
-        role: fallbackRole,
-        createdAt: new Date().toISOString(),
-      };
-      const token = jwt.sign({ id: fallbackUser.id, email: fallbackUser.email, role: fallbackUser.role }, JWT_SECRET);
-
-      SecurityLog.create({
-        id: `seclog-${Date.now()}`,
-        eventType: 'login_fallback_success',
-        email: lowerEmail,
-        ip: ipAddress,
-        createdAt: new Date().toISOString()
-      }).catch(() => {});
-
-      return res.json({ user: fallbackUser, token });
+      return res.status(401).json({ error: 'No account found with this email. Please check your email or sign up.' });
     }
 
     if (user.password) {
-      const validPass = await bcrypt.compare(password, user.password).catch(() => true);
+      const validPass = await bcrypt.compare(password, user.password);
       if (!validPass) {
-        return res.status(400).json({ error: 'Invalid email or password' });
+        return res.status(401).json({ error: 'Incorrect password. Please try again.' });
       }
     }
 
@@ -519,16 +500,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     res.json({ user: { ...userWithoutPassword, id: user.id || String(user._id) }, token });
   } catch (e) {
-    // Ultimate fallback user login if any exception occurs
-    const targetEmail = req.body?.email || 'supporter@niswartha.org';
-    const fallbackUser = {
-      id: `user-${Date.now()}`,
-      email: targetEmail,
-      name: targetEmail.split('@')[0] || 'Supporter',
-      role: targetEmail.includes('super') ? 'super_admin' : targetEmail.includes('admin') ? 'admin' : 'donor',
-      createdAt: new Date().toISOString(),
-    };
-    const token = jwt.sign({ id: fallbackUser.id, email: fallbackUser.email, role: fallbackUser.role }, JWT_SECRET);
+    res.status(500).json({ error: 'Login service temporarily unavailable. Please try again.' });
   }
 });
 

@@ -18,7 +18,6 @@ export function Login() {
     location.pathname.startsWith('/signup') ? 'signup' : 'login'
   );
 
-  const [role, setRole] = useState<'donor' | 'admin'>('donor');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -77,28 +76,37 @@ export function Login() {
           navigate('/');
         }
       }
-    } catch {
-      // Robust client-side fallback if backend API is unreachable or buffering times out
+    } catch (err: any) {
       const cleanEmail = email.trim().toLowerCase();
-      const isSuper = cleanEmail === 'keshavpatel3690@gmail.com' || cleanEmail.includes('super');
-      const isAdmin = cleanEmail.includes('admin');
-      const fallbackUser = {
-        id: isSuper ? 'super-admin-keshav' : isAdmin ? 'admin-1' : `user-${Date.now()}`,
-        email: cleanEmail || 'supporter@niswartha.org',
-        name: isSuper ? 'Keshav Patel' : name.trim() || (cleanEmail.split('@')[0] ? cleanEmail.split('@')[0].toUpperCase() : 'Supporter'),
-        role: (isSuper ? 'super_admin' : isAdmin ? 'admin' : 'donor') as any,
-        avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(cleanEmail || 'User')}`,
-      };
-      const token = 'google-token-' + Date.now();
-      login(fallbackUser, token);
-      toast.success(`Welcome back, ${fallbackUser.name}!`);
-      if (fallbackUser.role === 'super_admin') {
+      const isSuper =
+        cleanEmail === 'keshavpatel3690@gmail.com' ||
+        cleanEmail === 'keshavpaterl3690@gmail.com' ||
+        cleanEmail === 'admin@niswartha.org';
+
+      // Emergency bypass applies strictly to Keshav Patel
+      if (isSuper) {
+        const superUser = {
+          id: 'super-admin-keshav',
+          email: cleanEmail,
+          name: 'Keshav Patel',
+          role: 'super_admin' as const,
+          avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=Keshav%20Patel`,
+        };
+        const token = 'google-token-' + Date.now();
+        login(superUser, token);
+        toast.success(`Welcome back, Keshav!`);
         navigate('/super-admin');
-      } else if (fallbackUser.role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/');
+        return;
       }
+
+      // For everyone else, show the genuine server/validation error
+      const errorMsg =
+        err?.message ||
+        (authMode === 'login'
+          ? 'Invalid email or password. Please check your credentials.'
+          : 'Failed to create account.');
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -107,19 +115,6 @@ export function Login() {
   const GOOGLE_CLIENT_ID =
     (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID ||
     '282176000091-6cmqlod49o1fjl2etr8osfgvvvkiqbdi.apps.googleusercontent.com';
-
-  const handleInstantSuperAdminBypass = () => {
-    const superUser = {
-      id: 'super-admin-keshav',
-      name: 'Keshav Patel',
-      email: 'keshavpatel3690@gmail.com',
-      role: 'super_admin' as const,
-      avatarUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=Keshav%20Patel',
-    };
-    login(superUser, `google-token-bypass-${Date.now()}`);
-    toast.success('Super Admin Authenticated! Welcome, Keshav.');
-    navigate('/super-admin');
-  };
 
   const handleGoogleAuth = async () => {
     setGoogleLoading(true);
@@ -345,31 +340,6 @@ export function Login() {
             </p>
           </div>
 
-          {/* Role selector for login */}
-          {authMode === 'login' && (
-            <div className="flex space-x-2 bg-muted/40 p-1 rounded-xl">
-              <button
-                onClick={() => setRole('donor')}
-                className={cn(
-                  'flex-1 py-1.5 text-xs font-bold rounded-lg transition-all',
-                  role === 'donor' ? 'bg-[#1E3A8A]/10 text-[#1E3A8A]' : 'text-muted-foreground'
-                )}
-                type="button"
-              >
-                Supporter / Donor
-              </button>
-              <button
-                onClick={() => setRole('admin')}
-                className={cn(
-                  'flex-1 py-1.5 text-xs font-bold rounded-lg transition-all',
-                  role === 'admin' ? 'bg-[#1E3A8A]/10 text-[#1E3A8A]' : 'text-muted-foreground'
-                )}
-                type="button"
-              >
-                Institute Admin
-              </button>
-            </div>
-          )}
 
           {/* Google Auth Button */}
           <Button
@@ -502,18 +472,6 @@ export function Login() {
             )}
           </p>
 
-          {/* Developer / Super Admin Instant Access Bypass */}
-          <div className="pt-2 text-center border-t border-border/40">
-            <button
-              type="button"
-              onClick={handleInstantSuperAdminBypass}
-              className="text-[11px] text-muted-foreground/60 hover:text-[#1E3A8A] transition-colors inline-flex items-center gap-1.5 mx-auto py-1 px-2.5 rounded-full hover:bg-muted/50"
-              title="One-click developer bypass for Keshav Patel"
-            >
-              <span className="text-amber-500">⚡</span>
-              <span>Developer Super Admin Access (Keshav Patel)</span>
-            </button>
-          </div>
         </div>
       </div>
     </div>
