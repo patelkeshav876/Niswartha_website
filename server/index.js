@@ -640,6 +640,211 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
+// --- Forgot Password: Send OTP ---
+app.post('/api/auth/forgot-password/send-otp', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email address is required' });
+    }
+    const lowerEmail = email.trim().toLowerCase();
+    if (!isValidEmail(lowerEmail)) {
+      return res.status(400).json({ error: 'Please enter a valid email address' });
+    }
+
+    // Check if user exists in DB
+    let user = null;
+    try {
+      if (mongoose.connection.readyState === 1) {
+        user = await Promise.race([
+          User.findOne({ email: lowerEmail }).lean(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('db-timeout')), 1500)),
+        ]);
+      }
+    } catch (dbErr) {
+      console.warn('[Forgot-Password DB Check Warning]:', dbErr.message);
+    }
+
+    const isSuper =
+      lowerEmail === 'keshavpatel3690@gmail.com' ||
+      lowerEmail === 'keshavpaterl3690@gmail.com' ||
+      lowerEmail === 'admin@niswartha.org';
+
+    if (!user && !isSuper && mongoose.connection.readyState === 1) {
+      return res.status(404).json({ error: 'No account found with this email. Please check your email or create an account.' });
+    }
+
+    // Rate-limiting check
+    const prev = authOtpStore.get(`reset-${lowerEmail}`);
+    if (prev && Date.now() - (prev.createdAt || 0) < 30000) {
+      const waitSec = Math.ceil((30000 - (Date.now() - prev.createdAt)) / 1000);
+      return res.status(429).json({ error: `Please wait ${waitSec}s before requesting a new code.` });
+    }
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const resetToken = jwt.sign(
+      {
+        email: lowerEmail,
+        codeHash: hashOtp(code),
+        purpose: 'password_reset',
+      },
+      JWT_SECRET,
+      { expiresIn: '15m' }
+    );
+
+    authOtpStore.set(`reset-${lowerEmail}`, {
+      code,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 15 * 60 * 1000,
+    });
+
+    console.log(`[PASSWORD RESET OTP] Generated code for ${lowerEmail}: ${code}`);
+
+    const subject = `${code} is your Niswartha password reset code`;
+    const html = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 28px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="color: #1E3A8A; margin: 0; font-size: 24px; font-weight: bold; letter-spacing: -0.5px;">Niswartha</h2>
+          <p style="color: #64748b; font-size: 11px; margin-top: 4px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Password Reset Request</p>
+        </div>
+        <p style="color: #1e293b; font-size: 15px; margin-bottom: 12px; font-weight: 500;">Hello,</p>
+        <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
+          We received a request to reset your Niswartha account password. Please enter this 6-digit recovery code to choose a new password:
+        </p>
+        <div style="text-align: center; margin: 28px 0;">
+          <span style="display: inline-block; font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #1E3A8A; background-color: #eff6ff; border: 1.5px dashed #2563eb; padding: 14px 28px; border-radius: 12px;">${code}</span>
+        </div>
+        <p style="color: #64748b; font-size: 12px; line-height: 1.5;">
+          This code will expire in <strong>15 minutes</strong>. If you did not request a password reset, you can safely ignore this email — your account remains completely secure.
+        </p>
+        <div style="margin-top: 32px; padding-top: 16px; border-top: 1px solid #f1f5f9; text-align: center;">
+          <p style="color: #94a3b8; font-size: 11px; margin: 0;">Deaf and Dumb Industrial Institute, Nagpur &bull; Est. 1946</p>
+        </div>
+      </div>
+    `;
+
+    try {
+      await configuredMailTransporter.sendMail({
+        from: `"Niswartha Support" <${SMTP_FROM}>`,
+        to: lowerEmail,
+        subject,
+        text: `Your Niswartha password reset code is: ${code}. It expires in 15 minutes.`,
+        html,
+      });
+      console.log(`[PASSWORD RESET OTP DELIVERED] Email sent to ${lowerEmail}`);
+    } catch (mailErr) {
+      console.error(`[PASSWORD RESET MAIL ERROR] Failed sending to ${lowerEmail}:`, mailErr?.message);
+      return res.status(500).json({ error: `Could not send reset email: ${mailErr?.message || 'SMTP delivery issue'}. Please try again.` });
+    }
+
+    res.json({
+      success: true,
+      message: `Password reset code sent to ${lowerEmail}`,
+      resetToken,
+    });
+  } catch (err) {
+    console.error('[Forgot-Password Send Handler Error]:', err);
+    res.status(500).json({ error: err?.message || 'Failed to send recovery code. Please try again.' });
+  }
+});
+
+// --- Forgot Password: Verify OTP & Set New Password ---
+app.post('/api/auth/forgot-password/reset', async (req, res) => {
+  try {
+    const { email, otp, newPassword, resetToken } = req.body;
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ error: 'Email, verification code, and new password are required' });
+    }
+
+    const lowerEmail = email.trim().toLowerCase();
+    const cleanInputOtp = String(otp).trim();
+
+    // 1. Verify OTP
+    let isOtpValid = false;
+
+    // A. Verify with signed token
+    if (resetToken) {
+      try {
+        const decoded = jwt.verify(resetToken, JWT_SECRET);
+        if (decoded && decoded.email === lowerEmail && decoded.codeHash === hashOtp(cleanInputOtp) && decoded.purpose === 'password_reset') {
+          isOtpValid = true;
+        }
+      } catch (tokErr) {
+        console.warn('[Reset Token Verification Notice]:', tokErr.message);
+      }
+    }
+
+    // B. Verify with memory store fallback
+    if (!isOtpValid) {
+      const storedOtp = authOtpStore.get(`reset-${lowerEmail}`);
+      if (storedOtp && String(storedOtp.code).trim() === cleanInputOtp) {
+        if (Date.now() <= storedOtp.expiresAt) {
+          isOtpValid = true;
+        }
+      }
+    }
+
+    if (!isOtpValid) {
+      return res.status(400).json({ error: 'Invalid or expired recovery code. Please check your email or request a new code.' });
+    }
+
+    // Clean up OTP store
+    authOtpStore.delete(`reset-${lowerEmail}`);
+
+    // 2. Validate Password strength
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({
+        error: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.'
+      });
+    }
+
+    // 3. Hash and update password in DB
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    let user = null;
+
+    try {
+      if (mongoose.connection.readyState === 1) {
+        await User.updateOne({ email: lowerEmail }, { $set: { password: hashedPassword } });
+        user = await User.findOne({ email: lowerEmail }).lean();
+      }
+    } catch (dbErr) {
+      console.warn('[Reset Password DB Update Warning]:', dbErr.message);
+    }
+
+    if (!user) {
+      user = {
+        id: `user-${Date.now()}`,
+        email: lowerEmail,
+        name: lowerEmail.split('@')[0],
+        role: 'donor',
+      };
+    }
+
+    const { password: _, ...userWithoutPassword } = user;
+    const token = jwt.sign({ id: user.id || String(user._id), email: lowerEmail, role: user.role || 'donor' }, JWT_SECRET);
+
+    SecurityLog.create({
+      id: `seclog-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      eventType: 'password_reset_success',
+      email: lowerEmail,
+      ip: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+      createdAt: new Date().toISOString()
+    }).catch(() => {});
+
+    res.json({
+      success: true,
+      message: 'Password reset successfully! You are now logged in.',
+      user: userWithoutPassword,
+      token,
+    });
+  } catch (err) {
+    console.error('[Forgot-Password Reset Handler Error]:', err);
+    res.status(500).json({ error: err?.message || 'Failed to reset password. Please try again.' });
+  }
+});
+
+
 
 app.post('/api/auth/login', async (req, res) => {
   try {

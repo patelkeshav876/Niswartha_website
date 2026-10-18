@@ -101,6 +101,10 @@ export const api = {
 
   sendAuthOtp: (data: { email: string; name?: string }) =>
     fetchAPI<{ success: boolean; message: string; otpToken?: string }>('/auth/send-otp', { method: 'POST', body: JSON.stringify(data) }),
+  forgotPasswordSendOtp: (data: { email: string }) =>
+    fetchAPI<{ success: boolean; message: string; resetToken?: string }>('/auth/forgot-password/send-otp', { method: 'POST', body: JSON.stringify(data) }),
+  resetPasswordWithOtp: (data: { email: string; otp: string; newPassword: string; resetToken?: string }) =>
+    fetchAPI<{ success: boolean; message: string; user: any; token: string }>('/auth/forgot-password/reset', { method: 'POST', body: JSON.stringify(data) }),
   login: (data: Record<string, unknown>) =>
     fetchAPI<{ user: any; token: string }>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   register: (data: Record<string, unknown>) =>

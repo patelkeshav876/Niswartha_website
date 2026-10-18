@@ -193,5 +193,10 @@ export const router = createBrowserRouter([
     path: '/signup',
     element: <RootLayout><Layout /></RootLayout>,
     children: [{ index: true, element: <SuspenseWrap><Signup /></SuspenseWrap> }],
+  },
+  {
+    path: '/forgot-password',
+    element: <RootLayout><Layout /></RootLayout>,
+    children: [{ index: true, element: <SuspenseWrap><Login /></SuspenseWrap> }],
   }
 ]);

@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router';
 import { useUser } from '../context/UserContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { Mail, Lock, Eye, EyeOff, UserRound, ArrowLeft, RefreshCw, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, UserRound, ArrowLeft, RefreshCw, ShieldCheck, CheckCircle2, KeyRound } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { api } from '../lib/api';
 import { toast } from 'sonner';
@@ -13,9 +13,13 @@ export function Login() {
   const location = useLocation();
   const { login } = useUser();
 
-  // Mode: 'login' or 'signup'
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>(
-    location.pathname.startsWith('/signup') ? 'signup' : 'login'
+  // Mode: 'login' | 'signup' | 'forgot_password'
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgot_password'>(
+    location.pathname.startsWith('/signup')
+      ? 'signup'
+      : location.pathname.startsWith('/forgot-password')
+      ? 'forgot_password'
+      : 'login'
   );
 
   // Sign up workflow: 'details' (enter name & email) -> 'verify' (enter OTP code & set password)
@@ -24,6 +28,16 @@ export function Login() {
   const [otpToken, setOtpToken] = useState('');
   const [sendingOtp, setSendingOtp] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+
+  // Forgot password workflow: 'email' (enter email) -> 'reset' (enter OTP code & set new password)
+  const [forgotStep, setForgotStep] = useState<'email' | 'reset'>('email');
+  const [forgotOtp, setForgotOtp] = useState('');
+  const [forgotResetToken, setForgotResetToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [sendingForgotOtp, setSendingForgotOtp] = useState(false);
+  const [forgotCooldown, setForgotCooldown] = useState(0);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -41,8 +55,18 @@ export function Login() {
   }, [resendCooldown]);
 
   useEffect(() => {
+    if (forgotCooldown > 0) {
+      const timer = setTimeout(() => setForgotCooldown(forgotCooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [forgotCooldown]);
+
+  useEffect(() => {
     if (location.pathname.startsWith('/signup')) {
       setAuthMode('signup');
+    } else if (location.pathname.startsWith('/forgot-password')) {
+      setAuthMode('forgot_password');
+      setForgotStep('email');
     } else {
       setAuthMode('login');
     }
@@ -104,9 +128,116 @@ export function Login() {
     }
   };
 
+  const handleSendForgotOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setError('');
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail) {
+      setError('Please enter your email address.');
+      toast.error('Please enter your email address.');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setError('Please enter a valid email address.');
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+
+    setSendingForgotOtp(true);
+    try {
+      const res = await api.forgotPasswordSendOtp({ email: trimmedEmail });
+      if (res?.resetToken) {
+        setForgotResetToken(res.resetToken);
+      }
+      toast.success(res?.message || `Password reset code sent to ${trimmedEmail}`);
+      setForgotStep('reset');
+      setForgotCooldown(60);
+      setForgotOtp('');
+    } catch (err: any) {
+      const msg = err?.message || 'Failed to send recovery code. Please check your email.';
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setSendingForgotOtp(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    const cleanOtp = forgotOtp.trim().replace(/\D/g, '');
+    if (!cleanOtp || cleanOtp.length !== 6) {
+      const msg = 'Please enter the 6-digit recovery code sent to your email.';
+      setError(msg);
+      toast.error(msg);
+      return;
+    }
+
+    if (!newPassword) {
+      setError('Please enter your new password.');
+      toast.error('Please enter your new password.');
+      return;
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      const msg = 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.';
+      setError(msg);
+      toast.error(msg);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      const msg = 'Passwords do not match. Please enter identical passwords.';
+      setError(msg);
+      toast.error(msg);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await api.resetPasswordWithOtp({
+        email: email.trim().toLowerCase(),
+        otp: cleanOtp,
+        newPassword,
+        resetToken: forgotResetToken || undefined,
+      });
+
+      if (res && res.user && res.token) {
+        login(res.user, res.token);
+        toast.success(res.message || 'Password reset successfully! You are now logged in.');
+        navigate('/');
+      } else {
+        toast.success('Password updated successfully! Please sign in.');
+        setAuthMode('login');
+        setPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      }
+    } catch (err: any) {
+      const msg = err?.message || 'Failed to reset password. Please check your recovery code and try again.';
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // If on forgot password workflow
+    if (authMode === 'forgot_password') {
+      if (forgotStep === 'email') {
+        await handleSendForgotOtp();
+      } else {
+        await handleResetPassword(e);
+      }
+      return;
+    }
 
     // If on sign up and on details step, trigger OTP send
     if (authMode === 'signup' && signupStep === 'details') {
@@ -378,61 +509,84 @@ export function Login() {
             </div>
           </div>
 
-          {/* Unified Mode Switcher: Sign In vs Sign Up */}
-          <div className="flex p-1 rounded-2xl bg-muted/60 border border-border/50">
+          {/* Mode Switcher / Back to Sign In */}
+          {authMode === 'forgot_password' ? (
             <button
               type="button"
               onClick={() => {
                 setAuthMode('login');
-                setSignupStep('details');
+                setForgotStep('email');
                 setError('');
               }}
-              className={cn(
-                'flex-1 py-2.5 text-xs font-bold rounded-xl transition-all duration-200',
-                authMode === 'login'
-                  ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
+              className="inline-flex items-center gap-2 text-xs font-bold text-[#1E3A8A] hover:underline px-1 py-1"
             >
-              Sign In
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Sign In</span>
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAuthMode('signup');
-                setSignupStep('details');
-                setError('');
-              }}
-              className={cn(
-                'flex-1 py-2.5 text-xs font-bold rounded-xl transition-all duration-200',
-                authMode === 'signup'
-                  ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              Create Account (Sign Up)
-            </button>
-          </div>
+          ) : (
+            <div className="flex p-1 rounded-2xl bg-muted/60 border border-border/50">
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('login');
+                  setSignupStep('details');
+                  setError('');
+                }}
+                className={cn(
+                  'flex-1 py-2.5 text-xs font-bold rounded-xl transition-all duration-200',
+                  authMode === 'login'
+                    ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('signup');
+                  setSignupStep('details');
+                  setError('');
+                }}
+                className={cn(
+                  'flex-1 py-2.5 text-xs font-bold rounded-xl transition-all duration-200',
+                  authMode === 'signup'
+                    ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                Create Account (Sign Up)
+              </button>
+            </div>
+          )}
 
           <div>
             <h1 className="text-2xl sm:text-3xl font-serif font-bold text-zinc-900">
               {authMode === 'login'
                 ? 'Welcome Back'
-                : signupStep === 'details'
-                ? 'Create Your Account'
-                : 'Verify Your Email'}
+                : authMode === 'signup'
+                ? signupStep === 'details'
+                  ? 'Create Your Account'
+                  : 'Verify Your Email'
+                : forgotStep === 'email'
+                ? 'Reset Password'
+                : 'Choose New Password'}
             </h1>
             <p className="text-xs text-muted-foreground mt-1">
               {authMode === 'login'
                 ? 'Sign in to access your donation history and support activities'
-                : signupStep === 'details'
-                ? 'Join our community supporting hearing-impaired children'
-                : `Enter the 6-digit code sent to ${email}`}
+                : authMode === 'signup'
+                ? signupStep === 'details'
+                  ? 'Join our community supporting hearing-impaired children'
+                  : `Enter the 6-digit code sent to ${email}`
+                : forgotStep === 'email'
+                ? 'Enter your registered email and we will send you a 6-digit recovery code.'
+                : `Enter the 6-digit recovery code sent to ${email} to set your new password.`}
             </p>
           </div>
 
           {/* Google Auth Button (Available on login and initial signup) */}
-          {(authMode === 'login' || signupStep === 'details') && (
+          {(authMode === 'login' || (authMode === 'signup' && signupStep === 'details')) && (
             <>
               <Button
                 type="button"
@@ -515,6 +669,20 @@ export function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10 pr-10 h-11 bg-muted/30 border-border/50 rounded-xl text-xs"
                   />
+                </div>
+
+                <div className="flex items-center justify-end -mt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode('forgot_password');
+                      setForgotStep('email');
+                      setError('');
+                    }}
+                    className="text-xs font-semibold text-[#1E3A8A] hover:underline"
+                  >
+                    Forgot password?
+                  </button>
                 </div>
 
                 <Button
@@ -669,12 +837,174 @@ export function Login() {
                 </div>
               </>
             )}
+
+            {/* FORGOT PASSWORD STEP 1: Enter Email -> Send Recovery Code */}
+            {authMode === 'forgot_password' && forgotStep === 'email' && (
+              <>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="email"
+                    placeholder="Registered email (you@example.com)"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 h-11 bg-muted/30 border-border/50 rounded-xl text-xs"
+                  />
+                </div>
+
+                <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 px-1">
+                  <ShieldCheck className="h-3.5 w-3.5 text-[#1E3A8A] shrink-0" />
+                  <span>We will send a 6-digit recovery code to verify your account.</span>
+                </p>
+
+                <Button
+                  type="submit"
+                  disabled={sendingForgotOtp}
+                  className="w-full h-11 rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white font-bold shadow-lg shadow-[#1E3A8A]/20 text-xs"
+                >
+                  {sendingForgotOtp ? 'Sending recovery code...' : 'Send Recovery Code'}
+                </Button>
+              </>
+            )}
+
+            {/* FORGOT PASSWORD STEP 2: Enter 6-digit OTP & Set New Password */}
+            {authMode === 'forgot_password' && forgotStep === 'reset' && (
+              <>
+                <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200/70 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 text-blue-900 truncate">
+                    <CheckCircle2 className="h-4 w-4 text-[#1E3A8A] shrink-0" />
+                    <span className="truncate">
+                      Recovery code sent to <strong>{email}</strong>
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotStep('email');
+                      setError('');
+                    }}
+                    className="text-xs text-[#1E3A8A] font-bold hover:underline shrink-0 ml-2"
+                  >
+                    Change
+                  </button>
+                </div>
+
+                {/* 6-Digit Verification Code Input */}
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block text-center">
+                    Enter 6-Digit Recovery Code
+                  </label>
+                  <div className="max-w-[280px] mx-auto">
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={6}
+                      autoFocus
+                      placeholder="• • • • • •"
+                      required
+                      value={forgotOtp}
+                      onChange={(e) => setForgotOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      className="h-12 bg-white dark:bg-muted/30 border-2 border-[#1E3A8A]/30 focus:border-[#1E3A8A] rounded-2xl text-center text-2xl font-bold tracking-[0.45em] font-mono shadow-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* New Password Input */}
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                    New Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3.5 top-3.5 text-muted-foreground hover:text-foreground"
+                    >
+                      {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                    <Input
+                      type={showNewPassword ? 'text' : 'password'}
+                      placeholder="At least 8 chars (e.g. School#2026)"
+                      required
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="pl-10 pr-10 h-11 bg-muted/30 border-border/50 rounded-xl text-xs"
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground px-1">
+                    Must be 8+ chars with uppercase, lowercase, and a number.
+                  </p>
+                </div>
+
+                {/* Confirm New Password Input */}
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Confirm New Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type={showNewPassword ? 'text' : 'password'}
+                      placeholder="Re-enter new password"
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="pl-10 pr-10 h-11 bg-muted/30 border-border/50 rounded-xl text-xs"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-11 rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white font-bold shadow-lg shadow-[#1E3A8A]/20 text-xs"
+                >
+                  {loading ? 'Updating Password & Signing In...' : 'Update Password & Sign In'}
+                </Button>
+
+                {/* Resend Code */}
+                <div className="text-center pt-1">
+                  {forgotCooldown > 0 ? (
+                    <span className="text-[11px] text-muted-foreground">
+                      Resend code in <strong className="text-foreground">{forgotCooldown}s</strong>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleSendForgotOtp()}
+                      disabled={sendingForgotOtp}
+                      className="text-[11px] text-[#1E3A8A] font-bold hover:underline inline-flex items-center gap-1.5"
+                    >
+                      <RefreshCw className={cn('h-3 w-3', sendingForgotOtp && 'animate-spin')} />
+                      <span>Didn't receive code? Resend Code</span>
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
           </form>
 
-          {/* Switch between Sign In and Sign Up */}
-          <p className="text-center text-xs text-muted-foreground">
-            {authMode === 'login' ? (
-              <>
+          {/* Switch between Sign In / Sign Up / Forgot Password */}
+          <div className="text-center text-xs text-muted-foreground">
+            {authMode === 'forgot_password' ? (
+              <p>
+                Remember your password?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode('login');
+                    setError('');
+                  }}
+                  className="text-[#1E3A8A] font-bold hover:underline"
+                >
+                  Sign In
+                </button>
+              </p>
+            ) : authMode === 'login' ? (
+              <p>
                 Don't have an account?{' '}
                 <button
                   type="button"
@@ -687,9 +1017,9 @@ export function Login() {
                 >
                   Create Account
                 </button>
-              </>
+              </p>
             ) : (
-              <>
+              <p>
                 Already registered?{' '}
                 <button
                   type="button"
@@ -702,9 +1032,9 @@ export function Login() {
                 >
                   Sign In
                 </button>
-              </>
+              </p>
             )}
-          </p>
+          </div>
 
         </div>
       </div>
