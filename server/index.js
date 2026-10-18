@@ -390,15 +390,152 @@ app.post('/api/razorpay/order', async (req, res) => {
   }
 });
 
-// --- Auth ---
-app.post('/api/auth/register', async (req, res) => {
+// --- Auth OTP Verification Store & Helper ---
+const authOtpStore = new Map();
+
+async function sendAuthOtpEmail(email, code, name) {
+  let transporter = configuredMailTransporter;
+  if (!transporter) {
+    if (!fallbackMailTransporterPromise) {
+      fallbackMailTransporterPromise = nodemailer.createTestAccount().then((acct) => {
+        console.log('Using Ethereal SMTP fallback for auth OTP emails.');
+        console.log(`Ethereal login: ${acct.user}`);
+        return nodemailer.createTransport({
+          host: 'smtp.ethereal.email',
+          port: 587,
+          secure: false,
+          auth: { user: acct.user, pass: acct.pass },
+        });
+      });
+    }
+    transporter = await fallbackMailTransporterPromise;
+  }
+
+  const subject = `${code} is your Niswartha verification code`;
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 28px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <h2 style="color: #1E3A8A; margin: 0; font-size: 24px; font-weight: bold; letter-spacing: -0.5px;">Niswartha</h2>
+        <p style="color: #64748b; font-size: 11px; margin-top: 4px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Deaf and Dumb Industrial Institute, Nagpur</p>
+      </div>
+      <p style="color: #1e293b; font-size: 15px; margin-bottom: 12px; font-weight: 500;">Hello ${name ? name : 'there'},</p>
+      <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
+        Thank you for joining our community supporting hearing-impaired children. Please use this 6-digit verification code to confirm your email address:
+      </p>
+      <div style="text-align: center; margin: 28px 0;">
+        <span style="display: inline-block; font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #1E3A8A; background-color: #f0fdf4; border: 1.5px dashed #16a34a; padding: 14px 28px; border-radius: 12px;">${code}</span>
+      </div>
+      <p style="color: #64748b; font-size: 12px; line-height: 1.5;">
+        This verification code expires in <strong>10 minutes</strong>. If you did not create an account with Niswartha, please ignore this email.
+      </p>
+      <div style="margin-top: 32px; padding-top: 16px; border-top: 1px solid #f1f5f9; text-align: center;">
+        <p style="color: #94a3b8; font-size: 11px; margin: 0;">Deaf and Dumb Industrial Institute, Near Kasturchand Park, Nagpur &bull; Est. 1946</p>
+      </div>
+    </div>
+  `;
+
+  const mailOptions = {
+    from: `"Niswartha Institute" <${SMTP_FROM}>`,
+    to: email,
+    subject,
+    text: `Your Niswartha verification code is: ${code}. It expires in 10 minutes.`,
+    html,
+  };
+
+  return sendEmailWithRetry(transporter, mailOptions);
+}
+
+// Request Email OTP for Sign Up
+app.post('/api/auth/send-otp', async (req, res) => {
   try {
-    const { email, password, name, role } = req.body;
-    if (!email || !password || !name) {
-      return res.status(400).json({ error: 'Email, password and name are required' });
+    const { email, name } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email address is required' });
+    }
+    const lowerEmail = email.trim().toLowerCase();
+    if (!isValidEmail(lowerEmail)) {
+      return res.status(400).json({ error: 'Please enter a valid email address' });
     }
 
-    // Password strength check
+    // Check if user already exists
+    const existing = await User.findOne({ email: lowerEmail }).lean();
+    if (existing) {
+      return res.status(400).json({ error: 'An account with this email already exists. Please sign in.' });
+    }
+
+    // Anti-spam cooldown: 30 seconds
+    const prev = authOtpStore.get(lowerEmail);
+    if (prev && Date.now() - (prev.createdAt || 0) < 30000) {
+      const waitSec = Math.ceil((30000 - (Date.now() - prev.createdAt)) / 1000);
+      return res.status(429).json({ error: `Please wait ${waitSec}s before requesting a new code.` });
+    }
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    authOtpStore.set(lowerEmail, {
+      code,
+      name: name?.trim() || 'Supporter',
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 10 * 60 * 1000,
+      attempts: 0,
+    });
+
+    console.log(`[AUTH OTP VERIFIED SENDER] OTP for ${lowerEmail}: ${code}`);
+
+    // Send email asynchronously
+    sendAuthOtpEmail(lowerEmail, code, name?.trim()).catch((err) => {
+      console.error(`[AUTH OTP MAIL ERROR] Failed sending to ${lowerEmail}:`, err?.message);
+    });
+
+    res.json({
+      success: true,
+      message: `A 6-digit verification code has been sent to ${lowerEmail}`,
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to send verification code. Please try again.' });
+  }
+});
+
+// Complete Registration with OTP Verification
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { email, password, name, role, otp } = req.body;
+    if (!email || !password || !name) {
+      return res.status(400).json({ error: 'Name, email, and password are required' });
+    }
+
+    const lowerEmail = email.trim().toLowerCase();
+    if (!isValidEmail(lowerEmail)) {
+      return res.status(400).json({ error: 'Please enter a valid email address' });
+    }
+
+    // 1. Verify OTP
+    if (!otp) {
+      return res.status(400).json({ error: 'Please enter the 6-digit verification code sent to your email.' });
+    }
+
+    const storedOtp = authOtpStore.get(lowerEmail);
+    if (!storedOtp) {
+      return res.status(400).json({ error: 'Verification code not found or expired. Please request a new code.' });
+    }
+
+    if (Date.now() > storedOtp.expiresAt) {
+      authOtpStore.delete(lowerEmail);
+      return res.status(400).json({ error: 'Verification code has expired. Please request a new code.' });
+    }
+
+    if (String(storedOtp.code).trim() !== String(otp).trim()) {
+      storedOtp.attempts = (storedOtp.attempts || 0) + 1;
+      if (storedOtp.attempts >= 5) {
+        authOtpStore.delete(lowerEmail);
+        return res.status(400).json({ error: 'Too many incorrect attempts. Please request a new code.' });
+      }
+      return res.status(400).json({ error: 'Invalid verification code. Please check your email and try again.' });
+    }
+
+    // OTP verified! Remove from store
+    authOtpStore.delete(lowerEmail);
+
+    // 2. Password strength check
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
@@ -406,38 +543,40 @@ app.post('/api/auth/register', async (req, res) => {
       });
     }
 
-    const existing = await User.findOne({ email }).lean();
-    if (existing) return res.status(400).json({ error: 'User already exists' });
+    const existing = await User.findOne({ email: lowerEmail }).lean();
+    if (existing) return res.status(400).json({ error: 'User already exists with this email. Please sign in.' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const id = `user-${Date.now()}`;
     const userDoc = {
       id,
-      email,
+      email: lowerEmail,
       password: hashedPassword,
-      name,
+      name: name.trim(),
       role: role || 'donor',
-      avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`,
+      isEmailVerified: true,
+      avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name.trim())}`,
       createdAt: new Date().toISOString()
     };
 
     await User.create(userDoc);
-    const token = jwt.sign({ id, email, role: userDoc.role }, JWT_SECRET);
+    const token = jwt.sign({ id, email: lowerEmail, role: userDoc.role }, JWT_SECRET);
     const { password: _, ...userWithoutPassword } = userDoc;
 
     await SecurityLog.create({
       id: `seclog-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      eventType: 'register_success',
-      email,
+      eventType: 'register_verified_success',
+      email: lowerEmail,
       ip: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
       createdAt: new Date().toISOString()
-    });
+    }).catch(() => {});
 
     res.json({ user: userWithoutPassword, token });
   } catch (e) {
     res.status(500).json({ error: String(e.message) });
   }
 });
+
 
 app.post('/api/auth/login', async (req, res) => {
   try {

@@ -94,6 +94,8 @@ export const api = {
   changePassword: (id: string, data: Record<string, unknown>) =>
     fetchAPI(`/users/${id}/change-password`, { method: 'POST', body: JSON.stringify(data) }),
 
+  sendAuthOtp: (data: { email: string; name?: string }) =>
+    fetchAPI<{ success: boolean; message: string }>('/auth/send-otp', { method: 'POST', body: JSON.stringify(data) }),
   login: (data: Record<string, unknown>) =>
     fetchAPI<{ user: any; token: string }>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   register: (data: Record<string, unknown>) =>

@@ -3,7 +3,8 @@ import { useNavigate, useLocation, Link } from 'react-router';
 import { useUser } from '../context/UserContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { Mail, Lock, Eye, EyeOff, UserRound } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, UserRound, ArrowLeft, RefreshCw, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '../components/ui/input-otp';
 import { cn } from '../lib/utils';
 import { api } from '../lib/api';
 import { toast } from 'sonner';
@@ -18,6 +19,12 @@ export function Login() {
     location.pathname.startsWith('/signup') ? 'signup' : 'login'
   );
 
+  // Sign up workflow: 'details' (enter name & email) -> 'verify' (enter OTP code & set password)
+  const [signupStep, setSignupStep] = useState<'details' | 'verify'>('details');
+  const [otp, setOtp] = useState('');
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,6 +32,13 @@ export function Login() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
 
   useEffect(() => {
     if (location.pathname.startsWith('/signup')) {
@@ -44,14 +58,61 @@ export function Login() {
     }
   }, [location.pathname]);
 
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setError('');
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail) {
+      setError('Please enter your email address.');
+      toast.error('Please enter your email address.');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setError('Please enter a valid email address.');
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+    if (!name.trim()) {
+      setError('Please enter your full name.');
+      toast.error('Please enter your full name.');
+      return;
+    }
+
+    setSendingOtp(true);
+    try {
+      const res = await api.sendAuthOtp({
+        email: trimmedEmail,
+        name: name.trim(),
+      });
+      toast.success(res?.message || `Verification code sent to ${trimmedEmail}`);
+      setSignupStep('verify');
+      setResendCooldown(60);
+      setOtp('');
+    } catch (err: any) {
+      const msg = err?.message || 'Failed to send verification code. Please check your email.';
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // If on sign up and on details step, trigger OTP send
+    if (authMode === 'signup' && signupStep === 'details') {
+      await handleSendOtp();
+      return;
+    }
+
     setLoading(true);
 
     try {
       if (authMode === 'login') {
-        const response = await api.login({ email, password });
+        const response = await api.login({ email: email.trim(), password });
         if (response && response.user && response.token) {
           login(response.user, response.token);
           toast.success(`Welcome back, ${response.user.name || 'User'}!`);
@@ -64,15 +125,24 @@ export function Login() {
           }
         }
       } else {
+        if (!otp || otp.trim().length !== 6) {
+          const errText = 'Please enter the 6-digit verification code sent to your email.';
+          setError(errText);
+          toast.error(errText);
+          setLoading(false);
+          return;
+        }
+
         const response = await api.register({
           name: name.trim() || 'Supporter',
           email: email.trim(),
           password,
+          otp: otp.trim(),
           role: 'donor',
         });
         if (response && response.user && response.token) {
           login(response.user, response.token);
-          toast.success('Account created successfully!');
+          toast.success('Email verified! Account created successfully.');
           navigate('/');
         }
       }
@@ -301,6 +371,7 @@ export function Login() {
               type="button"
               onClick={() => {
                 setAuthMode('login');
+                setSignupStep('details');
                 setError('');
               }}
               className={cn(
@@ -316,6 +387,7 @@ export function Login() {
               type="button"
               onClick={() => {
                 setAuthMode('signup');
+                setSignupStep('details');
                 setError('');
               }}
               className={cn(
@@ -331,55 +403,64 @@ export function Login() {
 
           <div>
             <h1 className="text-2xl sm:text-3xl font-serif font-bold text-zinc-900">
-              {authMode === 'login' ? 'Welcome Back' : 'Create Your Account'}
+              {authMode === 'login'
+                ? 'Welcome Back'
+                : signupStep === 'details'
+                ? 'Create Your Account'
+                : 'Verify Your Email'}
             </h1>
             <p className="text-xs text-muted-foreground mt-1">
               {authMode === 'login'
                 ? 'Sign in to access your donation history and support activities'
-                : 'Join our community supporting hearing-impaired children'}
+                : signupStep === 'details'
+                ? 'Join our community supporting hearing-impaired children'
+                : `Enter the 6-digit code sent to ${email}`}
             </p>
           </div>
 
+          {/* Google Auth Button (Available on login and initial signup) */}
+          {(authMode === 'login' || signupStep === 'details') && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleGoogleAuth}
+                disabled={googleLoading}
+                className="w-full h-11 rounded-full border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-700 font-semibold text-xs gap-3 shadow-2xs"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                  />
+                </svg>
+                {googleLoading
+                  ? 'Connecting...'
+                  : authMode === 'login'
+                  ? 'Sign in with Google'
+                  : 'Fast Sign up with Google'}
+              </Button>
 
-          {/* Google Auth Button */}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleGoogleAuth}
-            disabled={googleLoading}
-            className="w-full h-11 rounded-full border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-700 font-semibold text-xs gap-3 shadow-2xs"
-          >
-            <svg className="h-4 w-4" viewBox="0 0 24 24">
-              <path
-                fill="#4285F4"
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              />
-              <path
-                fill="#34A853"
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-              />
-              <path
-                fill="#EA4335"
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-              />
-            </svg>
-            {googleLoading
-              ? 'Connecting...'
-              : authMode === 'login'
-              ? 'Sign in with Google'
-              : 'Sign up with Google'}
-          </Button>
-
-          <div className="relative flex items-center justify-center">
-            <div className="border-t border-border/60 w-full" />
-            <span className="bg-background px-3 text-[10px] uppercase font-bold text-muted-foreground tracking-wider absolute">
-              or credentials
-            </span>
-          </div>
+              <div className="relative flex items-center justify-center">
+                <div className="border-t border-border/60 w-full" />
+                <span className="bg-background px-3 text-[10px] uppercase font-bold text-muted-foreground tracking-wider absolute">
+                  or with email
+                </span>
+              </div>
+            </>
+          )}
 
           {error && (
             <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs text-center font-medium">
@@ -387,72 +468,210 @@ export function Login() {
             </div>
           )}
 
+          {/* --- FORM SECTION --- */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {authMode === 'signup' && (
-              <div className="relative">
-                <UserRound className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Full Name"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="pl-10 h-11 bg-muted/30 border-border/50 rounded-xl text-xs"
-                />
-              </div>
+            {/* LOGIN MODE */}
+            {authMode === 'login' && (
+              <>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="email"
+                    placeholder="you@example.com"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 h-11 bg-muted/30 border-border/50 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-3.5 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 pr-10 h-11 bg-muted/30 border-border/50 rounded-xl text-xs"
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-11 rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white font-bold shadow-lg shadow-[#1E3A8A]/20 text-xs"
+                >
+                  {loading ? 'Signing in...' : 'Sign In'}
+                </Button>
+              </>
             )}
 
-            <div className="relative">
-              <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="email"
-                placeholder="you@example.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 h-11 bg-muted/30 border-border/50 rounded-xl text-xs"
-              />
-            </div>
+            {/* SIGNUP STEP 1: Name & Email -> Send OTP */}
+            {authMode === 'signup' && signupStep === 'details' && (
+              <>
+                <div className="relative">
+                  <UserRound className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Full Name (e.g. Ramesh Patel)"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="pl-10 h-11 bg-muted/30 border-border/50 rounded-xl text-xs"
+                  />
+                </div>
 
-            <div className="relative">
-              <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-3.5 text-muted-foreground hover:text-foreground"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-              <Input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="••••••••"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 pr-10 h-11 bg-muted/30 border-border/50 rounded-xl text-xs"
-              />
-            </div>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="email"
+                    placeholder="Email address (you@example.com)"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 h-11 bg-muted/30 border-border/50 rounded-xl text-xs"
+                  />
+                </div>
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full h-11 rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white font-bold shadow-lg shadow-[#1E3A8A]/20 text-xs"
-            >
-              {loading
-                ? 'Processing...'
-                : authMode === 'login'
-                ? 'Sign In'
-                : 'Complete Registration'}
-            </Button>
+                <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 px-1">
+                  <ShieldCheck className="h-3.5 w-3.5 text-[#1E3A8A] shrink-0" />
+                  <span>We will send a 6-digit verification code to confirm this email is real.</span>
+                </p>
+
+                <Button
+                  type="button"
+                  onClick={handleSendOtp}
+                  disabled={sendingOtp}
+                  className="w-full h-11 rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white font-bold shadow-lg shadow-[#1E3A8A]/20 text-xs"
+                >
+                  {sendingOtp ? 'Sending verification code...' : 'Send Verification Code'}
+                </Button>
+              </>
+            )}
+
+            {/* SIGNUP STEP 2: Enter 6-digit OTP & Create Password */}
+            {authMode === 'signup' && signupStep === 'verify' && (
+              <>
+                <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200/70 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 text-blue-900 truncate">
+                    <CheckCircle2 className="h-4 w-4 text-[#1E3A8A] shrink-0" />
+                    <span className="truncate">
+                      Code sent to <strong>{email}</strong>
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSignupStep('details');
+                      setError('');
+                    }}
+                    className="text-xs text-[#1E3A8A] font-bold hover:underline shrink-0 ml-2"
+                  >
+                    Change
+                  </button>
+                </div>
+
+                {/* 6-Digit OTP */}
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block text-center">
+                    Enter 6-Digit Verification Code
+                  </label>
+                  <div className="flex justify-center">
+                    <InputOTP
+                      maxLength={6}
+                      value={otp}
+                      onChange={(val) => setOtp(val)}
+                    >
+                      <InputOTPGroup className="gap-1.5 sm:gap-2">
+                        <InputOTPSlot index={0} className="w-10 h-11 sm:w-11 sm:h-12 text-base font-bold rounded-xl border-border/70 bg-muted/30" />
+                        <InputOTPSlot index={1} className="w-10 h-11 sm:w-11 sm:h-12 text-base font-bold rounded-xl border-border/70 bg-muted/30" />
+                        <InputOTPSlot index={2} className="w-10 h-11 sm:w-11 sm:h-12 text-base font-bold rounded-xl border-border/70 bg-muted/30" />
+                        <InputOTPSlot index={3} className="w-10 h-11 sm:w-11 sm:h-12 text-base font-bold rounded-xl border-border/70 bg-muted/30" />
+                        <InputOTPSlot index={4} className="w-10 h-11 sm:w-11 sm:h-12 text-base font-bold rounded-xl border-border/70 bg-muted/30" />
+                        <InputOTPSlot index={5} className="w-10 h-11 sm:w-11 sm:h-12 text-base font-bold rounded-xl border-border/70 bg-muted/30" />
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </div>
+                </div>
+
+                {/* Password Input */}
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Create Your Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-3.5 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="At least 8 chars (e.g. School#2026)"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 pr-10 h-11 bg-muted/30 border-border/50 rounded-xl text-xs"
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground px-1">
+                    Must be 8+ chars with uppercase, lowercase, and a number.
+                  </p>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-11 rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white font-bold shadow-lg shadow-[#1E3A8A]/20 text-xs"
+                >
+                  {loading ? 'Verifying & Creating Account...' : 'Verify Email & Create Account'}
+                </Button>
+
+                {/* Resend Code */}
+                <div className="text-center pt-1">
+                  {resendCooldown > 0 ? (
+                    <span className="text-[11px] text-muted-foreground">
+                      Resend code in <strong className="text-foreground">{resendCooldown}s</strong>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleSendOtp()}
+                      disabled={sendingOtp}
+                      className="text-[11px] text-[#1E3A8A] font-bold hover:underline inline-flex items-center gap-1.5"
+                    >
+                      <RefreshCw className={cn('h-3 w-3', sendingOtp && 'animate-spin')} />
+                      <span>Didn't receive code? Resend Code</span>
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
           </form>
 
+          {/* Switch between Sign In and Sign Up */}
           <p className="text-center text-xs text-muted-foreground">
             {authMode === 'login' ? (
               <>
                 Don't have an account?{' '}
                 <button
                   type="button"
-                  onClick={() => setAuthMode('signup')}
+                  onClick={() => {
+                    setAuthMode('signup');
+                    setSignupStep('details');
+                    setError('');
+                  }}
                   className="text-[#1E3A8A] font-bold hover:underline"
                 >
                   Create Account
@@ -463,7 +682,11 @@ export function Login() {
                 Already registered?{' '}
                 <button
                   type="button"
-                  onClick={() => setAuthMode('login')}
+                  onClick={() => {
+                    setAuthMode('login');
+                    setSignupStep('details');
+                    setError('');
+                  }}
                   className="text-[#1E3A8A] font-bold hover:underline"
                 >
                   Sign In
