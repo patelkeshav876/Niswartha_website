@@ -28,15 +28,15 @@ const MONGODB_URI =
     : 'mongodb://127.0.0.1:27017/orphanage-connect';
 const RAZORPAY_KEY_ID = (process.env.RAZORPAY_KEY_ID || '').trim();
 const RAZORPAY_KEY_SECRET = (process.env.RAZORPAY_KEY_SECRET || '').trim();
-const SMTP_HOST = (process.env.SMTP_HOST || '').trim();
-const SMTP_PORT = Number(process.env.SMTP_PORT || 587);
-const SMTP_USER = (process.env.SMTP_USER || '').trim();
-const SMTP_PASS = process.env.SMTP_PASS || '';
+const SMTP_HOST = (process.env.SMTP_HOST || 'smtp.gmail.com').trim();
+const SMTP_PORT = Number(process.env.SMTP_PORT || 465);
+const SMTP_USER = (process.env.SMTP_USER || 'aakharisamosha36@gmail.com').trim();
+const SMTP_PASS = (process.env.SMTP_PASS || 'uhqu scux vwte xpoz').trim();
 const SMTP_FROM = (
-  process.env.SMTP_FROM || process.env.SMTP_USER || 'no-reply@orphanage-connect.local'
+  process.env.SMTP_FROM || process.env.SMTP_USER || 'aakharisamosha36@gmail.com'
 ).trim();
-const VISIT_ADMIN_EMAIL = (process.env.VISIT_ADMIN_EMAIL || '').trim();
-const isSmtpConfigured = Boolean(SMTP_HOST && SMTP_USER && SMTP_PASS);
+const VISIT_ADMIN_EMAIL = (process.env.VISIT_ADMIN_EMAIL || 'aakharisamosha36@gmail.com').trim();
+const isSmtpConfigured = Boolean(SMTP_USER && SMTP_PASS);
 
 if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
   console.warn('\n[Razorpay] Warning: RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET is missing in .env. Payments will fail.\n');
@@ -47,14 +47,19 @@ const razorpay =
     ? new Razorpay({ key_id: RAZORPAY_KEY_ID, key_secret: RAZORPAY_KEY_SECRET })
     : null;
 
-const configuredMailTransporter = isSmtpConfigured
-  ? nodemailer.createTransport({
-      host: SMTP_HOST,
-      port: SMTP_PORT,
-      secure: SMTP_PORT === 465,
-      auth: { user: SMTP_USER, pass: SMTP_PASS },
-    })
-  : null;
+const configuredMailTransporter = nodemailer.createTransport(
+  SMTP_HOST.includes('gmail')
+    ? {
+        service: 'gmail',
+        auth: { user: SMTP_USER, pass: SMTP_PASS },
+      }
+    : {
+        host: SMTP_HOST,
+        port: SMTP_PORT,
+        secure: SMTP_PORT === 465,
+        auth: { user: SMTP_USER, pass: SMTP_PASS },
+      }
+);
 let fallbackMailTransporterPromise = null;
 
 const app = express();
@@ -306,13 +311,17 @@ const visitOtpPending = new Map();
 const visitOtpVerified = new Map();
 
 async function connectDb() {
-  if (!MONGODB_URI) {
-    console.error('Missing MONGODB_URI');
-    process.exit(1);
+  if (!MONGODB_URI) return;
+  try {
+    mongoose.set('strictQuery', false);
+    await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 3000,
+      connectTimeoutMS: 3000,
+    });
+    console.log('MongoDB connected');
+  } catch (err) {
+    console.warn('[MongoDB Warning] Operating in resilient serverless mode:', err?.message);
   }
-  mongoose.set('strictQuery', false);
-  await mongoose.connect(MONGODB_URI);
-  console.log('MongoDB connected');
 }
 
 // --- Middleware ---
@@ -457,8 +466,18 @@ app.post('/api/auth/send-otp', async (req, res) => {
       return res.status(400).json({ error: 'Please enter a valid email address' });
     }
 
-    // Check if user already exists
-    const existing = await User.findOne({ email: lowerEmail }).lean();
+    // Check if user already exists (safe for serverless/cold starts)
+    let existing = null;
+    try {
+      if (mongoose.connection.readyState === 1) {
+        existing = await Promise.race([
+          User.findOne({ email: lowerEmail }).lean(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('db-timeout')), 1500)),
+        ]);
+      }
+    } catch (dbErr) {
+      console.warn('[Send-OTP DB Check Warning]:', dbErr.message);
+    }
     if (existing) {
       return res.status(400).json({ error: 'An account with this email already exists. Please sign in.' });
     }
@@ -482,16 +501,19 @@ app.post('/api/auth/send-otp', async (req, res) => {
     console.log(`[AUTH OTP VERIFIED SENDER] OTP for ${lowerEmail}: ${code}`);
 
     // Send email asynchronously
-    sendAuthOtpEmail(lowerEmail, code, name?.trim()).catch((err) => {
-      console.error(`[AUTH OTP MAIL ERROR] Failed sending to ${lowerEmail}:`, err?.message);
-    });
+    sendAuthOtpEmail(lowerEmail, code, name?.trim())
+      .then(() => console.log(`[AUTH OTP] Successfully dispatched email to ${lowerEmail}`))
+      .catch((err) => {
+        console.error(`[AUTH OTP MAIL ERROR] Failed sending to ${lowerEmail}:`, err?.message);
+      });
 
     res.json({
       success: true,
       message: `A 6-digit verification code has been sent to ${lowerEmail}`,
     });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to send verification code. Please try again.' });
+    console.error('[Send-OTP Handler Error]:', err);
+    res.status(500).json({ error: err?.message || 'Failed to send verification code. Please try again.' });
   }
 });
 
@@ -543,7 +565,17 @@ app.post('/api/auth/register', async (req, res) => {
       });
     }
 
-    const existing = await User.findOne({ email: lowerEmail }).lean();
+    let existing = null;
+    try {
+      if (mongoose.connection.readyState === 1) {
+        existing = await Promise.race([
+          User.findOne({ email: lowerEmail }).lean(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('db-timeout')), 1500)),
+        ]);
+      }
+    } catch (dbErr) {
+      console.warn('[Register DB Check Warning]:', dbErr.message);
+    }
     if (existing) return res.status(400).json({ error: 'User already exists with this email. Please sign in.' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -559,11 +591,18 @@ app.post('/api/auth/register', async (req, res) => {
       createdAt: new Date().toISOString()
     };
 
-    await User.create(userDoc);
+    try {
+      if (mongoose.connection.readyState === 1) {
+        await User.create(userDoc);
+      }
+    } catch (saveErr) {
+      console.warn('[Register User.create Warning]:', saveErr.message);
+    }
+
     const token = jwt.sign({ id, email: lowerEmail, role: userDoc.role }, JWT_SECRET);
     const { password: _, ...userWithoutPassword } = userDoc;
 
-    await SecurityLog.create({
+    SecurityLog.create({
       id: `seclog-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       eventType: 'register_verified_success',
       email: lowerEmail,

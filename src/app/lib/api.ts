@@ -50,7 +50,12 @@ export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}):
       if (errorText.includes('NOT_FOUND') || errorText.includes('<!DOCTYPE') || errorText.includes('<html')) {
         errorMsg = `Server endpoint ${endpoint} is not available (${response.status}).`;
       } else if (errorText) {
-        errorMsg = errorText;
+        try {
+          const parsed = JSON.parse(errorText);
+          errorMsg = parsed.error || parsed.message || errorText;
+        } catch {
+          errorMsg = errorText;
+        }
       }
     } catch {}
     throw new Error(errorMsg);
