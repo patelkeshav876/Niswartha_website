@@ -19,7 +19,10 @@ export function Footer() {
   }, []);
 
   return (
-    <footer className="relative bg-[#0b110e] text-white overflow-hidden">
+    <footer
+      className="relative bg-[#0b110e] text-white overflow-hidden"
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '0 400px' } as React.CSSProperties}
+    >
       {/* Ambient decorations */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(15,109,78,0.15),transparent_50%),radial-gradient(circle_at_80%_20%,rgba(15,109,78,0.08),transparent_50%)]" />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:24px_24px] opacity-30" />

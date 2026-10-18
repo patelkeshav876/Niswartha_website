@@ -39,10 +39,10 @@ function UnifiedStatCounters({ stats }: { stats: StatItem[] }) {
     if (!inView || hasAnimated.current) return;
     hasAnimated.current = true;
 
-    // Delay counter ignition by 800ms until hero entrance, FCP and LCP completely settle
+    // Delay counter ignition to 1100ms so hero entrance animation finishes and settles
     let frameId: number;
     const timeout = setTimeout(() => {
-      const duration = 1600;
+      const duration = 1400;
       const start = performance.now();
       const targets = targetsRef.current;
       let lastUpdate = 0;
@@ -52,8 +52,8 @@ function UnifiedStatCounters({ stats }: { stats: StatItem[] }) {
         const progress = Math.min(elapsed / duration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
 
-        // Throttle state updates to ~30fps (every 33ms) to eliminate main-thread microtask flooding
-        if (now - lastUpdate >= 33 || progress === 1) {
+        // Throttle state updates to ~20fps (every 48ms) to keep main thread completely free
+        if (now - lastUpdate >= 48 || progress === 1) {
           lastUpdate = now;
           setCounts(targets.map((t) => Math.round(eased * t)));
         }
@@ -64,7 +64,7 @@ function UnifiedStatCounters({ stats }: { stats: StatItem[] }) {
       };
 
       frameId = requestAnimationFrame(step);
-    }, 800);
+    }, 1100);
 
     return () => {
       clearTimeout(timeout);
@@ -218,26 +218,34 @@ export function Home() {
       {/* ════════════ MAIN CONTENT ════════════ */}
       <main ref={mainRef} className="flex-1">
         {/* ──── Quick Actions ──── */}
-        <Suspense fallback={<div className="section-container py-16 lg:py-20 min-h-[140px] sm:min-h-[160px]" />}>
-          <QuickActions ashramId={ashram.id} />
-        </Suspense>
+        <div style={{ contentVisibility: 'auto', containIntrinsicSize: '0 160px' } as React.CSSProperties}>
+          <Suspense fallback={<div className="section-container py-16 lg:py-20 min-h-[140px] sm:min-h-[160px]" />}>
+            <QuickActions ashramId={ashram.id} />
+          </Suspense>
+        </div>
 
         {/* ──── Urgent Needs ──── */}
         {urgentNeeds.length > 0 && (
-          <Suspense fallback={<div className="bg-muted/30 py-16 lg:py-20 min-h-[380px]" />}>
-            <UrgentNeedsSection urgentNeeds={urgentNeeds} />
-          </Suspense>
+          <div style={{ contentVisibility: 'auto', containIntrinsicSize: '0 420px' } as React.CSSProperties}>
+            <Suspense fallback={<div className="bg-muted/30 py-16 lg:py-20 min-h-[380px]" />}>
+              <UrgentNeedsSection urgentNeeds={urgentNeeds} />
+            </Suspense>
+          </div>
         )}
 
         {/* ──── Upcoming Events ──── */}
-        <Suspense fallback={<div className="section-container py-16 lg:py-20 min-h-[450px]" />}>
-          <UpcomingEventsSection upcomingEvents={upcomingEvents} />
-        </Suspense>
+        <div style={{ contentVisibility: 'auto', containIntrinsicSize: '0 450px' } as React.CSSProperties}>
+          <Suspense fallback={<div className="section-container py-16 lg:py-20 min-h-[450px]" />}>
+            <UpcomingEventsSection upcomingEvents={upcomingEvents} />
+          </Suspense>
+        </div>
 
         {/* ──── Contact / CTA Band ──── */}
-        <Suspense fallback={<div className="bg-gradient-to-br from-primary/[0.06] via-background to-primary/[0.04] py-12 lg:py-20 min-h-[480px]" />}>
-          <ContactCtaSection ashram={ashram} />
-        </Suspense>
+        <div style={{ contentVisibility: 'auto', containIntrinsicSize: '0 480px' } as React.CSSProperties}>
+          <Suspense fallback={<div className="bg-gradient-to-br from-primary/[0.06] via-background to-primary/[0.04] py-12 lg:py-20 min-h-[480px]" />}>
+            <ContactCtaSection ashram={ashram} />
+          </Suspense>
+        </div>
       </main>
     </div>
   );
