@@ -98,6 +98,8 @@ export const api = {
     fetchAPI<{ user: any; token: string }>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   register: (data: Record<string, unknown>) =>
     fetchAPI<{ user: any; token: string }>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+  googleAuth: (data: { email: string; name?: string; avatarUrl?: string; googleId?: string }) =>
+    fetchAPI<{ user: any; token: string }>('/auth/google', { method: 'POST', body: JSON.stringify(data) }),
 
   getNotifications: async () => {
     let list: any[] = [];

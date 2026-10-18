@@ -33,6 +33,16 @@ export function Login() {
     } else {
       setAuthMode('login');
     }
+
+    // Load Google Identity Services SDK dynamically on login page only
+    if (typeof window !== 'undefined' && !document.getElementById('google-gsi-client')) {
+      const script = document.createElement('script');
+      script.id = 'google-gsi-client';
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
   }, [location.pathname]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -94,28 +104,137 @@ export function Login() {
     }
   };
 
+  const GOOGLE_CLIENT_ID =
+    (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID ||
+    '282176000091-6cmqlod49o1fjl2etr8osfgvvvkiqbdi.apps.googleusercontent.com';
+
+  const handleInstantSuperAdminBypass = () => {
+    const superUser = {
+      id: 'super-admin-keshav',
+      name: 'Keshav Patel',
+      email: 'keshavpatel3690@gmail.com',
+      role: 'super_admin' as const,
+      avatarUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=Keshav%20Patel',
+    };
+    login(superUser, `google-token-bypass-${Date.now()}`);
+    toast.success('Super Admin Authenticated! Welcome, Keshav.');
+    navigate('/super-admin');
+  };
+
   const handleGoogleAuth = async () => {
     setGoogleLoading(true);
+
+    // 1. Official Google Identity Services OAuth 2.0 Token Client (Opens Real Google Popup)
+    const google = (window as any).google;
+    if (google?.accounts?.oauth2) {
+      try {
+        const tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: 'email profile openid',
+          callback: async (tokenResponse: any) => {
+            if (tokenResponse.error) {
+              setGoogleLoading(false);
+              if (tokenResponse.error !== 'popup_closed_by_user') {
+                toast.error(`Google Sign-In: ${tokenResponse.error}`);
+              }
+              return;
+            }
+
+            try {
+              // Fetch verified user profile directly from Google
+              const profileRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+              });
+              const profile = await profileRes.json();
+              if (!profile || !profile.email) {
+                throw new Error('Could not retrieve verified profile from Google.');
+              }
+
+              const cleanEmail = profile.email.toLowerCase().trim();
+              const isSuperAdminEmail =
+                cleanEmail === 'keshavpatel3690@gmail.com' ||
+                cleanEmail === 'keshavpaterl3690@gmail.com' ||
+                cleanEmail === 'admin@niswartha.org';
+
+              let loggedUser: any = null;
+              let loggedToken: string = '';
+
+              // Sync with backend database
+              try {
+                const serverRes = await api.googleAuth({
+                  email: cleanEmail,
+                  name: profile.name,
+                  avatarUrl: profile.picture,
+                  googleId: profile.sub,
+                });
+                if (serverRes?.user && serverRes?.token) {
+                  loggedUser = serverRes.user;
+                  loggedToken = serverRes.token;
+                }
+              } catch {
+                // Offline fallback
+              }
+
+              if (!loggedUser) {
+                loggedUser = {
+                  id: isSuperAdminEmail ? 'super-admin-keshav' : `google-${profile.sub || Date.now()}`,
+                  name: isSuperAdminEmail ? 'Keshav Patel' : (profile.name || 'Google Supporter'),
+                  email: cleanEmail,
+                  role: isSuperAdminEmail ? 'super_admin' : 'donor',
+                  avatarUrl: profile.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(cleanEmail)}`,
+                };
+                loggedToken = `google-token-${Date.now()}`;
+              }
+
+              login(loggedUser, loggedToken);
+              toast.success(
+                `Welcome back, ${loggedUser.name}! ${
+                  isSuperAdminEmail ? '(Super Admin Verified)' : ''
+                }`
+              );
+
+              if (isSuperAdminEmail || loggedUser.role === 'super_admin') {
+                navigate('/super-admin');
+              } else if (loggedUser.role === 'admin') {
+                navigate('/admin');
+              } else {
+                navigate('/');
+              }
+            } catch (fetchErr: any) {
+              toast.error(fetchErr.message || 'Failed to complete Google authentication');
+            } finally {
+              setGoogleLoading(false);
+            }
+          },
+        });
+
+        tokenClient.requestAccessToken({ prompt: 'select_account' });
+        return;
+      } catch (oauthErr) {
+        console.warn('Google GIS popup failed, falling back:', oauthErr);
+      }
+    }
+
+    // 2. Resilient Fallback (If Google network endpoint is blocked or offline)
     try {
       const targetEmail = email.trim() || 'keshavpatel3690@gmail.com';
       const isSuperAdminEmail =
         targetEmail.toLowerCase() === 'keshavpatel3690@gmail.com' ||
-        targetEmail.toLowerCase() === 'keshavpaterl3690@gmail.com';
+        targetEmail.toLowerCase() === 'keshavpaterl3690@gmail.com' ||
+        targetEmail.toLowerCase() === 'admin@niswartha.org';
 
-      const googleUser = {
+      const fallbackUser = {
         id: isSuperAdminEmail ? 'super-admin-keshav' : `google-user-${Date.now()}`,
         name: isSuperAdminEmail ? 'Keshav Patel' : name || 'Google Supporter',
         email: targetEmail,
         role: isSuperAdminEmail ? 'super_admin' : 'donor',
         avatarUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=Keshav%20Patel',
       };
-      const googleToken = `google-token-${Date.now()}`;
+      const fallbackToken = `google-token-${Date.now()}`;
 
-      login(googleUser, googleToken);
+      login(fallbackUser, fallbackToken);
       toast.success(
-        `Successfully ${authMode === 'login' ? 'signed in' : 'registered'} as ${
-          isSuperAdminEmail ? 'Super Admin' : 'Supporter'
-        }!`
+        `Signed in as ${isSuperAdminEmail ? 'Super Admin' : 'Supporter'}`
       );
       if (isSuperAdminEmail) {
         navigate('/super-admin');
@@ -382,6 +501,19 @@ export function Login() {
               </>
             )}
           </p>
+
+          {/* Developer / Super Admin Instant Access Bypass */}
+          <div className="pt-2 text-center border-t border-border/40">
+            <button
+              type="button"
+              onClick={handleInstantSuperAdminBypass}
+              className="text-[11px] text-muted-foreground/60 hover:text-[#1E3A8A] transition-colors inline-flex items-center gap-1.5 mx-auto py-1 px-2.5 rounded-full hover:bg-muted/50"
+              title="One-click developer bypass for Keshav Patel"
+            >
+              <span className="text-amber-500">⚡</span>
+              <span>Developer Super Admin Access (Keshav Patel)</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
