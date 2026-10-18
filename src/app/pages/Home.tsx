@@ -32,34 +32,45 @@ function UnifiedStatCounters({ stats }: { stats: StatItem[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const inView = useInView(containerRef, { once: true, margin: '-5% 0px' });
   const hasAnimated = useRef(false);
+  const targetsRef = useRef(stats.map((s) => s.target));
+  targetsRef.current = stats.map((s) => s.target);
 
   useEffect(() => {
     if (!inView || hasAnimated.current) return;
     hasAnimated.current = true;
 
-    // Delay counter ignition slightly (400ms) until Framer Motion hero entrance animations settle
+    // Delay counter ignition by 800ms until hero entrance, FCP and LCP completely settle
+    let frameId: number;
     const timeout = setTimeout(() => {
-      const duration = 1800;
+      const duration = 1600;
       const start = performance.now();
-      const targets = stats.map((s) => s.target);
+      const targets = targetsRef.current;
+      let lastUpdate = 0;
 
       const step = (now: number) => {
         const elapsed = now - start;
         const progress = Math.min(elapsed / duration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
 
-        setCounts(targets.map((t) => Math.round(eased * t)));
+        // Throttle state updates to ~30fps (every 33ms) to eliminate main-thread microtask flooding
+        if (now - lastUpdate >= 33 || progress === 1) {
+          lastUpdate = now;
+          setCounts(targets.map((t) => Math.round(eased * t)));
+        }
 
         if (progress < 1) {
-          requestAnimationFrame(step);
+          frameId = requestAnimationFrame(step);
         }
       };
 
-      requestAnimationFrame(step);
-    }, 400);
+      frameId = requestAnimationFrame(step);
+    }, 800);
 
-    return () => clearTimeout(timeout);
-  }, [inView, stats]);
+    return () => {
+      clearTimeout(timeout);
+      if (frameId) cancelAnimationFrame(frameId);
+    };
+  }, [inView]);
 
   return (
     <motion.div

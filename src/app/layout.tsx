@@ -4,7 +4,7 @@ import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { useUser } from './context/UserContext';
 import { useConfig } from './context/ConfigContext';
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import { WhatsAppButton } from './components/WhatsAppButton';
 import { api, applyThemeColor } from './lib/api';
@@ -131,8 +131,6 @@ export function Layout() {
 
       {/* Floating support widgets on public pages */}
       {isPublicPage && <WhatsAppButton />}
-
-      <Toaster position="top-center" expand={true} richColors closeButton />
     </div>
   );
 }
