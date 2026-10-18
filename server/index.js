@@ -12,6 +12,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import Razorpay from 'razorpay';
 import nodemailer from 'nodemailer';
+import crypto from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -489,12 +490,25 @@ app.post('/api/auth/send-otp', async (req, res) => {
       return res.status(429).json({ error: `Please wait ${waitSec}s before requesting a new code.` });
     }
 
+function hashOtp(code) {
+  return crypto.createHmac('sha256', JWT_SECRET).update(String(code).trim()).digest('hex');
+}
+
     const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpToken = jwt.sign(
+      {
+        email: lowerEmail,
+        codeHash: hashOtp(code),
+      },
+      JWT_SECRET,
+      { expiresIn: '15m' }
+    );
+
     authOtpStore.set(lowerEmail, {
       code,
       name: name?.trim() || 'Supporter',
       createdAt: Date.now(),
-      expiresAt: Date.now() + 10 * 60 * 1000,
+      expiresAt: Date.now() + 15 * 60 * 1000,
       attempts: 0,
     });
 
@@ -510,6 +524,7 @@ app.post('/api/auth/send-otp', async (req, res) => {
     res.json({
       success: true,
       message: `A 6-digit verification code has been sent to ${lowerEmail}`,
+      otpToken,
     });
   } catch (err) {
     console.error('[Send-OTP Handler Error]:', err);
@@ -520,7 +535,7 @@ app.post('/api/auth/send-otp', async (req, res) => {
 // Complete Registration with OTP Verification
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { email, password, name, role, otp } = req.body;
+    const { email, password, name, role, otp, otpToken } = req.body;
     if (!email || !password || !name) {
       return res.status(400).json({ error: 'Name, email, and password are required' });
     }
@@ -535,23 +550,37 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ error: 'Please enter the 6-digit verification code sent to your email.' });
     }
 
-    const storedOtp = authOtpStore.get(lowerEmail);
-    if (!storedOtp) {
-      return res.status(400).json({ error: 'Verification code not found or expired. Please request a new code.' });
-    }
+    const cleanInputOtp = String(otp).trim();
+    let isOtpValid = false;
 
-    if (Date.now() > storedOtp.expiresAt) {
-      authOtpStore.delete(lowerEmail);
-      return res.status(400).json({ error: 'Verification code has expired. Please request a new code.' });
-    }
-
-    if (String(storedOtp.code).trim() !== String(otp).trim()) {
-      storedOtp.attempts = (storedOtp.attempts || 0) + 1;
-      if (storedOtp.attempts >= 5) {
-        authOtpStore.delete(lowerEmail);
-        return res.status(400).json({ error: 'Too many incorrect attempts. Please request a new code.' });
+    // A. Verify with cryptographically signed token (Stateless - survives serverless container recycling)
+    if (otpToken) {
+      try {
+        const decoded = jwt.verify(otpToken, JWT_SECRET);
+        if (decoded && decoded.email === lowerEmail && decoded.codeHash === hashOtp(cleanInputOtp)) {
+          isOtpValid = true;
+        }
+      } catch (tokErr) {
+        console.warn('[OTP Token Verification Notice]:', tokErr.message);
       }
-      return res.status(400).json({ error: 'Invalid verification code. Please check your email and try again.' });
+    }
+
+    // B. Fallback to memory store if token verification was not used
+    if (!isOtpValid) {
+      const storedOtp = authOtpStore.get(lowerEmail);
+      if (storedOtp) {
+        if (String(storedOtp.code).trim() === cleanInputOtp) {
+          if (Date.now() <= storedOtp.expiresAt) {
+            isOtpValid = true;
+          }
+        }
+      }
+    }
+
+    if (!isOtpValid) {
+      return res.status(400).json({
+        error: 'Invalid verification code. Please check your email and enter the latest 6-digit code.',
+      });
     }
 
     // OTP verified! Remove from store

@@ -4,7 +4,6 @@ import { useUser } from '../context/UserContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Mail, Lock, Eye, EyeOff, UserRound, ArrowLeft, RefreshCw, ShieldCheck, CheckCircle2 } from 'lucide-react';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '../components/ui/input-otp';
 import { cn } from '../lib/utils';
 import { api } from '../lib/api';
 import { toast } from 'sonner';
@@ -22,6 +21,7 @@ export function Login() {
   // Sign up workflow: 'details' (enter name & email) -> 'verify' (enter OTP code & set password)
   const [signupStep, setSignupStep] = useState<'details' | 'verify'>('details');
   const [otp, setOtp] = useState('');
+  const [otpToken, setOtpToken] = useState('');
   const [sendingOtp, setSendingOtp] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
 
@@ -85,6 +85,12 @@ export function Login() {
         email: trimmedEmail,
         name: name.trim(),
       });
+      if (res?.otpToken) {
+        setOtpToken(res.otpToken);
+        try {
+          sessionStorage.setItem('niswartha_otp_token', res.otpToken);
+        } catch {}
+      }
       toast.success(res?.message || `Verification code sent to ${trimmedEmail}`);
       setSignupStep('verify');
       setResendCooldown(60);
@@ -125,22 +131,29 @@ export function Login() {
           }
         }
       } else {
-        if (!otp || otp.trim().length !== 6) {
-          const errText = 'Please enter the 6-digit verification code sent to your email.';
+        const cleanOtp = otp.trim().replace(/\D/g, '');
+        if (!cleanOtp || cleanOtp.length !== 6) {
+          const errText = 'Please enter the complete 6-digit verification code sent to your email.';
           setError(errText);
           toast.error(errText);
           setLoading(false);
           return;
         }
 
+        const activeToken = otpToken || sessionStorage.getItem('niswartha_otp_token') || undefined;
+
         const response = await api.register({
           name: name.trim() || 'Supporter',
           email: email.trim(),
           password,
-          otp: otp.trim(),
+          otp: cleanOtp,
+          otpToken: activeToken,
           role: 'donor',
         });
         if (response && response.user && response.token) {
+          try {
+            sessionStorage.removeItem('niswartha_otp_token');
+          } catch {}
           login(response.user, response.token);
           toast.success('Email verified! Account created successfully.');
           navigate('/');
@@ -579,26 +592,24 @@ export function Login() {
                   </button>
                 </div>
 
-                {/* 6-Digit OTP */}
+                {/* 6-Digit Verification Code Input */}
                 <div className="space-y-2">
                   <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block text-center">
                     Enter 6-Digit Verification Code
                   </label>
-                  <div className="flex justify-center">
-                    <InputOTP
+                  <div className="max-w-[280px] mx-auto">
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       maxLength={6}
+                      autoFocus
+                      placeholder="• • • • • •"
+                      required
                       value={otp}
-                      onChange={(val) => setOtp(val)}
-                    >
-                      <InputOTPGroup className="gap-1.5 sm:gap-2">
-                        <InputOTPSlot index={0} className="w-10 h-11 sm:w-11 sm:h-12 text-base font-bold rounded-xl border-border/70 bg-muted/30" />
-                        <InputOTPSlot index={1} className="w-10 h-11 sm:w-11 sm:h-12 text-base font-bold rounded-xl border-border/70 bg-muted/30" />
-                        <InputOTPSlot index={2} className="w-10 h-11 sm:w-11 sm:h-12 text-base font-bold rounded-xl border-border/70 bg-muted/30" />
-                        <InputOTPSlot index={3} className="w-10 h-11 sm:w-11 sm:h-12 text-base font-bold rounded-xl border-border/70 bg-muted/30" />
-                        <InputOTPSlot index={4} className="w-10 h-11 sm:w-11 sm:h-12 text-base font-bold rounded-xl border-border/70 bg-muted/30" />
-                        <InputOTPSlot index={5} className="w-10 h-11 sm:w-11 sm:h-12 text-base font-bold rounded-xl border-border/70 bg-muted/30" />
-                      </InputOTPGroup>
-                    </InputOTP>
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      className="h-12 bg-white dark:bg-muted/30 border-2 border-[#1E3A8A]/30 focus:border-[#1E3A8A] rounded-2xl text-center text-2xl font-bold tracking-[0.45em] font-mono shadow-xs"
+                    />
                   </div>
                 </div>
 
