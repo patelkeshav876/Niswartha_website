@@ -144,15 +144,17 @@ export function Profile() {
 
               <div className="space-y-1 sm:mb-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight">{currentUser.name}</h1>
-                  <Badge className="bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">
+                  <h1 className="text-xl sm:text-2xl font-bold text-white sm:text-zinc-900 tracking-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] sm:drop-shadow-none">
+                    {currentUser.name}
+                  </h1>
+                  <Badge className="bg-white/20 sm:bg-primary/10 text-white sm:text-primary border border-white/30 sm:border-primary/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase backdrop-blur-xs">
                     {currentUser.role === 'super_admin' ? 'Super Admin' : currentUser.role === 'admin' ? 'Ashram Admin' : 'Supporter'}
                   </Badge>
                 </div>
-                <p className="text-xs text-zinc-500 font-medium">
+                <p className="text-xs text-white/90 sm:text-zinc-500 font-medium drop-shadow-xs sm:drop-shadow-none">
                   {currentUser.bio || 'Niswartha Donor & Community Supporter'}
                 </p>
-                <div className="flex flex-wrap items-center gap-3 text-[11px] text-zinc-500 pt-0.5">
+                <div className="flex flex-wrap items-center gap-3 text-[11px] text-zinc-400 sm:text-zinc-500 pt-0.5">
                   <span className="flex items-center gap-1"><Mail className="h-3 w-3 text-zinc-400" /> {currentUser.email}</span>
                   {currentUser.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3 text-zinc-400" /> {currentUser.phone}</span>}
                   {currentUser.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-zinc-400" /> {currentUser.location}</span>}
