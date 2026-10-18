@@ -268,7 +268,7 @@ export function Settings() {
         sessionStorage.setItem('niswartha_user_pwd', securityData.newPassword);
       } catch {}
 
-      toast.success('Password changed successfully in MongoDB! You can now use it next time.');
+      toast.success('Password changed successfully! You can now use it next time you sign in.');
       setShowPasswordConfirmDialog(false);
       setSecurityData({
         currentPassword: securityData.newPassword,
@@ -684,7 +684,7 @@ export function Settings() {
                   Do you really want to change your password?
                 </AlertDialogTitle>
                 <AlertDialogDescription className="text-xs text-zinc-600 leading-relaxed text-center sm:text-left">
-                  This will update your password in MongoDB. You will need to use this new password the next time you sign into your account.
+                  This will securely update your account password. You will need to use this new password the next time you sign into your account.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter className="flex-row gap-2 justify-end pt-3">
@@ -702,7 +702,7 @@ export function Settings() {
                   disabled={isUpdating}
                   className="rounded-full text-xs font-bold bg-[#1E3A8A] hover:bg-[#0c593f] text-white shadow-md"
                 >
-                  {isUpdating ? 'Saving in MongoDB...' : 'Yes, Update Password'}
+                  {isUpdating ? 'Updating...' : 'Yes, Update Password'}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
