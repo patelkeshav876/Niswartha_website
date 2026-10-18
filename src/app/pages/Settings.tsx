@@ -17,6 +17,9 @@ import {
   Mail,
   ShieldCheck,
   Check,
+  Eye,
+  EyeOff,
+  KeyRound,
 } from 'lucide-react';
 import { ImageUploadWithCamera } from '../components/ImageUploadWithCamera';
 import { api } from '../lib/api';
@@ -38,6 +41,10 @@ export function Settings() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('personal');
   const [isUpdating, setIsUpdating] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showPasswordConfirmDialog, setShowPasswordConfirmDialog] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -57,7 +64,7 @@ export function Settings() {
   const [userStats, setUserStats] = useState({ visits: 3, donations: 8 });
 
   const [securityData, setSecurityData] = useState({
-    currentPassword: '',
+    currentPassword: typeof window !== 'undefined' ? (sessionStorage.getItem('niswartha_user_pwd') || '') : '',
     newPassword: '',
     confirmPassword: '',
   });
@@ -89,6 +96,14 @@ export function Settings() {
         }
       };
       loadStats();
+
+      const savedPwd = typeof window !== 'undefined' ? sessionStorage.getItem('niswartha_user_pwd') : null;
+      if (savedPwd) {
+        setSecurityData((prev) => ({
+          ...prev,
+          currentPassword: savedPwd,
+        }));
+      }
     }
   }, [currentUser]);
 
@@ -188,17 +203,17 @@ export function Settings() {
     }
   };
 
-  const handlePasswordChange = async (e: React.FormEvent) => {
+  const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentUser || !token) return;
+    if (!currentUser) return;
 
-    if (!securityData.currentPassword) {
+    if (!securityData.currentPassword.trim()) {
       toast.error('Current password is required');
       return;
     }
 
-    if (securityData.newPassword !== securityData.confirmPassword) {
-      toast.error('New passwords do not match');
+    if (!securityData.newPassword) {
+      toast.error('Please enter a new password');
       return;
     }
 
@@ -207,13 +222,30 @@ export function Settings() {
       return;
     }
 
+    if (securityData.newPassword !== securityData.confirmPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+
+    if (securityData.currentPassword === securityData.newPassword) {
+      toast.error('New password must be different from current password');
+      return;
+    }
+
+    // Trigger confirmation modal popup
+    setShowPasswordConfirmDialog(true);
+  };
+
+  const executePasswordChange = async () => {
+    if (!currentUser) return;
+
     setIsUpdating(true);
     try {
       const response = await fetch(`/api/users/${currentUser.id}/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           currentPassword: securityData.currentPassword,
@@ -222,21 +254,27 @@ export function Settings() {
       });
 
       const rawText = await response.text();
+      let resData: any = null;
+      try {
+        resData = JSON.parse(rawText);
+      } catch {}
+
       if (!response.ok) {
-        let errorMsg = 'Failed to update password';
-        if (rawText && rawText.trim()) {
-          try {
-            const errData = JSON.parse(rawText);
-            if (errData.error) errorMsg = errData.error;
-          } catch {
-            errorMsg = rawText;
-          }
-        }
-        throw new Error(errorMsg);
+        throw new Error(resData?.error || rawText || 'Failed to update password');
       }
 
-      toast.success('Password changed successfully!');
-      setSecurityData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      // Update in sessionStorage so current password stays in sync for future changes
+      try {
+        sessionStorage.setItem('niswartha_user_pwd', securityData.newPassword);
+      } catch {}
+
+      toast.success('Password changed successfully in MongoDB! You can now use it next time.');
+      setShowPasswordConfirmDialog(false);
+      setSecurityData({
+        currentPassword: securityData.newPassword,
+        newPassword: '',
+        confirmPassword: '',
+      });
     } catch (error: any) {
       toast.error(error.message || 'Failed to change password');
     } finally {
@@ -556,50 +594,119 @@ export function Settings() {
                 <p className="text-xs text-muted-foreground mt-0.5">Manage your credentials and security preferences</p>
               </div>
 
-              <form onSubmit={handlePasswordChange} className="space-y-4">
+              <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-zinc-500">Current Password</Label>
-                  <input
-                    type="password"
-                    value={securityData.currentPassword}
-                    onChange={(e) => setSecurityData({ ...securityData, currentPassword: e.target.value })}
-                    placeholder="••••••••"
-                    className="w-full h-11 px-4 text-xs font-bold rounded-2xl bg-zinc-100/70 border-none text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#F97316]/30"
-                  />
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold text-zinc-500">Current Password</Label>
+                    {securityData.currentPassword && (
+                      <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        ✓ Loaded from your login
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showCurrentPassword ? 'text' : 'password'}
+                      value={securityData.currentPassword}
+                      onChange={(e) => setSecurityData({ ...securityData, currentPassword: e.target.value })}
+                      placeholder="••••••••"
+                      className="w-full h-11 pl-4 pr-10 text-xs font-bold rounded-2xl bg-zinc-100/70 border-none text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#F97316]/30 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      className="absolute right-3.5 top-3.5 text-zinc-400 hover:text-zinc-700"
+                    >
+                      {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold text-zinc-500">New Password</Label>
-                  <input
-                    type="password"
-                    value={securityData.newPassword}
-                    onChange={(e) => setSecurityData({ ...securityData, newPassword: e.target.value })}
-                    placeholder="At least 6 characters"
-                    className="w-full h-11 px-4 text-xs font-bold rounded-2xl bg-zinc-100/70 border-none text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#F97316]/30"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showNewPassword ? 'text' : 'password'}
+                      value={securityData.newPassword}
+                      onChange={(e) => setSecurityData({ ...securityData, newPassword: e.target.value })}
+                      placeholder="At least 6 characters"
+                      className="w-full h-11 pl-4 pr-10 text-xs font-bold rounded-2xl bg-zinc-100/70 border-none text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#F97316]/30 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3.5 top-3.5 text-zinc-400 hover:text-zinc-700"
+                    >
+                      {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold text-zinc-500">Confirm New Password</Label>
-                  <input
-                    type="password"
-                    value={securityData.confirmPassword}
-                    onChange={(e) => setSecurityData({ ...securityData, confirmPassword: e.target.value })}
-                    placeholder="At least 6 characters"
-                    className="w-full h-11 px-4 text-xs font-bold rounded-2xl bg-zinc-100/70 border-none text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#F97316]/30"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={securityData.confirmPassword}
+                      onChange={(e) => setSecurityData({ ...securityData, confirmPassword: e.target.value })}
+                      placeholder="At least 6 characters"
+                      className="w-full h-11 pl-4 pr-10 text-xs font-bold rounded-2xl bg-zinc-100/70 border-none text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#F97316]/30 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3.5 top-3.5 text-zinc-400 hover:text-zinc-700"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
 
                 <Button
                   type="submit"
                   disabled={isUpdating}
-                  className="w-full rounded-full bg-zinc-950 text-white hover:bg-zinc-800 font-bold text-xs py-3 mt-4 shadow-md"
+                  className="w-full rounded-full bg-[#1E3A8A] hover:bg-[#0c593f] text-white font-bold text-xs py-3 mt-4 shadow-md transition-all"
                 >
-                  {isUpdating ? 'Updating...' : 'Update Password'}
+                  {isUpdating ? 'Updating Password...' : 'Update Password'}
                 </Button>
               </form>
             </Card>
           )}
+
+          {/* Password Change Confirmation Dialog */}
+          <AlertDialog open={showPasswordConfirmDialog} onOpenChange={setShowPasswordConfirmDialog}>
+            <AlertDialogContent className="rounded-3xl border-zinc-200 bg-white p-6 shadow-2xl max-w-sm sm:max-w-md">
+              <AlertDialogHeader className="space-y-3">
+                <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto sm:mx-0 border border-amber-100">
+                  <KeyRound className="h-6 w-6" />
+                </div>
+                <AlertDialogTitle className="text-lg font-bold font-serif text-zinc-950 text-center sm:text-left">
+                  Do you really want to change your password?
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-xs text-zinc-600 leading-relaxed text-center sm:text-left">
+                  This will update your password in MongoDB. You will need to use this new password the next time you sign into your account.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="flex-row gap-2 justify-end pt-3">
+                <AlertDialogCancel
+                  disabled={isUpdating}
+                  className="rounded-full text-xs font-bold border-zinc-200"
+                >
+                  No, Keep Current
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={(e) => {
+                    e.preventDefault();
+                    executePasswordChange();
+                  }}
+                  disabled={isUpdating}
+                  className="rounded-full text-xs font-bold bg-[#1E3A8A] hover:bg-[#0c593f] text-white shadow-md"
+                >
+                  {isUpdating ? 'Saving in MongoDB...' : 'Yes, Update Password'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 

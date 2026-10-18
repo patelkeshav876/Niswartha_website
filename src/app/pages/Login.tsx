@@ -206,6 +206,9 @@ export function Login() {
       });
 
       if (res && res.user && res.token) {
+        try {
+          sessionStorage.setItem('niswartha_user_pwd', newPassword);
+        } catch {}
         login(res.user, res.token);
         toast.success(res.message || 'Password reset successfully! You are now logged in.');
         navigate('/');
@@ -251,6 +254,9 @@ export function Login() {
       if (authMode === 'login') {
         const response = await api.login({ email: email.trim(), password });
         if (response && response.user && response.token) {
+          try {
+            sessionStorage.setItem('niswartha_user_pwd', password);
+          } catch {}
           login(response.user, response.token);
           toast.success(`Welcome back, ${response.user.name || 'User'}!`);
           if (response.user.role === 'super_admin') {
@@ -284,6 +290,7 @@ export function Login() {
         if (response && response.user && response.token) {
           try {
             sessionStorage.removeItem('niswartha_otp_token');
+            sessionStorage.setItem('niswartha_user_pwd', password);
           } catch {}
           login(response.user, response.token);
           toast.success('Email verified! Account created successfully.');
