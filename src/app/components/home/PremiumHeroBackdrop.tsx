@@ -52,6 +52,16 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
   const [config, setConfig] = useState<any>(() => getInitialConfig(pageKey));
   const [scrollY, setScrollY] = useState(0);
 
+  // Derived configuration values (declared before effects to eliminate TDZ issues)
+  const rawBgType = config?.bgType || config?.heroBgType;
+  const bgType = rawBgType === 'gradient' ? 'gradient' : (pageKey === 'about' ? 'gradient' : 'image');
+  const rawBgUrl = config?.bgUrl || config?.heroBgUrl || (pageKey === 'about' ? '' : '/hero-bg.webp');
+  const safeBgUrl = (rawBgUrl && rawBgUrl.startsWith('data:image/')) ? '/hero-bg.webp' : rawBgUrl;
+  const bgUrl = safeBgUrl ? optimizeUnsplashUrl(safeBgUrl, 1200, 800, 75) : '';
+  const overlayOpacity = config?.overlayOpacity !== undefined ? Number(config.overlayOpacity) : (config?.heroOverlayOpacity !== undefined ? Number(config.heroOverlayOpacity) : 0.55);
+  const blurIntensity = config?.blurIntensity !== undefined ? Number(config.blurIntensity) : 0;
+  const brightness = config?.brightness !== undefined ? Number(config.brightness) : 1.0;
+
   useEffect(() => {
     let active = true;
     (async () => {
@@ -98,16 +108,6 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [config]);
-
-  // bgType is strictly 'gradient' or 'image'
-  const rawBgType = config?.bgType || config?.heroBgType;
-  const bgType = rawBgType === 'gradient' ? 'gradient' : (pageKey === 'about' ? 'gradient' : 'image');
-  const rawBgUrl = config?.bgUrl || config?.heroBgUrl || (pageKey === 'about' ? '' : '/hero-bg.webp');
-  const safeBgUrl = (rawBgUrl && rawBgUrl.startsWith('data:image/')) ? '/hero-bg.webp' : rawBgUrl;
-  const bgUrl = safeBgUrl ? optimizeUnsplashUrl(safeBgUrl, 1200, 800, 75) : '';
-  const overlayOpacity = config?.overlayOpacity !== undefined ? Number(config.overlayOpacity) : (config?.heroOverlayOpacity !== undefined ? Number(config.heroOverlayOpacity) : 0.55);
-  const blurIntensity = config?.blurIntensity !== undefined ? Number(config.blurIntensity) : 0;
-  const brightness = config?.brightness !== undefined ? Number(config.brightness) : 1.0;
   const textAlign = config?.textAlign || 'center';
   
   const enableParallax = config?.parallax || config?.heroParallax;
