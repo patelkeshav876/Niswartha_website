@@ -38,11 +38,15 @@ export default defineConfig(({ mode }) => {
     chunkSizeWarningLimit: 1000,
     target: 'es2020',
     cssMinify: true,
+    cssCodeSplit: true,
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+            if (id.includes('recharts')) {
+              return 'vendor-charts';
+            }
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router') || id.includes('scheduler')) {
               return 'vendor-react';
             }
             if (id.includes('motion')) {
@@ -50,6 +54,9 @@ export default defineConfig(({ mode }) => {
             }
             if (id.includes('lucide-react')) {
               return 'vendor-icons';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'vendor-ui';
             }
           }
         },

@@ -134,7 +134,7 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
         className
       )}
       style={{
-        contain: 'paint',
+        contain: 'layout paint',
         filter: blurIntensity > 0 || brightness !== 1.0 ? `brightness(${brightness})` : undefined,
         minHeight: sizeMode === 'custom' && customHeight ? `${customHeight}px` : undefined,
       }}

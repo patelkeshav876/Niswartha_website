@@ -78,15 +78,16 @@ function UnifiedStatCounters({ stats }: { stats: StatItem[] }) {
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.6 }}
+      style={{ contain: 'layout paint' }}
       className="mt-16 grid grid-cols-2 gap-8 sm:grid-cols-4 sm:gap-12 lg:gap-16"
     >
       {stats.map((stat, i) => (
-        <div key={stat.label} className="text-center">
+        <div key={stat.label} className="text-center will-change-transform">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.06] ring-1 ring-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
             {stat.icon}
           </div>
           <p className="text-3xl font-bold tracking-tight text-white lg:text-4xl">
-            <span>
+            <span className="tabular-nums">
               {stat.prefix || ''}
               {counts[i].toLocaleString()}
               {stat.suffix || ''}
