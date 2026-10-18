@@ -403,22 +403,17 @@ app.post('/api/razorpay/order', async (req, res) => {
 // --- Auth OTP Verification Store & Helper ---
 const authOtpStore = new Map();
 
+function hashOtp(code) {
+  return crypto.createHmac('sha256', JWT_SECRET).update(String(code).trim()).digest('hex');
+}
+
 async function sendAuthOtpEmail(email, code, name) {
   let transporter = configuredMailTransporter;
   if (!transporter) {
-    if (!fallbackMailTransporterPromise) {
-      fallbackMailTransporterPromise = nodemailer.createTestAccount().then((acct) => {
-        console.log('Using Ethereal SMTP fallback for auth OTP emails.');
-        console.log(`Ethereal login: ${acct.user}`);
-        return nodemailer.createTransport({
-          host: 'smtp.ethereal.email',
-          port: 587,
-          secure: false,
-          auth: { user: acct.user, pass: acct.pass },
-        });
-      });
-    }
-    transporter = await fallbackMailTransporterPromise;
+    transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user: SMTP_USER, pass: SMTP_PASS },
+    });
   }
 
   const subject = `${code} is your Niswartha verification code`;
@@ -436,7 +431,7 @@ async function sendAuthOtpEmail(email, code, name) {
         <span style="display: inline-block; font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #1E3A8A; background-color: #f0fdf4; border: 1.5px dashed #16a34a; padding: 14px 28px; border-radius: 12px;">${code}</span>
       </div>
       <p style="color: #64748b; font-size: 12px; line-height: 1.5;">
-        This verification code expires in <strong>10 minutes</strong>. If you did not create an account with Niswartha, please ignore this email.
+        This verification code expires in <strong>15 minutes</strong>. If you did not create an account with Niswartha, please ignore this email.
       </p>
       <div style="margin-top: 32px; padding-top: 16px; border-top: 1px solid #f1f5f9; text-align: center;">
         <p style="color: #94a3b8; font-size: 11px; margin: 0;">Deaf and Dumb Industrial Institute, Near Kasturchand Park, Nagpur &bull; Est. 1946</p>
@@ -445,14 +440,14 @@ async function sendAuthOtpEmail(email, code, name) {
   `;
 
   const mailOptions = {
-    from: `"Niswartha Institute" <${SMTP_FROM}>`,
+    from: `"Niswartha Support" <${SMTP_FROM}>`,
     to: email,
     subject,
-    text: `Your Niswartha verification code is: ${code}. It expires in 10 minutes.`,
+    text: `Your Niswartha verification code is: ${code}. It expires in 15 minutes.`,
     html,
   };
 
-  return sendEmailWithRetry(transporter, mailOptions);
+  return transporter.sendMail(mailOptions);
 }
 
 // Request Email OTP for Sign Up
@@ -490,10 +485,6 @@ app.post('/api/auth/send-otp', async (req, res) => {
       return res.status(429).json({ error: `Please wait ${waitSec}s before requesting a new code.` });
     }
 
-function hashOtp(code) {
-  return crypto.createHmac('sha256', JWT_SECRET).update(String(code).trim()).digest('hex');
-}
-
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const otpToken = jwt.sign(
       {
@@ -512,14 +503,18 @@ function hashOtp(code) {
       attempts: 0,
     });
 
-    console.log(`[AUTH OTP VERIFIED SENDER] OTP for ${lowerEmail}: ${code}`);
+    console.log(`[AUTH OTP VERIFIED SENDER] Generated code for ${lowerEmail}: ${code}`);
 
-    // Send email asynchronously
-    sendAuthOtpEmail(lowerEmail, code, name?.trim())
-      .then(() => console.log(`[AUTH OTP] Successfully dispatched email to ${lowerEmail}`))
-      .catch((err) => {
-        console.error(`[AUTH OTP MAIL ERROR] Failed sending to ${lowerEmail}:`, err?.message);
+    // Send email and wait for completion so serverless lambda does not terminate before delivery finishes
+    try {
+      await sendAuthOtpEmail(lowerEmail, code, name?.trim());
+      console.log(`[AUTH OTP DELIVERED] Successfully dispatched email to ${lowerEmail}`);
+    } catch (mailErr) {
+      console.error(`[AUTH OTP MAIL ERROR] Failed sending to ${lowerEmail}:`, mailErr?.message);
+      return res.status(500).json({
+        error: `Could not send verification email. Error: ${mailErr?.message || 'SMTP delivery issue'}. Please try again in a few moments.`,
       });
+    }
 
     res.json({
       success: true,
