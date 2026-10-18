@@ -17,6 +17,18 @@ export function Layout() {
   const { currentUser, loading } = useUser();
   const { config } = useConfig();
   const [announcementDismissed, setAnnouncementDismissed] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  // Defer non-critical floating support widgets until page is completely idle
+  useEffect(() => {
+    const idleCallback = (window as any).requestIdleCallback;
+    if (idleCallback) {
+      const id = idleCallback(() => setReady(true), { timeout: 2000 });
+      return () => (window as any).cancelIdleCallback(id);
+    }
+    const id = setTimeout(() => setReady(true), 1500);
+    return () => clearTimeout(id);
+  }, []);
 
   // Scroll to top on route changes
   useEffect(() => {
@@ -129,8 +141,8 @@ export function Layout() {
 
       {!hideNavFooter && <Footer />}
 
-      {/* Floating support widgets on public pages */}
-      {isPublicPage && <WhatsAppButton />}
+      {/* Floating support widgets on public pages deferred until after initial idle */}
+      {isPublicPage && ready && <WhatsAppButton />}
     </div>
   );
 }

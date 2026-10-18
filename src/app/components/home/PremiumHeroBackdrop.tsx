@@ -57,18 +57,28 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
     (async () => {
       try {
         const pageConf = await api.getHeroConfig(pageKey);
-        if (active && pageConf && pageConf.bgType) {
-          setConfig(pageConf);
-          return;
+        const resolved = (pageConf && pageConf.bgType) ? pageConf : globalConfig;
+        if (!active || !resolved) return;
+
+        const urlOf = (c: any) => c?.bgUrl || c?.heroBgUrl || '/hero-bg.webp';
+        const rawNextUrl = urlOf(resolved);
+        const safeNextUrl = (rawNextUrl && rawNextUrl.startsWith('data:image/')) ? '/hero-bg.webp' : rawNextUrl;
+        const nextUrl = safeNextUrl ? optimizeUnsplashUrl(safeNextUrl, 1200, 800, 75) : '';
+
+        // If the background image URL changed from the current one, decode off-thread before swapping
+        if (nextUrl && nextUrl !== bgUrl && nextUrl !== '/hero-bg.webp') {
+          const img = new Image();
+          img.src = nextUrl;
+          await img.decode().catch(() => {});
         }
-        // Fallback to global config if page-specific config not found
-        if (active && globalConfig) {
-          setConfig(globalConfig);
-          return;
-        }
-        const fetchedGlobal = await api.getConfig();
-        if (active && fetchedGlobal) {
-          setConfig(fetchedGlobal);
+
+        if (active) {
+          setConfig((prev: any) =>
+            JSON.stringify(prev) === JSON.stringify(resolved) ? prev : resolved
+          );
+          try {
+            localStorage.setItem('hero_config_' + pageKey, JSON.stringify(resolved));
+          } catch {}
         }
       } catch {
         // fallback
@@ -77,7 +87,7 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
     return () => {
       active = false;
     };
-  }, [pageKey, globalConfig]);
+  }, [pageKey, globalConfig, bgUrl]);
 
   // Scroll handler for hardware-accelerated parallax shift
   useEffect(() => {
@@ -163,15 +173,21 @@ export function PremiumHeroBackdrop({ children, className, pageKey = 'home' }: P
         >
           <img
             src={bgUrl}
+            srcSet={
+              bgUrl === '/hero-bg.webp'
+                ? '/hero-bg-480.webp 480w, /hero-bg-800.webp 800w, /hero-bg.webp 960w'
+                : undefined
+            }
+            sizes="100vw"
             className={cn('w-full h-full object-center animate-hero-zoom', fitClass)}
             alt="Niswartha Hero Background"
             loading="eager"
             // @ts-ignore
             fetchpriority="high"
             decoding="async"
-            width={1920}
-            height={1080}
-            style={{ aspectRatio: '16/9' }}
+            width={960}
+            height={640}
+            style={{ aspectRatio: '3/2' }}
           />
         </div>
       )}

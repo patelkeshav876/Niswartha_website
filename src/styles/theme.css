@@ -480,9 +480,15 @@ textarea,
 }
 
 .animate-hero-zoom {
-  animation: heroZoom 20s ease-in-out infinite;
+  animation: heroZoom 14s ease-out 1 forwards;
   will-change: transform;
   transform-origin: center center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-zoom {
+    animation: none !important;
+  }
 }
 
 /* Card hover lift utility */

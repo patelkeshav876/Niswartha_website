@@ -27,7 +27,7 @@ export function WhatsAppButton() {
       <span className="absolute right-16 scale-0 rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white shadow-lg transition-all group-hover:scale-100 whitespace-nowrap bg-zinc-900/90 backdrop-blur-sm select-none">
         Chat with Us
       </span>
-      <span className="absolute inset-0 rounded-full bg-[#25D366] opacity-35 animate-ping pointer-events-none" style={{ animationDuration: '3s' }} />
+      <span className="absolute inset-0 rounded-full bg-[#25D366] opacity-35 animate-ping pointer-events-none" style={{ animationIterationCount: 3, animationDuration: '2.5s' }} />
     </a>
   );
 }

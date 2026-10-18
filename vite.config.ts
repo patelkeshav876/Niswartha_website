@@ -46,17 +46,20 @@ export default defineConfig(({ mode }) => {
             if (id.includes('recharts')) {
               return 'vendor-charts';
             }
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router') || id.includes('scheduler')) {
-              return 'vendor-react';
-            }
-            if (id.includes('motion')) {
-              return 'vendor-motion';
-            }
             if (id.includes('lucide-react')) {
               return 'vendor-icons';
             }
             if (id.includes('@radix-ui')) {
               return 'vendor-ui';
+            }
+            if (id.includes('motion')) {
+              return 'vendor-motion';
+            }
+            if (id.includes('date-fns') || id.includes('react-day-picker')) {
+              return 'vendor-calendar';
+            }
+            if (/[\\/]node_modules[\\/](react|react-dom|react-router|scheduler)[\\/]/.test(id)) {
+              return 'vendor-react';
             }
           }
         },

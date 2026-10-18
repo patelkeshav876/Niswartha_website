@@ -132,9 +132,14 @@ export function Home() {
         // Keep mock data
       }
     };
-    void loadData();
+    // Defer API calls slightly so initial frame & LCP paint settle cleanly
+    const timer = setTimeout(() => {
+      void loadData();
+    }, 200);
+
     return () => {
       active = false;
+      clearTimeout(timer);
     };
   }, []);
 

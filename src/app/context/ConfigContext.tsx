@@ -26,7 +26,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       try {
         const c = await api.getConfig();
         if (active && c) {
-          setConfig(c);
+          setConfig((prev: any) => (JSON.stringify(prev) === JSON.stringify(c) ? prev : c));
           if (c.primaryThemeColor) applyThemeColor(c.primaryThemeColor);
         }
       } catch {
