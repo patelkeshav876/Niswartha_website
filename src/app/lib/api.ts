@@ -550,9 +550,7 @@ export const api = {
   createDonationsBatch: (data: Record<string, unknown>) =>
     fetchAPI('/donations/batch', { method: 'POST', body: JSON.stringify(data) }),
 
-  createRazorpayOrder: (data: Record<string, unknown>) =>
-    fetchAPI('/razorpay/order', { method: 'POST', body: JSON.stringify(data) }),
-
+  
   // --- Physical Item Donations API ---
   getItemDonations: async (opts?: { userId?: string; ashramId?: string }) => {
     try {

@@ -26,7 +26,7 @@ import { toast } from 'sonner';
 const COMPLAINT_CATEGORIES = [
   'Technical Bug / Website Error',
   'Visit Booking Issue',
-  'Donation / Payment Issue',
+  'Donation & Contribution Inquiry',
   'Account / Profile Issue',
   'Content or Information Error',
   'Other Website Complaint',
@@ -107,7 +107,7 @@ export function Help() {
     {
       question: 'How do I contribute or support a child or ashram?',
       answer:
-        'Browse current needs or ashrams, select the cause you would like to support, and click "Support Our Mission". You can choose to contribute towards specific educational items, food programs, or general welfare. Follow the simple online payment steps to complete your support.',
+        'Browse current needs or ashrams, select the cause you would like to support, and click "Support Our Mission". You can choose to contribute towards specific educational items, food programs, or general welfare. You can choose to sponsor physical educational items, groceries, hearing supplies, or connect with the institute directly for support.',
     },
     {
       question: 'Are contributions eligible for 80G tax exemption?',
@@ -130,9 +130,9 @@ export function Help() {
         'You can view upcoming gatherings on our Events page and click "Register / Join". To organize meal distribution or special visits, navigate to Visit Us to schedule a slot directly with the ashram administration.',
     },
     {
-      question: 'What payment methods are supported?',
+      question: 'Does the website accept direct online payments?',
       answer:
-        'We accept all secure payment options including UPI (GPay, PhonePe, Paytm), Credit/Debit Cards, Net Banking, and direct Bank Transfer.',
+        'To ensure complete transparency and direct support, we do not collect online payments through the website. Contributions are accepted as in-kind physical goods (books, clothes, rations, hearing aids) delivered to the campus, or through direct trust bank transfer / cheque upon connecting with the school office.',
     },
   ];
 

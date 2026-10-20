@@ -10,7 +10,6 @@ import bcrypt from 'bcryptjs';
 import * as dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import Razorpay from 'razorpay';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 
@@ -27,8 +26,6 @@ const MONGODB_URI =
   RAW_MONGODB_URI.startsWith('mongodb://') || RAW_MONGODB_URI.startsWith('mongodb+srv://')
     ? RAW_MONGODB_URI
     : 'mongodb://127.0.0.1:27017/orphanage-connect';
-const RAZORPAY_KEY_ID = (process.env.RAZORPAY_KEY_ID || '').trim();
-const RAZORPAY_KEY_SECRET = (process.env.RAZORPAY_KEY_SECRET || '').trim();
 const SMTP_HOST = (process.env.SMTP_HOST || 'smtp.gmail.com').trim();
 const SMTP_PORT = Number(process.env.SMTP_PORT || 465);
 const SMTP_USER = (process.env.SMTP_USER || 'aakharisamosha36@gmail.com').trim();
@@ -38,15 +35,6 @@ const SMTP_FROM = (
 ).trim();
 const VISIT_ADMIN_EMAIL = (process.env.VISIT_ADMIN_EMAIL || 'aakharisamosha36@gmail.com').trim();
 const isSmtpConfigured = Boolean(SMTP_USER && SMTP_PASS);
-
-if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
-  console.warn('\n[Razorpay] Warning: RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET is missing in .env. Payments will fail.\n');
-}
-
-const razorpay =
-  RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET
-    ? new Razorpay({ key_id: RAZORPAY_KEY_ID, key_secret: RAZORPAY_KEY_SECRET })
-    : null;
 
 const configuredMailTransporter = nodemailer.createTransport(
   SMTP_HOST.includes('gmail')
@@ -374,30 +362,6 @@ function requireSuperAdmin(req, res, next) {
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' });
-});
-
-// --- Razorpay ---
-app.post('/api/razorpay/order', async (req, res) => {
-  try {
-    if (!razorpay) {
-      return res.status(500).json({ error: 'Razorpay keys not configured on server' });
-    }
-    const { amount, currency, receipt, notes } = req.body || {};
-    const rupees = Number(amount);
-    if (!Number.isFinite(rupees) || rupees <= 0) {
-      return res.status(400).json({ error: 'amount (in INR rupees) is required' });
-    }
-    const order = await razorpay.orders.create({
-      amount: Math.round(rupees * 100), // paise
-      currency: currency || 'INR',
-      receipt: (receipt || `rcpt_${Date.now()}`).slice(0, 40),
-      notes: notes || {},
-    });
-    res.json(order);
-  } catch (e) {
-    console.error('[Razorpay Order Error]:', e);
-    res.status(500).json({ error: String(e.message || 'Razorpay order creation failed') });
-  }
 });
 
 // --- Auth OTP Verification Store & Helper ---
