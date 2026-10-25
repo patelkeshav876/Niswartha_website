@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { MapPin, Phone, Mail, Facebook, ArrowRight } from 'lucide-react';
 import { mockAshrams } from '../data/mock';
-import { HandSupportIcon } from './HandSupportIcon';
 import { api } from '../lib/api';
 
 export function Footer() {
@@ -146,12 +145,9 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="border-t border-white/10">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-5 flex items-center justify-center text-center">
             <p className="text-xs text-white/40">
               © {currentYear} Niswartha — Deaf and Dumb Industrial Institute, Shankar Nagar, Nagpur. All rights reserved.
-            </p>
-            <p className="text-xs text-white/30 flex items-center gap-1">
-              Built with <HandSupportIcon className="h-3.5 w-3.5 text-emerald-400 inline" /> for a better tomorrow
             </p>
           </div>
         </div>
